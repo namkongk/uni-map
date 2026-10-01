@@ -190,11 +190,7 @@ function filtered() {
 }
 
 /* ---------------- header controls ---------------- */
-function bindSeg(id, key) {
-  const seg = $(id);
-  seg.querySelectorAll("button").forEach(b => b.addEventListener("click", () => { S[key] = b.dataset.v; save(); update(); }));
-}
-bindSeg("levelSeg", "lv");
+$("lv").addEventListener("input", () => { S.lv = $("lv").value; save(); update(); });
 $("subj").addEventListener("input", () => { S.subj = $("subj").value; save(); update(); });
 Object.keys(CITY).sort().forEach(c => { const o = document.createElement("option"); o.value = o.textContent = c; $("city").appendChild(o); });
 function fitMaxCost() {
@@ -396,6 +392,80 @@ function setView(open) {
   if (open) renderTable();
 }
 $("viewToggle").addEventListener("click", () => setView(!tableOpen));
+
+/* ---------------- university search (toolbar): suggest → fly to it on the map → open its card ---------------- */
+const normName = s => s.toLowerCase().replace(/univ\./g, "university").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const SKIP = new Set(["of", "the", "and", "for", "at"]);
+const UNI_INDEX = Object.keys(UNIS).map(u => {
+  const n = normName(u), words = n.split(" ");
+  return { u, n, words, initials: words.filter(w => !SKIP.has(w)).map(w => w[0]).join(""), city: UNIS[u].c, cn: normName(UNIS[u].c), courses: ROWS.filter(r => r.u === u).length };
+});
+function suggestUnis(q) {
+  const t = normName(q); if (!t) return [];
+  const parts = t.split(" ");
+  return UNI_INDEX.map(x => {
+    let sc;
+    if (x.n.startsWith(t)) sc = 100;                                          // "university of gla…"
+    else if (t.length >= 2 && x.initials.startsWith(t.replace(/ /g, ""))) sc = 90; // "kcl", "qmul", "uwe"
+    else if (x.words.some(w => w.startsWith(t))) sc = 80;                     // "glasgow", "imperial"
+    else if (parts.every(p => x.n.includes(p))) sc = 60;                      // words in any order
+    else if (x.cn.startsWith(t)) sc = 40;                                     // city: "london"
+    else return null;
+    return { ...x, sc: sc - x.n.length / 1000 };
+  }).filter(Boolean).sort((a, b) => b.sc - a.sc || a.u.localeCompare(b.u)).slice(0, 8);
+}
+// Highlight what was typed inside the university name.
+function markMatch(name, q) {
+  const t = q.trim(); if (!t) return esc(name);
+  const i = name.toLowerCase().indexOf(t.toLowerCase());
+  return i < 0 ? esc(name) : esc(name.slice(0, i)) + "<mark>" + esc(name.slice(i, i + t.length)) + "</mark>" + esc(name.slice(i + t.length));
+}
+let usItems = [], usActive = -1;
+const usInput = $("uniSearch"), usList = $("uniSuggest");
+function usRender() {
+  const q = usInput.value;
+  usItems = suggestUnis(q); usActive = usItems.length ? 0 : -1;
+  $("uniSearchClear").hidden = !q;
+  if (!q.trim()) { usClose(); return; }
+  usList.innerHTML = usItems.length ? usItems.map((x, i) => {
+    const shown = LIST.filter(r => r.u === x.u).length;
+    return `<li role="option" id="us-opt-${i}" aria-selected="${i === usActive}" data-u="${esc(x.u)}">
+      <span class="us-name">${markMatch(x.u, q)}</span>
+      <span class="us-meta">${esc(x.city)} · ${x.courses} course${x.courses === 1 ? "" : "s"}${shown < x.courses ? ` · ${shown ? shown + " match your filters" : "hidden by your filters"}` : ""}</span></li>`;
+  }).join("") : `<li class="us-empty" role="presentation">No university matches “${esc(q.trim())}”</li>`;
+  usList.hidden = false; usInput.setAttribute("aria-expanded", "true");
+  usInput.setAttribute("aria-activedescendant", usActive >= 0 ? "us-opt-0" : "");
+}
+function usMove(d) {
+  if (!usItems.length) return;
+  usActive = (usActive + d + usItems.length) % usItems.length;
+  usList.querySelectorAll("[role=option]").forEach((li, i) => li.setAttribute("aria-selected", String(i === usActive)));
+  usInput.setAttribute("aria-activedescendant", "us-opt-" + usActive);
+  usList.querySelector(`#us-opt-${usActive}`)?.scrollIntoView({ block: "nearest" });
+}
+function usClose() { usList.hidden = true; usInput.setAttribute("aria-expanded", "false"); usInput.removeAttribute("aria-activedescendant"); }
+function usChoose(u) {
+  usInput.value = u; $("uniSearchClear").hidden = false; usClose(); usInput.blur();
+  if (tableOpen) setView(false);
+  openCard(u, true); // pans/zooms the map to the university and opens its information card
+}
+usInput.addEventListener("input", usRender);
+usInput.addEventListener("focus", () => { if (usInput.value.trim()) usRender(); });
+usInput.addEventListener("keydown", e => {
+  if (e.key === "ArrowDown") { e.preventDefault(); usList.hidden ? usRender() : usMove(1); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); usMove(-1); }
+  else if (e.key === "Enter") { if (usActive >= 0 && !usList.hidden) { e.preventDefault(); usChoose(usItems[usActive].u); } }
+  else if (e.key === "Escape" && !usList.hidden) { e.stopPropagation(); usClose(); }
+});
+usList.addEventListener("pointerdown", e => { const li = e.target.closest("[data-u]"); if (li) { e.preventDefault(); usChoose(li.dataset.u); } });
+usInput.addEventListener("blur", () => setTimeout(usClose, 120));
+$("uniSearchClear").addEventListener("click", () => { usInput.value = ""; $("uniSearchClear").hidden = true; usClose(); usInput.focus(); });
+// "/" jumps to the search box from anywhere on the page (unless you're typing somewhere).
+document.addEventListener("keydown", e => {
+  if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.target.closest("input, textarea, select, [contenteditable]") || $("liveReport").open) return;
+  e.preventDefault(); usInput.focus(); usInput.select();
+});
 $("tableClose").addEventListener("click", () => { setView(false); $("viewToggle").focus(); });
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape" || $("liveReport").open) return;
@@ -761,7 +831,9 @@ const SOURCE_UNIS = [...new Set(ROWS.filter(r => r.url).map(r => r.u))];
 const fmtWhen = iso => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 function syncLiveBar(msg) {
   const ok = ROWS.filter(r => r.live).length;
-  $("liveStatus").textContent = msg || (LIVE.checked ? `Live fees: ${ok} courses · ${fmtWhen(LIVE.checked)}` : "Fees: built-in data");
+  const st = msg || (LIVE.checked ? `Live fees for ${ok} courses, checked ${fmtWhen(LIVE.checked)}` : "Showing built-in fees");
+  $("liveStatus").textContent = st; // read by screen readers; sighted users get it on hover
+  $("refreshBtn").title = `Refresh fees — re-read the international fee from each university's course page.\n${st}`;
   $("liveReportBtn").hidden = !LIVE.checked;
 }
 let refreshing = false;
@@ -823,7 +895,7 @@ syncLiveBar();
 
 /* ---------------- main update ---------------- */
 function update(opts = {}) {
-  $("levelSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === S.lv)));
+  $("lv").value = S.lv;
   $("subj").value = S.subj;
   $("maxv").textContent = money(+$("maxcost").value);
   const nf = activeFilterCount(); $("fCount").hidden = !nf; $("fCount").textContent = nf;

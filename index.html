@@ -88,11 +88,12 @@
     <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 
-  <div class="seg" role="group" aria-label="Level" id="levelSeg">
-    <button type="button" data-v="ALL">All<span class="long"> levels</span></button>
-    <button type="button" data-v="Masters">Masters</button>
-    <button type="button" data-v="PhD">PhD</button>
-  </div>
+  <label class="pill-pick" id="lvPick"><span class="sr">Level</span>
+    <select id="lv">
+      <option value="ALL">All levels</option>
+      <option value="Masters">Masters</option>
+      <option value="PhD">PhD</option>
+    </select></label>
 
   <label class="pill-pick" id="subjPick"><span class="sr">Subject</span>
     <select id="subj">
@@ -107,12 +108,22 @@
     <span class="vt-label">View list</span><span class="vt-count" id="vtCount">0</span>
   </button>
 
+  <!-- University search (centre of the toolbar) -->
+  <div class="uni-search" id="uniSearchBox">
+    <svg class="us-ico" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <input type="text" id="uniSearch" role="combobox" aria-expanded="false" aria-controls="uniSuggest" aria-autocomplete="list" autocomplete="off" spellcheck="false"
+      placeholder="Search universities…" aria-label="Search universities and go to them on the map">
+    <kbd class="us-kbd" aria-hidden="true">/</kbd>
+    <button type="button" class="us-clear" id="uniSearchClear" aria-label="Clear search" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+    <ul class="us-list glass" id="uniSuggest" role="listbox" aria-label="Universities" hidden></ul>
+  </div>
+
   <div class="live">
-    <button type="button" class="btn-plain" id="refreshBtn" title="Re-read international fees from each university's course page">
-      <svg class="ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.5h-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-      <span class="rf-t">Refresh fees</span></button>
-    <span class="live-st" id="liveStatus" role="status"></span>
     <button type="button" class="linkish" id="liveReportBtn" hidden>Details</button>
+    <button type="button" class="icon-btn" id="refreshBtn" aria-describedby="liveStatus">
+      <svg class="ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.5h-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span class="sr">Refresh fees</span></button>
+    <span class="sr" id="liveStatus" role="status"></span>
   </div>
 
   <label class="pill-pick cur-pick" id="curPick"><span class="sr">Show prices in</span>
