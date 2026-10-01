@@ -6,6 +6,14 @@ import { extname, join, normalize } from "node:path";
 import { HERE } from "./_rows.mjs";
 
 const ROOT = join(HERE, ".."), PORT = +process.env.PORT || 5173;
+
+// Load .env (KEY=value lines) so api/config.js can read local secrets without committing them.
+try {
+  for (const line of (await readFile(join(ROOT, ".env"), "utf8")).split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
+    if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^(["'])(.*)\1$/, "$2");
+  }
+} catch { /* no .env: the map falls back to OpenStreetMap */ }
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon" };
 
 createServer(async (req, res) => {

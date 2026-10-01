@@ -647,7 +647,7 @@ async function startMap() {
     catch (e) { console.error(e); status("Google Maps failed to load — showing OpenStreetMap."); MAP = LeafletMap; await MAP.init(el); }
   } else {
     MAP = LeafletMap; await MAP.init(el);
-    status("No Google Maps key set — add it in <b>js/config.js</b> for Google photos &amp; reviews.");
+    status("No Google Maps key set — add GOOGLE_MAPS_API_KEY to <b>.env</b> (or your Vercel settings) for Google photos &amp; reviews.");
     setTimeout(() => status(""), 9000);
   }
   refreshMarkers(); applyCityOnMap();
@@ -720,7 +720,7 @@ async function loadPlace(u) {
   const box = $("gplace"), id = ++placeReq;
   const gmSearch = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UNIS[u].q);
   if (!MAP || MAP.kind !== "google") {
-    box.innerHTML = `<div class="gp-empty">Google photos &amp; reviews need a Google Maps API key (js/config.js).<br><a href="${gmSearch}" target="_blank" rel="noopener">Open ${esc(u)} in Google Maps ↗</a></div>`;
+    box.innerHTML = `<div class="gp-empty">Google photos &amp; reviews need a Google Maps API key (GOOGLE_MAPS_API_KEY).<br><a href="${gmSearch}" target="_blank" rel="noopener">Open ${esc(u)} in Google Maps ↗</a></div>`;
     return;
   }
   box.innerHTML = `<div class="skeleton"></div><div class="gp-body"><p class="gp-note">Loading Google Maps details…</p></div>`;
