@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Uni Map</title>
+  <meta name="description" content="UK universities for CS, AI and HCI/UX — Masters and PhD — on a map, with costs, scholarships open to Nepal and a part-time work calculator.">
+  <meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1117" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2c-6 0-11 4.6-11 10.6C5 21 16 30 16 30s11-9 11-17.4C27 6.6 22 2 16 2z' fill='%23007aff'/%3E%3Ccircle cx='16' cy='12.5' r='4.5' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    // Apply the saved theme before first paint so the glass doesn't flash the wrong colour.
+    try { const s = JSON.parse(localStorage.getItem("ukmap-state") || "{}");
+      if (s.theme === "light" || s.theme === "dark") document.documentElement.dataset.theme = s.theme; } catch (e) {}
+  </script>
+</head>
+<body>
+
+<!-- Full-bleed map; everything else floats above it -->
+<main class="stage" id="stage">
+  <div id="map" aria-label="Map of UK universities"></div>
+  <div class="map-status glass" id="mapStatus" hidden></div>
+
+  <div class="side" id="side">
+    <section class="panel glass" id="filters" aria-label="Filters">
+      <button type="button" class="panel-head" id="filtersToggle" aria-expanded="true" aria-controls="filtersBody">
+        <svg class="ph-ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M6 10h8M8.5 15h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+        <span>Filters</span><span class="badge" id="fCount" hidden></span><span class="caret" aria-hidden="true"></span>
+      </button>
+      <div class="panel-body" id="filtersBody">
+        <div class="field search"><label for="q" class="sr">Search</label>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input type="search" id="q" placeholder="University, course, scholarship…"></div>
+        <div class="row2">
+          <div class="field"><label for="city">City</label><select id="city"><option value="">Any city</option></select></div>
+          <div class="field"><label for="radius">Radius (km)</label><input type="number" id="radius" min="0" max="1000" step="5" placeholder="City only"></div>
+        </div>
+        <div class="field"><label for="rank">World rank (QS 2027)</label>
+          <select id="rank"><option value="">Any</option><option value="100">Top 100</option><option value="200">Top 200</option><option value="400">Top 400</option><option value="1000">Top 1000</option><option value="ranked">Ranked only</option></select></div>
+        <div class="field"><label for="maxcost" class="range-lbl"><span>Max total after sure scholarship</span><b id="maxv"></b></label><input type="range" id="maxcost" min="20000" max="64000" step="500"></div>
+        <div class="chips" role="group" aria-label="Options">
+          <label class="chip-t"><input type="checkbox" id="f-sure"><span>Sure scholarship</span></label>
+          <label class="chip-t"><input type="checkbox" id="f-place"><span>Placement year</span></label>
+          <label class="chip-t"><input type="checkbox" id="f-jan"><span>Non-autumn intake</span></label>
+          <label class="chip-t"><input type="checkbox" id="f-london"><span>Outside London</span></label>
+          <label class="chip-t"><input type="checkbox" id="f-noflag"><span>Hide warnings</span></label>
+          <label class="chip-t"><input type="checkbox" id="f-noest"><span>Hide est. fees</span></label>
+        </div>
+        <button type="button" class="btn-plain" id="reset">Reset filters</button>
+      </div>
+    </section>
+
+    <aside class="panel glass budget" id="budget" aria-label="Budget calculator">
+      <button type="button" class="panel-head" id="budgetToggle" aria-expanded="true" aria-controls="budgetBody">
+        <svg class="ph-ico" viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4.5" width="14" height="11" rx="2.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M3 8.5h14" stroke="currentColor" stroke-width="1.7"/></svg>
+        <span>Budget &amp; work</span><span class="takehome" id="thMini"></span><span class="caret" aria-hidden="true"></span>
+      </button>
+      <div class="panel-body" id="budgetBody"></div>
+    </aside>
+  </div>
+
+  <aside class="card glass" id="card" hidden aria-label="University details">
+    <div class="card-top">
+      <div>
+        <h2 id="cardTitle"></h2>
+        <p class="card-sub" id="cardSub"></p>
+      </div>
+      <button type="button" class="icon-btn" id="cardClose" aria-label="Close">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="card-scroll">
+      <div id="cardCourses"></div>
+      <section class="gplace" id="gplace"></section>
+    </div>
+  </aside>
+</main>
+
+<!-- Floating toolbar -->
+<header class="topbar glass" id="hdr">
+  <a class="brand" href="./"><span class="brand-pin" aria-hidden="true"></span><span class="brand-t">Uni Map</span></a>
+
+  <button type="button" class="country-btn" id="countryBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="countryMenu" aria-label="Country: United Kingdom">
+    <span class="flag" aria-hidden="true">🇬🇧</span><span class="c-name">UK</span>
+    <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <div class="seg" role="group" aria-label="Level" id="levelSeg">
+    <button type="button" data-v="ALL">All<span class="long"> levels</span></button>
+    <button type="button" data-v="Masters">Masters</button>
+    <button type="button" data-v="PhD">PhD</button>
+  </div>
+
+  <label class="pill-pick" id="subjPick"><span class="sr">Subject</span>
+    <select id="subj">
+      <option value="ALL">All subjects</option>
+      <option value="CS">Computer Science</option>
+      <option value="AI">AI</option>
+      <option value="HCI">HCI / UX</option>
+    </select></label>
+
+  <button type="button" class="btn-plain vt-btn" id="viewToggle" aria-pressed="false">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5.5h9M7 10h9M7 14.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="3.8" cy="5.5" r="1.2" fill="currentColor"/><circle cx="3.8" cy="10" r="1.2" fill="currentColor"/><circle cx="3.8" cy="14.5" r="1.2" fill="currentColor"/></svg>
+    <span class="vt-label">View list</span><span class="vt-count" id="vtCount">0</span>
+  </button>
+
+  <div class="live">
+    <button type="button" class="btn-plain" id="refreshBtn" title="Re-read international fees from each university's course page">
+      <svg class="ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.5v3.5h-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span class="rf-t">Refresh fees</span></button>
+    <span class="live-st" id="liveStatus" role="status"></span>
+    <button type="button" class="linkish" id="liveReportBtn" hidden>Details</button>
+  </div>
+
+  <label class="pill-pick cur-pick" id="curPick"><span class="sr">Show prices in</span>
+    <select id="cur"></select></label>
+
+  <a class="btn-primary plan-link" href="planner.html" title="Already enrolled? Plan installments, living costs and work month by month">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="2.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M3 8h14M7 2.5v3M13 2.5v3M6.5 11.5h3M6.5 14h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    <span>Budget planner</span></a>
+  <button type="button" class="icon-btn" id="settingsBtn" aria-label="Appearance" aria-expanded="false" aria-controls="settings">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h7m4 0h1M4 14h1m4 0h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="13" cy="6" r="2" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="7" cy="14" r="2" stroke="currentColor" stroke-width="1.7" fill="none"/></svg>
+  </button>
+</header>
+
+<div class="alert glass" id="alert"><span class="dot" aria-hidden="true"></span><span><b>Chevening 2027–28 closes 6 Oct 2026, 11:00 UTC (4:45 pm NPT).</b> Full tuition + stipend, any UK master's.</span>
+  <button type="button" id="alertX" aria-label="Dismiss"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+
+<!-- Country picker (only the UK has data so far) -->
+<div class="country-menu glass" id="countryMenu" role="menu" aria-label="Country" hidden>
+  <button type="button" role="menuitemradio" aria-checked="true" data-c="uk"><span class="flag" aria-hidden="true">🇬🇧</span><span class="c-t">United Kingdom</span>
+    <svg class="tick" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10.5 3.2 3.2L15 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇺🇸</span><span class="c-t">United States</span><span class="soon">Coming soon</span></button>
+  <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇨🇦</span><span class="c-t">Canada</span><span class="soon">Coming soon</span></button>
+  <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇦🇺</span><span class="c-t">Australia</span><span class="soon">Coming soon</span></button>
+  <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇩🇪</span><span class="c-t">Germany</span><span class="soon">Coming soon</span></button>
+</div>
+
+<!-- Appearance settings -->
+<section class="settings glass" id="settings" hidden aria-label="Appearance">
+  <h3>Appearance</h3>
+  <div class="set-row">
+    <span class="set-k">Theme</span>
+    <div class="seg small" role="group" aria-label="Theme" id="themeSeg">
+      <button type="button" data-v="auto">Auto</button>
+      <button type="button" data-v="light">Light</button>
+      <button type="button" data-v="dark">Dark</button>
+    </div>
+  </div>
+  <div class="set-row col">
+    <label class="set-k" for="glassT"><span>Window transparency</span><output id="glassTv" for="glassT"></output></label>
+    <input type="range" id="glassT" min="0" max="100" step="1">
+    <div class="set-scale"><span>Solid</span><span>Clear</span></div>
+  </div>
+  <div class="set-row col">
+    <label class="set-k" for="glassBlur"><span>Background blur</span><output id="glassBlurv" for="glassBlur"></output></label>
+    <input type="range" id="glassBlur" min="0" max="40" step="1">
+    <div class="set-scale"><span>None</span><span>Strong</span></div>
+  </div>
+  <button type="button" class="btn-plain" id="glassReset">Restore defaults</button>
+</section>
+
+<!-- TABLE VIEW (floating sheet under the toolbar) -->
+<section class="tableview glass" id="tableview" hidden aria-label="Data table">
+  <button type="button" class="icon-btn tv-close" id="tableClose" aria-label="Close list">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+  <div class="tv-bar">
+    <div class="fin-inline" id="finInline"></div>
+    <div class="tv-meta"><span id="count"></span><button type="button" class="btn-plain" id="clearrates">Clear row rates</button></div>
+  </div>
+  <div class="tablebox" id="tablebox">
+    <table id="tbl">
+      <thead><tr id="hrow"></tr><tr class="frow" id="frow"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>No courses match. Loosen the filters.</div>
+  </div>
+</section>
+
+<dialog class="report glass" id="liveReport" aria-labelledby="lrTitle">
+  <div class="report-top">
+    <h2 id="lrTitle">Fee refresh</h2>
+    <button type="button" class="icon-btn" id="lrClose" aria-label="Close">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+  </div>
+  <p class="report-sum" id="lrSummary"></p>
+  <div class="report-scroll">
+    <table class="report-tbl">
+      <thead><tr><th scope="col">Course</th><th scope="col">Built-in</th><th scope="col">On page</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead>
+      <tbody id="lrBody"></tbody>
+    </table>
+  </div>
+  <div class="report-foot">
+    <span>Live fees are saved in this browser. PhD fees are re-estimated from the refreshed masters fees.</span>
+    <button type="button" class="btn-plain" id="lrReset">Use built-in data</button>
+  </div>
+</dialog>
+
+
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

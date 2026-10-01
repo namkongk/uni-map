@@ -1,0 +1,732 @@
+{
+ "Imperial College London": {
+  "web": "https://www.imperial.ac.uk",
+  "c": "London",
+  "lat": 51.4988,
+  "lng": -0.1749
+ },
+ "University of Oxford": {
+  "web": "https://www.ox.ac.uk",
+  "c": "Oxford",
+  "lat": 51.7548,
+  "lng": -1.2544
+ },
+ "University of Cambridge": {
+  "web": "https://www.postgraduate.study.cam.ac.uk",
+  "c": "Cambridge",
+  "lat": 52.2043,
+  "lng": 0.1172
+ },
+ "UCL": {
+  "web": "https://www.ucl.ac.uk",
+  "c": "London",
+  "lat": 51.5246,
+  "lng": -0.134
+ },
+ "University of Edinburgh": {
+  "web": "https://www.ed.ac.uk",
+  "c": "Edinburgh",
+  "lat": 55.9445,
+  "lng": -3.1892
+ },
+ "King's College London": {
+  "web": "https://www.kcl.ac.uk",
+  "c": "London",
+  "lat": 51.5115,
+  "lng": -0.116
+ },
+ "University of Manchester": {
+  "web": "https://www.manchester.ac.uk",
+  "c": "Manchester",
+  "lat": 53.4668,
+  "lng": -2.2339
+ },
+ "University of Bristol": {
+  "web": "https://www.bristol.ac.uk",
+  "c": "Bristol",
+  "lat": 51.4584,
+  "lng": -2.603
+ },
+ "University of Warwick": {
+  "web": "https://warwick.ac.uk",
+  "c": "Coventry",
+  "lat": 52.3793,
+  "lng": -1.5615
+ },
+ "University of Birmingham": {
+  "web": "https://www.birmingham.ac.uk",
+  "c": "Birmingham",
+  "lat": 52.4508,
+  "lng": -1.9305
+ },
+ "University of Leeds": {
+  "web": "https://courses.leeds.ac.uk",
+  "c": "Leeds",
+  "lat": 53.8067,
+  "lng": -1.555
+ },
+ "University of Glasgow": {
+  "web": "https://www.gla.ac.uk",
+  "c": "Glasgow",
+  "lat": 55.8721,
+  "lng": -4.2882
+ },
+ "University of Sheffield": {
+  "web": "https://www.sheffield.ac.uk",
+  "c": "Sheffield",
+  "lat": 53.3811,
+  "lng": -1.4888
+ },
+ "Durham University": {
+  "web": "https://www.durham.ac.uk",
+  "c": "Durham",
+  "lat": 54.765,
+  "lng": -1.5782
+ },
+ "University of Nottingham": {
+  "web": "https://www.nottingham.ac.uk",
+  "c": "Nottingham",
+  "lat": 52.9387,
+  "lng": -1.1973
+ },
+ "Queen Mary Univ. of London": {
+  "web": "https://www.qmul.ac.uk",
+  "c": "London",
+  "lat": 51.524,
+  "lng": -0.0403
+ },
+ "University of Southampton": {
+  "web": "https://www.southampton.ac.uk",
+  "c": "Southampton",
+  "lat": 50.9346,
+  "lng": -1.396
+ },
+ "University of St Andrews": {
+  "web": "https://www.st-andrews.ac.uk",
+  "c": "St Andrews",
+  "lat": 56.3398,
+  "lng": -2.7967
+ },
+ "University of Bath": {
+  "web": "https://www.bath.ac.uk",
+  "c": "Bath",
+  "lat": 51.378,
+  "lng": -2.3264
+ },
+ "University of Exeter": {
+  "web": "https://www.exeter.ac.uk",
+  "c": "Exeter",
+  "lat": 50.7371,
+  "lng": -3.5351
+ },
+ "University of Liverpool": {
+  "web": "https://www.liverpool.ac.uk",
+  "c": "Liverpool",
+  "lat": 53.406,
+  "lng": -2.966
+ },
+ "Newcastle University": {
+  "web": "https://www.ncl.ac.uk",
+  "c": "Newcastle",
+  "lat": 54.9799,
+  "lng": -1.6152
+ },
+ "University of York": {
+  "web": "https://www.york.ac.uk",
+  "c": "York",
+  "lat": 53.9461,
+  "lng": -1.0518
+ },
+ "Cardiff University": {
+  "web": "https://www.cardiff.ac.uk",
+  "c": "Cardiff",
+  "lat": 51.4866,
+  "lng": -3.1789
+ },
+ "University of Strathclyde": {
+  "web": "https://www.strath.ac.uk",
+  "c": "Glasgow",
+  "lat": 55.8622,
+  "lng": -4.2424
+ },
+ "University of Sussex": {
+  "web": "https://www.sussex.ac.uk",
+  "c": "Brighton",
+  "lat": 50.8671,
+  "lng": -0.0879
+ },
+ "University of Leicester": {
+  "web": "https://le.ac.uk",
+  "c": "Leicester",
+  "lat": 52.6211,
+  "lng": -1.1249
+ },
+ "Heriot-Watt University": {
+  "web": "https://www.hw.ac.uk",
+  "c": "Edinburgh",
+  "lat": 55.9097,
+  "lng": -3.322
+ },
+ "City St George's, Univ. of London": {
+  "web": "https://www.citystgeorges.ac.uk",
+  "c": "London",
+  "lat": 51.5279,
+  "lng": -0.1027
+ },
+ "Aston University": {
+  "web": "https://www.aston.ac.uk",
+  "c": "Birmingham",
+  "lat": 52.4867,
+  "lng": -1.8885
+ },
+ "University of Hertfordshire": {
+  "web": "https://www.herts.ac.uk",
+  "c": "Hatfield",
+  "lat": 51.7525,
+  "lng": -0.24
+ },
+ "University of Greenwich": {
+  "web": "https://www.gre.ac.uk",
+  "c": "London",
+  "lat": 51.4834,
+  "lng": -0.006
+ },
+ "Wrexham University": {
+  "web": "https://wrexham.ac.uk",
+  "c": "Wrexham",
+  "lat": 53.0525,
+  "lng": -3.0055
+ },
+ "Edge Hill University": {
+  "web": "https://www.edgehill.ac.uk",
+  "c": "Ormskirk",
+  "lat": 53.5584,
+  "lng": -2.8695
+ },
+ "University of Chester": {
+  "web": "https://www1.chester.ac.uk",
+  "c": "Chester",
+  "lat": 53.201,
+  "lng": -2.899
+ },
+ "Teesside University": {
+  "web": "https://www.tees.ac.uk",
+  "c": "Middlesbrough",
+  "lat": 54.5706,
+  "lng": -1.2346
+ },
+ "University of Sunderland": {
+  "web": "https://www.sunderland.ac.uk",
+  "c": "Sunderland",
+  "lat": 54.9045,
+  "lng": -1.3922
+ },
+ "University of Staffordshire": {
+  "web": "https://www.staffs.ac.uk",
+  "c": "Stoke-on-Trent",
+  "lat": 53.009,
+  "lng": -2.177
+ },
+ "University of South Wales": {
+  "web": "https://www.southwales.ac.uk",
+  "c": "Pontypridd",
+  "lat": 51.5891,
+  "lng": -3.3274
+ },
+ "Keele University": {
+  "web": "https://www.keele.ac.uk",
+  "c": "Keele",
+  "lat": 53.003,
+  "lng": -2.272
+ },
+ "University of Lincoln": {
+  "web": "https://www.lincoln.ac.uk",
+  "c": "Lincoln",
+  "lat": 53.2283,
+  "lng": -0.5486
+ },
+ "University of Worcester": {
+  "web": "https://www.worcester.ac.uk",
+  "c": "Worcester",
+  "lat": 52.1966,
+  "lng": -2.2425
+ },
+ "Bangor University": {
+  "web": "https://www.bangor.ac.uk",
+  "c": "Bangor",
+  "lat": 53.229,
+  "lng": -4.1298
+ },
+ "Aberystwyth University": {
+  "web": "https://www.aber.ac.uk",
+  "c": "Aberystwyth",
+  "lat": 52.4165,
+  "lng": -4.0656
+ },
+ "Coventry University": {
+  "web": "https://www.coventry.ac.uk",
+  "c": "Coventry",
+  "lat": 52.4058,
+  "lng": -1.4999
+ },
+ "Nottingham Trent University": {
+  "web": "https://www.ntu.ac.uk",
+  "c": "Nottingham",
+  "lat": 52.958,
+  "lng": -1.154
+ },
+ "Manchester Metropolitan Univ.": {
+  "web": "https://www.mmu.ac.uk",
+  "c": "Manchester",
+  "lat": 53.471,
+  "lng": -2.24
+ },
+ "University of Huddersfield": {
+  "web": "https://www.hud.ac.uk",
+  "c": "Huddersfield",
+  "lat": 53.6431,
+  "lng": -1.7778
+ },
+ "University of Bradford": {
+  "web": "https://www.bradford.ac.uk",
+  "c": "Bradford",
+  "lat": 53.792,
+  "lng": -1.764
+ },
+ "Sheffield Hallam University": {
+  "web": "https://www.shu.ac.uk",
+  "c": "Sheffield",
+  "lat": 53.3786,
+  "lng": -1.4652
+ },
+ "Birmingham City University": {
+  "web": "https://www.bcu.ac.uk",
+  "c": "Birmingham",
+  "lat": 52.483,
+  "lng": -1.888
+ },
+ "University of Wolverhampton": {
+  "web": "https://www.wlv.ac.uk",
+  "c": "Wolverhampton",
+  "lat": 52.588,
+  "lng": -2.128
+ },
+ "University of Bedfordshire": {
+  "web": "https://www.beds.ac.uk",
+  "c": "Luton",
+  "lat": 51.8781,
+  "lng": -0.4093
+ },
+ "University of Northampton": {
+  "web": "https://www.northampton.ac.uk",
+  "c": "Northampton",
+  "lat": 52.233,
+  "lng": -0.892
+ },
+ "University of Portsmouth": {
+  "web": "https://www.port.ac.uk",
+  "c": "Portsmouth",
+  "lat": 50.7952,
+  "lng": -1.0937
+ },
+ "Middlesex University": {
+  "web": "https://www.mdx.ac.uk",
+  "c": "London",
+  "lat": 51.5896,
+  "lng": -0.2287
+ },
+ "University of East London": {
+  "web": "https://uel.ac.uk",
+  "c": "London",
+  "lat": 51.5079,
+  "lng": 0.065
+ },
+ "University of Brighton": {
+  "web": "https://www.brighton.ac.uk",
+  "c": "Brighton",
+  "lat": 50.8425,
+  "lng": -0.1193
+ },
+ "Leeds Beckett University": {
+  "web": "https://www.leedsbeckett.ac.uk",
+  "c": "Leeds",
+  "lat": 53.803,
+  "lng": -1.548
+ },
+ "Birkbeck, Univ. of London": {
+  "web": "https://www.bbk.ac.uk",
+  "c": "London",
+  "lat": 51.5219,
+  "lng": -0.1302
+ },
+ "University of East Anglia": {
+  "web": "https://www.uea.ac.uk",
+  "c": "Norwich",
+  "lat": 52.6219,
+  "lng": 1.2392
+ },
+ "Northumbria University": {
+  "web": "https://www.northumbria.ac.uk",
+  "c": "Newcastle",
+  "lat": 54.9775,
+  "lng": -1.6074
+ },
+ "Edinburgh Napier University": {
+  "web": "https://www.napier.ac.uk",
+  "c": "Edinburgh",
+  "lat": 55.933,
+  "lng": -3.213
+ },
+ "Swansea University": {
+  "web": "https://www.swansea.ac.uk",
+  "c": "Swansea",
+  "lat": 51.6188,
+  "lng": -3.8786
+ },
+ "University of Hull": {
+  "web": "https://www.hull.ac.uk",
+  "c": "Hull",
+  "lat": 53.771,
+  "lng": -0.368
+ },
+ "University of Essex": {
+  "web": "https://www.essex.ac.uk",
+  "c": "Colchester",
+  "lat": 51.877,
+  "lng": 0.947
+ },
+ "University of Kent": {
+  "web": "https://www.kent.ac.uk",
+  "c": "Canterbury",
+  "lat": 51.298,
+  "lng": 1.07
+ },
+ "Lancaster University": {
+  "web": "https://www.lancaster.ac.uk",
+  "c": "Lancaster",
+  "lat": 54.0104,
+  "lng": -2.7877
+ },
+ "University of Surrey": {
+  "web": "https://www.surrey.ac.uk",
+  "c": "Guildford",
+  "lat": 51.243,
+  "lng": -0.5895
+ },
+ "University of Aberdeen": {
+  "web": "https://www.abdn.ac.uk",
+  "c": "Aberdeen",
+  "lat": 57.1648,
+  "lng": -2.1015
+ },
+ "Brunel University of London": {
+  "web": "https://www.brunel.ac.uk",
+  "c": "London",
+  "lat": 51.5329,
+  "lng": -0.473
+ },
+ "Abertay University": {
+  "web": "https://www.abertay.ac.uk",
+  "c": "Dundee",
+  "lat": 56.4633,
+  "lng": -2.9737
+ },
+ "University of Plymouth": {
+  "web": "https://www.plymouth.ac.uk",
+  "c": "Plymouth",
+  "lat": 50.3755,
+  "lng": -4.1393
+ },
+ "University of Dundee": {
+  "web": "https://www.dundee.ac.uk",
+  "c": "Dundee",
+  "lat": 56.458,
+  "lng": -2.982
+ },
+ "University of Stirling": {
+  "web": "https://www.stir.ac.uk",
+  "c": "Stirling",
+  "lat": 56.145,
+  "lng": -3.92
+ },
+ "Liverpool John Moores Univ.": {
+  "web": "https://www.ljmu.ac.uk",
+  "c": "Liverpool",
+  "lat": 53.404,
+  "lng": -2.986
+ },
+ "University of Salford": {
+  "web": "https://www.salford.ac.uk",
+  "c": "Manchester",
+  "lat": 53.487,
+  "lng": -2.273
+ },
+ "De Montfort University": {
+  "web": "https://www.dmu.ac.uk",
+  "c": "Leicester",
+  "lat": 52.63,
+  "lng": -1.139
+ },
+ "UWE Bristol": {
+  "web": "https://www.uwe.ac.uk",
+  "c": "Bristol",
+  "lat": 51.5,
+  "lng": -2.548
+ },
+ "Kingston University": {
+  "web": "https://www.kingston.ac.uk",
+  "c": "London",
+  "lat": 51.403,
+  "lng": -0.303
+ },
+ "University of Westminster": {
+  "web": "https://www.westminster.ac.uk",
+  "c": "London",
+  "lat": 51.5216,
+  "lng": -0.1559
+ },
+ "London South Bank University": {
+  "web": "https://www.lsbu.ac.uk",
+  "c": "London",
+  "lat": 51.498,
+  "lng": -0.102
+ },
+ "Goldsmiths, Univ. of London": {
+  "web": "https://www.gold.ac.uk",
+  "c": "London",
+  "lat": 51.4743,
+  "lng": -0.0354
+ },
+ "Royal Holloway, Univ. of London": {
+  "web": "https://www.royalholloway.ac.uk",
+  "c": "Egham",
+  "lat": 51.4256,
+  "lng": -0.563
+ },
+ "Queen's University Belfast": {
+  "web": "https://www.qub.ac.uk",
+  "c": "Belfast",
+  "lat": 54.5844,
+  "lng": -5.934
+ },
+ "Robert Gordon University": {
+  "web": "https://www.rgu.ac.uk",
+  "c": "Aberdeen",
+  "lat": 57.1186,
+  "lng": -2.1386
+ },
+ "Univ. of the West of Scotland": {
+  "web": "https://www.uws.ac.uk",
+  "c": "Paisley",
+  "lat": 55.8434,
+  "lng": -4.4302
+ },
+ "Oxford Brookes University": {
+  "web": "https://www.brookes.ac.uk",
+  "c": "Oxford",
+  "lat": 51.755,
+  "lng": -1.224
+ },
+ "Anglia Ruskin University": {
+  "web": "https://www.aru.ac.uk",
+  "c": "Cambridge",
+  "lat": 52.203,
+  "lng": 0.134
+ },
+ "Solent University": {
+  "web": "https://www.solent.ac.uk",
+  "c": "Southampton",
+  "lat": 50.908,
+  "lng": -1.399
+ },
+ "Loughborough University": {
+  "web": "https://www.lboro.ac.uk",
+  "c": "Loughborough",
+  "lat": 52.765,
+  "lng": -1.229
+ },
+ "Bournemouth University": {
+  "web": "https://www.bournemouth.ac.uk",
+  "c": "Bournemouth",
+  "lat": 50.7425,
+  "lng": -1.897
+ },
+ "Glasgow Caledonian University": {
+  "web": "https://www.gcu.ac.uk",
+  "c": "Glasgow",
+  "lat": 55.8668,
+  "lng": -4.2504
+ },
+ "University for the Creative Arts": {
+  "web": "https://www.uca.ac.uk",
+  "c": "Farnham",
+  "lat": 51.215,
+  "lng": -0.788
+ },
+ "University of Lancashire (UCLan)": {
+  "web": "https://www.lancashire.ac.uk",
+  "c": "Preston",
+  "lat": 53.7645,
+  "lng": -2.7085
+ },
+ "Ulster University": {
+  "web": "https://www.ulster.ac.uk",
+  "c": "Belfast",
+  "lat": 54.6036,
+  "lng": -5.929,
+  "l": 11500,
+  "new": true
+ },
+ "University of Derby": {
+  "web": "https://www.derby.ac.uk",
+  "c": "Derby",
+  "lat": 52.9378,
+  "lng": -1.4968,
+  "l": 11500,
+  "new": true
+ },
+ "Cranfield University": {
+  "web": "https://www.cranfield.ac.uk",
+  "c": "Cranfield",
+  "lat": 52.074,
+  "lng": -0.629,
+  "l": 13000,
+  "new": true
+ },
+ "University of West London": {
+  "web": "https://www.uwl.ac.uk",
+  "c": "London",
+  "lat": 51.5068,
+  "lng": -0.3036,
+  "l": 18000,
+  "new": true
+ },
+ "University of Roehampton": {
+  "web": "https://www.roehampton.ac.uk",
+  "c": "London",
+  "lat": 51.4573,
+  "lng": -0.241,
+  "l": 18000,
+  "new": true
+ },
+ "London Metropolitan University": {
+  "web": "https://www.londonmet.ac.uk",
+  "c": "London",
+  "lat": 51.5517,
+  "lng": -0.111,
+  "l": 18000,
+  "new": true
+ },
+ "University of Gloucestershire": {
+  "web": "https://www.glos.ac.uk",
+  "c": "Cheltenham",
+  "lat": 51.8873,
+  "lng": -2.088,
+  "l": 12000,
+  "new": true
+ },
+ "Canterbury Christ Church University": {
+  "web": "https://www.canterbury.ac.uk",
+  "c": "Canterbury",
+  "lat": 51.2795,
+  "lng": 1.089,
+  "l": 12000,
+  "new": true
+ },
+ "Buckinghamshire New University": {
+  "web": "https://www.bucks.ac.uk",
+  "c": "High Wycombe",
+  "lat": 51.6278,
+  "lng": -0.7482,
+  "l": 13000,
+  "new": true
+ },
+ "Cardiff Metropolitan University": {
+  "web": "https://www.cardiffmet.ac.uk",
+  "c": "Cardiff",
+  "lat": 51.496,
+  "lng": -3.212,
+  "l": 12000,
+  "new": true
+ },
+ "Liverpool Hope University": {
+  "web": "https://www.hope.ac.uk",
+  "c": "Liverpool",
+  "lat": 53.3906,
+  "lng": -2.893,
+  "l": 12000,
+  "new": true
+ },
+ "York St John University": {
+  "web": "https://www.yorksj.ac.uk",
+  "c": "York",
+  "lat": 53.964,
+  "lng": -1.08,
+  "l": 13000,
+  "new": true
+ },
+ "University of Winchester": {
+  "web": "https://www.winchester.ac.uk",
+  "c": "Winchester",
+  "lat": 51.06,
+  "lng": -1.326,
+  "l": 13000,
+  "new": true
+ },
+ "University of the Arts London": {
+  "web": "https://www.arts.ac.uk",
+  "c": "London",
+  "lat": 51.4946,
+  "lng": -0.1013,
+  "l": 18000,
+  "new": true
+ },
+ "Univ. of Wales Trinity Saint David": {
+  "web": "https://www.uwtsd.ac.uk",
+  "c": "Swansea",
+  "lat": 51.6187,
+  "lng": -3.9286,
+  "l": 11500,
+  "new": true
+ },
+ "University of Buckingham": {
+  "web": "https://www.buckingham.ac.uk",
+  "c": "Buckingham",
+  "lat": 51.999,
+  "lng": -0.987,
+  "l": 12500,
+  "new": true
+ },
+ "Bath Spa University": {
+  "web": "https://www.bathspa.ac.uk",
+  "c": "Bath",
+  "lat": 51.374,
+  "lng": -2.44,
+  "l": 15000,
+  "new": true
+ },
+ "University of Suffolk": {
+  "web": "https://www.uos.ac.uk",
+  "c": "Ipswich",
+  "lat": 52.053,
+  "lng": 1.162,
+  "l": 12000,
+  "new": true
+ },
+ "Leeds Trinity University": {
+  "web": "https://www.leedstrinity.ac.uk",
+  "c": "Leeds",
+  "lat": 53.846,
+  "lng": -1.643,
+  "l": 13000,
+  "new": true
+ },
+ "University of Greater Manchester": {
+  "web": "https://greatermanchester.ac.uk",
+  "c": "Bolton",
+  "lat": 53.5734,
+  "lng": -2.438,
+  "l": 11000,
+  "new": true
+ }
+}

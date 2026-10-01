@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Budget planner · Uni Map</title>
+  <meta name="description" content="Already enrolled? Plan your fee installments, living costs and part-time work month by month, and see whether you'll have the money in time.">
+  <meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1117" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2c-6 0-11 4.6-11 10.6C5 21 16 30 16 30s11-9 11-17.4C27 6.6 22 2 16 2z' fill='%23007aff'/%3E%3Ccircle cx='16' cy='12.5' r='4.5' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/planner.css">
+  <script>
+    // Same saved appearance as the map page, applied before first paint.
+    try { const s = JSON.parse(localStorage.getItem("ukmap-state") || "{}"), r = document.documentElement;
+      if (s.theme === "light" || s.theme === "dark") r.dataset.theme = s.theme;
+      if (s.glassT != null) r.style.setProperty("--glass-a", (0.94 - Math.min(100, Math.max(0, +s.glassT)) / 100 * 0.86).toFixed(3));
+      if (s.glassBlur != null) r.style.setProperty("--glass-blur", Math.min(40, Math.max(0, +s.glassBlur)) + "px"); } catch (e) {}
+  </script>
+</head>
+<body class="page">
+<div class="backdrop" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<header class="topbar glass" id="hdr">
+  <a class="brand" href="./"><span class="brand-pin" aria-hidden="true"></span><span class="brand-t">Uni Map</span></a>
+  <span class="pl-title">Budget planner</span>
+  <span class="pl-saved" id="saved" role="status">Saved in this browser</span>
+  <button type="button" class="btn-plain" id="resetPlan">Start over</button>
+  <button type="button" class="icon-btn" id="settingsBtn" aria-label="Appearance" aria-expanded="false" aria-controls="settings">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h7m4 0h1M4 14h1m4 0h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="13" cy="6" r="2" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="7" cy="14" r="2" stroke="currentColor" stroke-width="1.7" fill="none"/></svg>
+  </button>
+  <a class="btn-primary back" href="./"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to map</span></a>
+</header>
+
+<!-- Appearance settings (shared with the map page) -->
+<section class="settings glass" id="settings" hidden aria-label="Appearance">
+  <h3>Appearance</h3>
+  <div class="set-row">
+    <span class="set-k">Theme</span>
+    <div class="seg small" role="group" aria-label="Theme" id="themeSeg">
+      <button type="button" data-v="auto">Auto</button>
+      <button type="button" data-v="light">Light</button>
+      <button type="button" data-v="dark">Dark</button>
+    </div>
+  </div>
+  <div class="set-row col">
+    <label class="set-k" for="glassT"><span>Window transparency</span><output id="glassTv" for="glassT"></output></label>
+    <input type="range" id="glassT" min="0" max="100" step="1">
+    <div class="set-scale"><span>Solid</span><span>Clear</span></div>
+  </div>
+  <div class="set-row col">
+    <label class="set-k" for="glassBlur"><span>Background blur</span><output id="glassBlurv" for="glassBlur"></output></label>
+    <input type="range" id="glassBlur" min="0" max="40" step="1">
+    <div class="set-scale"><span>None</span><span>Strong</span></div>
+  </div>
+  <button type="button" class="btn-plain" id="glassReset">Restore defaults</button>
+</section>
+
+<main class="pl">
+  <!-- ================= INPUTS ================= -->
+  <div class="pl-inputs">
+    <section class="pl-card glass" aria-labelledby="h-uni">
+      <h2 id="h-uni"><span class="num">1</span>University &amp; fees</h2>
+      <div class="grid2">
+        <div class="field"><label for="country">Country</label>
+          <select id="country">
+            <option value="uk">🇬🇧 United Kingdom</option>
+            <option value="us" disabled>🇺🇸 United States — coming soon</option>
+            <option value="ca" disabled>🇨🇦 Canada — coming soon</option>
+            <option value="au" disabled>🇦🇺 Australia — coming soon</option>
+            <option value="de" disabled>🇩🇪 Germany — coming soon</option>
+          </select></div>
+        <div class="field"><label for="uni">University</label><input id="uni" list="uniList" autocomplete="off" placeholder="Start typing… e.g. University of Glasgow"><datalist id="uniList"></datalist></div>
+        <div class="field span2"><label for="course">Course <i class="opt">(optional)</i></label><input id="course" list="courseList" autocomplete="off" placeholder="e.g. MSc Computing Science"><datalist id="courseList"></datalist>
+          <span class="hint" id="courseHint"></span></div>
+        <div class="field"><label for="fee">Total tuition fee (£)</label><input id="fee" type="number" min="0" step="10" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label for="scholarship">Scholarship / discount (£)</label><input id="scholarship" type="number" min="0" step="10" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><div class="lbl-row"><label for="paid">Already paid <span id="paidUnit">(£)</span></label>
+            <div class="seg tiny" role="group" aria-label="Enter already paid as" id="paidMode"><button type="button" data-v="gbp">£</button><button type="button" data-v="pct">%</button></div></div>
+          <input id="paid" type="number" min="0" step="10" inputmode="decimal" placeholder="0">
+          <span class="hint" id="paidHint">Deposit and anything else paid so far</span></div>
+        <div class="field"><label for="savings">Money you have now (£)</label><input id="savings" type="number" step="10" inputmode="decimal" placeholder="0">
+          <span class="hint">Savings available for fees &amp; living</span></div>
+        <div class="field"><label for="start">Plan from</label><input id="start" type="month"></div>
+        <div class="field"><label for="end">Plan until</label><input id="end" type="month"><span class="hint">e.g. when your visa or course ends</span></div>
+      </div>
+      <div class="owed" id="owed"></div>
+    </section>
+
+    <section class="pl-card glass" aria-labelledby="h-inst">
+      <div class="sec-head"><h2 id="h-inst"><span class="num">2</span>Installments still to pay</h2>
+        <div class="seg tiny" role="group" aria-label="Enter installment amounts as" id="instMode"><button type="button" data-v="gbp">£</button><button type="button" data-v="pct">%</button></div></div>
+      <p class="sub" id="instModeHint" hidden></p>
+      <div class="rows" id="instRows"></div>
+      <div class="row-actions">
+        <button type="button" class="btn-plain sm" id="addInst"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add installment</button>
+        <button type="button" class="btn-plain sm ghost" id="splitInst" title="Replace the list with equal monthly installments covering what you still owe">Split what I owe…</button>
+        <span class="total" id="instTotal"></span>
+      </div>
+      <div class="split" id="splitBox" hidden>
+        <label>Split <b id="splitAmt"></b> into <input type="number" id="splitN" min="1" max="24" value="3"> monthly payments starting <input type="date" id="splitFrom"></label>
+        <button type="button" class="btn-primary sm" id="splitGo">Create</button>
+      </div>
+      <p class="check" id="instCheck" hidden></p>
+    </section>
+
+    <section class="pl-card glass" aria-labelledby="h-extra">
+      <h2 id="h-extra"><span class="num">3</span>Additional fees</h2>
+      <p class="sub">One-off payments on their own dates, e.g. visa application, Immigration Health Surcharge, graduation. For a cost paid together with an installment, use that installment's “Extra cost” instead.</p>
+      <div class="rows" id="extraRows"></div>
+      <div class="row-actions">
+        <button type="button" class="btn-plain sm" id="addExtra"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add fee</button>
+        <span class="total" id="extraTotal"></span>
+      </div>
+    </section>
+
+    <section class="pl-card glass" aria-labelledby="h-cost">
+      <h2 id="h-cost"><span class="num">4</span>Living costs</h2>
+      <div class="rows" id="costRows"></div>
+      <div class="row-actions">
+        <button type="button" class="btn-plain sm" id="addCost"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add cost</button>
+        <span class="total" id="costTotal"></span>
+      </div>
+    </section>
+
+    <section class="pl-card glass" aria-labelledby="h-work">
+      <h2 id="h-work"><span class="num">5</span>Work</h2>
+      <div class="rows" id="jobRows"></div>
+      <div class="row-actions">
+        <button type="button" class="btn-plain sm" id="addJob"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add job</button>
+        <span class="total" id="jobTotal"></span>
+      </div>
+      <p class="check warn" id="visaWarn" hidden></p>
+      <p class="fine">Take-home uses UK rules: 20% income tax + 8% National Insurance on earnings above £12,570 a year (≈£1,048 a month). Months use 52 ÷ 12 ≈ 4.33 weeks. Leave a job's dates empty if it runs the whole plan.</p>
+    </section>
+  </div>
+
+  <!-- ================= RESULTS ================= -->
+  <div class="pl-results" aria-live="polite">
+    <section class="pl-card glass hero" id="hero"></section>
+
+    <section class="pl-card glass">
+      <h2>Your money, month by month</h2>
+      <p class="sub" id="chartSub"></p>
+      <div class="chart" id="chart"></div>
+      <details class="tbl">
+        <summary>Show as a table</summary>
+        <div class="tbl-scroll"><table id="monthTbl"></table></div>
+      </details>
+    </section>
+
+    <section class="pl-card glass">
+      <h2>Payments due</h2>
+      <div id="instOut"></div>
+    </section>
+
+    <section class="pl-card glass">
+      <h2>What this means</h2>
+      <div class="story" id="story"></div>
+    </section>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/planner.js"></script>
+<script src="js/appearance.js"></script>
+</body>
+</html>
