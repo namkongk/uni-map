@@ -2,7 +2,7 @@
   "name": "uni-map",
   "version": "1.0.0",
   "private": true,
-  "description": "UK universities (Masters/PhD, CS/AI/HCI) on Google Maps with cost & work calculator",
+  "description": "Universities and courses (Masters/PhD) on a map, with costs, scholarships and a budget & work calculator",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "data": "python3 scripts/build_data.py",
