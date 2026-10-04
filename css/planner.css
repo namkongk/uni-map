@@ -205,3 +205,14 @@ details.tbl summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--
   .topbar .back{padding:8px 10px}
   .pl{padding-inline:10px}
 }
+
+/* "Filled in from the map" banner */
+.prefill{gap:8px;border:1px solid var(--accent-soft)}
+.prefill .pf-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.prefill .pf-top b{font-size:14px;color:var(--accent)}
+.prefill .pf-act{display:flex;align-items:center;gap:6px}
+.prefill .icon-btn.sm{width:28px;height:28px}
+.prefill .icon-btn.sm svg{width:16px;height:16px}
+.prefill ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.5;display:grid;gap:3px}
+.prefill .muted{color:var(--muted)}
+.prefill select{font:inherit;font-weight:600;color:var(--accent);background:var(--accent-soft);border:0;border-radius:8px;padding:1px 6px;cursor:pointer}

@@ -61,18 +61,122 @@ function fillCourses() {
   $("courseHint").textContent = r ? `Listed fee ~${gbp(r.f)}/yr${r.fn ? ` (${r.fn})` : ""} · typical living ~${gbp(r.l)}/yr (≈${gbp(r.l / 12)}/month)` : rs.length ? `${rs.length} course${rs.length === 1 ? "" : "s"} on the map for this university — pick one to fill in its listed fee.` : "";
 }
 
-// Arriving from a university card on the map: planner.html?u=<uni>&p=<course>
-(function fromLink() {
-  const q = new URLSearchParams(location.search), u = q.get("u"), p = q.get("p");
-  if (!u || !DATA.unis[u]) return;
-  if (P.uni !== u || (p && P.course !== p)) {
-    P.uni = u; P.course = p || "";
-    const r = DATA.rows.find(x => x.u === u && x.p === p);
-    if (r) P.fee = r.f;
+/* ---------------- prefill from the map ----------------
+   "Plan my budget" on a course card opens planner.html?u=&p=&f=&s=&sl=&l=[&rate=]. We fill in the fee and sure scholarship
+   (as shown on the map), the university's payment schedule (pf in payment_policies.json), living costs scaled to the
+   city's typical cost, and the jobs from the map's Work card. The previous plan is kept so it can be undone. */
+const INTAKE = { sep: { m: 8, name: "September" }, jan: { m: 0, name: "January" } };
+const iso = (y, m, d) => `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+const todayIso = iso(now.getFullYear(), now.getMonth() + 1, now.getDate());
+// Intakes worth offering: the one that started up to 3 months ago, and the next ones, limited to what the
+// university publishes dates for (or, with only a deposit known, what the course runs).
+function intakeChoices(u, p) {
+  const pf = DATA.unis[u]?.pay?.pf, row = DATA.rows.find(x => x.u === u && x.p === p);
+  const has = k => pf && pf[k] ? true : !pf?.sep && !pf?.jan && (!row || !row.i || (k === "sep" ? /sep/i : /jan/i).test(row.i));
+  const out = [], m0 = mIdx(thisMonth) - 3;
+  for (let mi = m0; mi < m0 + 16 && out.length < 3; mi++) {
+    const k = mi % 12 === 8 ? "sep" : mi % 12 === 0 ? "jan" : null;
+    if (k && has(k)) out.push({ k, y: Math.floor(mi / 12), mi, name: `${INTAKE[k].name} ${Math.floor(mi / 12)}` });
   }
+  return out;
+}
+// The installments for one intake, in £, from the fee after scholarship.
+function scheduleFor(u, intake, net, mapDepPct) {
+  const pf = DATA.unis[u]?.pay?.pf, rows = [];
+  const at = (md, y) => {   // "MM-DD" (or "~MM-DD" when only the month/term is known) → a date in this intake's year
+    const approx = md[0] === "~", [mm, dd] = md.replace("~", "").split("-").map(Number);
+    const yr = intake.k === "sep" ? (mm >= 7 ? y : y + 1) : (mm >= 10 ? y - 1 : y);
+    return { date: iso(yr, mm, dd), approx };
+  };
+  let dep = 0, depLabel = "Deposit (before CAS)";
+  if (pf?.dep != null) dep = typeof pf.dep === "string" ? net * parseFloat(pf.dep) / 100 : pf.dep;
+  else if (!pf && mapDepPct) { dep = net * mapDepPct / 100; depLabel = `Deposit (${mapDepPct}%, your estimate on the map)`; }
+  dep = Math.min(net, Math.round(dep));
+  if (dep > 0) rows.push({ ...at(intake.k === "sep" ? "~07-15" : "~11-15", intake.y), amount: dep, label: depLabel });
+  const sched = pf?.[intake.k] || [];
+  if (sched.length) {
+    const base = pf.bal ? net - dep : net;
+    let owe = sched.map(x => x[1] / 100 * base), left = pf.bal ? 0 : dep;
+    owe = owe.map(a => { const t = Math.min(a, left); left -= t; return a - t; });   // the deposit counts towards the first payments
+    const target = net - dep;
+    let amts = owe.map(a => Math.round(a));
+    const lastPos = amts.map(a => a > 0).lastIndexOf(true);
+    if (lastPos >= 0) amts[lastPos] += Math.round(target) - amts.reduce((a, b) => a + b, 0);   // rounding goes on the last one
+    const n = sched.length;
+    sched.forEach((x, k) => { if (amts[k] > 0) rows.push({ ...at(x[0], intake.y), amount: amts[k], label: x[2] || (n === 1 ? "Balance" : `Installment ${k + 1} of ${n}`) }); });
+  }
+  return rows.map(r => ({ date: r.date, amount: r.amount, extra: "", label: r.label + (r.approx ? " · date ≈" : ""), approx: r.approx }));
+}
+function readMap() { try { return JSON.parse(localStorage.getItem("ukmap-state") || "{}"); } catch (e) { return {}; } }
+// Apply a schedule: payments dated before today count as already paid.
+function applySchedule(rows) {
+  const past = rows.filter(r => r.date < todayIso), next = rows.filter(r => r.date >= todayIso);
+  P.inst = next.map(({ approx, ...r }) => r); P.instMode = "gbp";
+  P.paidMode = "gbp"; P.paid = past.length ? past.reduce((a, r) => a + r.amount, 0) : "";
+  const last = next.reduce((m, r) => Math.max(m, mIdx(r.date.slice(0, 7))), 0);
+  if (last && last > mIdx(P.end || thisMonth)) P.end = mStr(last);
+  return { past, next };
+}
+let undoPlan = null;
+function fromLink() {
+  const q = new URLSearchParams(location.search), u = q.get("u"), p = q.get("p") || "";
+  if (!u || !DATA.unis[u]) return;
   history.replaceState(null, "", location.pathname);
+  undoPlan = JSON.parse(JSON.stringify(P));
+  const r = DATA.rows.find(x => x.u === u && x.p === p), S = readMap();
+  const fee = q.has("f") ? num(q.get("f")) : r ? r.f : num(P.fee), sch = q.has("s") ? num(q.get("s")) : r ? r.s : 0;
+  P.uni = u; P.course = p; P.fee = fee || ""; P.scholarship = sch || "";
+  // Living costs: keep the usual split, scaled to this city's typical cost.
+  const liv = q.has("l") ? num(q.get("l")) : r ? r.l : 0;
+  if (liv > 0) {
+    const sum = DEF_COSTS.reduce((a, c) => a + c.amount, 0), m = liv / 12;
+    P.costs = DEF_COSTS.map(c => ({ ...c, amount: Math.round(c.amount / sum * m / 5) * 5 }));
+  }
+  // Work: the jobs from the map, with weeks per year turned into average hours a week (same yearly pay).
+  const rate = q.has("rate") ? num(q.get("rate")) : null;
+  if (Array.isArray(S.jobs) && S.jobs.length) P.jobs = S.jobs.map(j => {
+    const wks = j.wks == null ? 52 : Math.min(52, num(j.wks));
+    return { name: j.name || "", rate: rate ?? num(j.rate), hrs: wks < 52 ? Math.round(num(j.hrs) * wks / 52 * 2) / 2 : num(j.hrs), from: "", to: "" };
+  });
+  if (mIdx(P.start || thisMonth) < mIdx(thisMonth)) P.start = thisMonth;
+  const choices = intakeChoices(u, p);
+  P.pre = { u, p, sl: q.get("sl") || "", liv, rate, jobs: P.jobs.length, wks: (S.jobs || []).some(j => j.wks != null && num(j.wks) < 52),
+    depPct: num(S.dep), intake: choices[0] ? `${choices[0].k}-${choices[0].y}` : "" };
+  prefillSchedule();
   save();
-})();
+}
+function prefillSchedule() {
+  const pre = P.pre; if (!pre) return { past: [], next: [] };
+  const intake = intakeChoices(pre.u, pre.p).find(c => `${c.k}-${c.y}` === pre.intake);
+  if (!intake) { P.inst = []; return { past: [], next: [] }; }
+  return applySchedule(scheduleFor(pre.u, intake, netFee(), pre.depPct));
+}
+function renderPrefill() {
+  const box = $("prefill"), pre = P.pre;
+  box.hidden = !pre || P.uni !== pre.u;
+  if (box.hidden) return;
+  const pf = DATA.unis[pre.u]?.pay?.pf, choices = intakeChoices(pre.u, pre.p);
+  const sched = pf && (pf.sep || pf.jan), approx = P.inst.some(x => /date ≈$/.test(x.label));
+  const items = [
+    `<li>Fee <b>${gbp(num(P.fee))}</b>${num(P.scholarship) ? ` and scholarship <b>${gbp(num(P.scholarship))}</b>${pre.sl ? ` <span class="muted">(${esc(pre.sl)})</span>` : ""}` : ""}, as shown on the map</li>`,
+    `<li>${sched ? `${esc(pre.u)}'s published payment schedule` : pf?.dep != null ? `${esc(pre.u)}'s deposit — <b>the rest has no published dates</b>, so add them from your invoice` : `A deposit using your ${pre.depPct}% estimate from the map — <b>${esc(pre.u)} hasn't published installment dates</b>, so add them from your invoice`}
+      for the <label class="pf-intake">${choices.length > 1 ? `<select id="prefillIntake" aria-label="Intake">${choices.map(c => `<option value="${c.k}-${c.y}"${`${c.k}-${c.y}` === pre.intake ? " selected" : ""}>${c.name}</option>`).join("")}</select>` : esc(choices[0]?.name || "")}</label> intake${approx ? ". Dates marked ≈ are estimates from the month or term the university gives — check your invoice" : ""}${num(P.paid) ? `. <b>${gbp(num(P.paid))}</b> due before today is counted as already paid` : ""}</li>`,
+    pre.liv ? `<li>Living costs scaled to this city's typical <b>${gbp(pre.liv / 12)}</b>/month</li>` : "",
+    `<li>Your ${pre.jobs === 1 ? "job" : pre.jobs + " jobs"} from the map's Work card${pre.rate != null ? ` at the £${pre.rate.toFixed(2)}/hr you set for this course` : ""}${pre.wks ? " (weeks per year turned into average hours a week)" : ""}</li>`,
+  ];
+  box.innerHTML = `<div class="pf-top"><b>Filled in from the map</b>
+      <span class="pf-act">${undoPlan ? `<button type="button" class="btn-plain sm ghost" id="prefillUndo">Undo</button>` : ""}
+      <button type="button" class="icon-btn sm" id="prefillClose" aria-label="Dismiss">${X}</button></span></div>
+    <ul>${items.join("")}</ul><p class="fine">Change anything below — it's your plan.</p>`;
+}
+$("prefill").addEventListener("change", e => {
+  if (e.target.id !== "prefillIntake") return;
+  P.pre.intake = e.target.value; prefillSchedule(); save(); init();
+});
+$("prefill").addEventListener("click", e => {
+  if (e.target.closest("#prefillClose")) { P.pre = null; undoPlan = null; save(); renderPrefill(); }
+  if (e.target.closest("#prefillUndo")) { P = undoPlan; undoPlan = null; P.pre = null; save(); init(); }
+});
 
 /* ---------------- editable lists ---------------- */
 const X = `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>`;
@@ -158,7 +262,7 @@ const FIELDS = ["country", "uni", "course", "fee", "scholarship", "paid", "savin
 function fillFields() { if (P.country !== "uk") P.country = "uk"; FIELDS.forEach(f => { $(f).value = P[f] ?? ""; }); fillCourses(); syncModes(); }
 FIELDS.forEach(f => $(f).addEventListener("input", () => {
   P[f] = ["fee", "scholarship", "paid", "savings"].includes(f) ? ($(f).value === "" ? "" : +$(f).value) : $(f).value;
-  if (f === "uni") { fillCourses(); }
+  if (f === "uni") { fillCourses(); renderPrefill(); }
   if (f === "course") {
     // Picking a listed course fills in its fee if you haven't typed one.
     const r = coursesOf(P.uni).find(x => x.p === P.course);
@@ -486,6 +590,7 @@ new ResizeObserver(() => { const w = $("chart").clientWidth; if (Math.abs(w - la
 /* ---------------- boot ---------------- */
 const syncHdr = () => document.documentElement.style.setProperty("--hdr", $("hdr").getBoundingClientRect().height + "px");
 new ResizeObserver(syncHdr).observe($("hdr")); syncHdr();
-function init() { fillFields(); Object.keys(LISTS).forEach(renderList); compute(); }
+function init() { fillFields(); Object.keys(LISTS).forEach(renderList); renderPrefill(); compute(); }
+fromLink();
 init();
 })();

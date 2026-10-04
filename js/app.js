@@ -874,7 +874,7 @@ function courseHTML(r) {
       ${row("Placement", esc(r.pl))}
       <div class="full"><b>Other scholarships:</b> ${esc(otherSch(r))}</div>
       ${r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>` : ""}
-      <div class="full"><a href="planner.html?u=${encodeURIComponent(r.u)}&amp;p=${encodeURIComponent(r.p)}">Enrolled here? Plan my budget →</a></div>
+      <div class="full"><a href="${plannerLink(r)}" title="Opens the budget planner with this course's fee, scholarship, payment schedule, living costs and your work filled in">Enrolled here? Plan my budget →</a></div>
     </div>
   </article>`;
 }
@@ -885,6 +885,14 @@ function courseCheck(r) {
   return x.ok ? ` <span class="muted">· checked ${when}</span>` : ` <span class="muted">· couldn't read fee (${esc(x.err)})</span>`;
 }
 // Fee payment policy for international postgraduate students, from the university's own pages.
+// Budget planner link: the planner fills itself in from this course (live fee, sure scholarship incl. grade-based awards,
+// typical living cost, any pay rate set for this row) plus the university's payment schedule and your work from this page.
+function plannerLink(r) {
+  const q = new URLSearchParams({ u: r.u, p: r.p, f: Math.round(r.f), s: Math.round(r.s || 0), l: Math.round(r.l || 0) });
+  if (r.s && r.sl) q.set("sl", r.sl);
+  if (r.id in rowRate) q.set("rate", rowRate[r.id]);
+  return "planner.html?" + esc(q.toString());
+}
 function payHTML(u) {
   const P = UNIS[u].pay, when = window.UNIDATA.payChecked ? new Date(window.UNIDATA.payChecked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
   // Short badge: "Deposit £2,000", "Deposit from £1,000", "Deposit 50%" — the full wording is in the rows below.

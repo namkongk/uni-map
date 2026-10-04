@@ -1,11 +1,12 @@
 {
- "_about": "International postgraduate taught fee payment policies, from each university's own pages (checked 4 Oct 2026). dep = minimum deposit before CAS; nepal = deposit for applicants from Nepal where it differs; plan = how the rest is paid; sched = installment dates by intake. Fields left out were not stated on the pages that could be read.",
+ "_about": "International postgraduate taught fee payment policies, from each university's own pages (checked 4 Oct 2026). dep = minimum deposit before CAS; nepal = deposit for applicants from Nepal where it differs; plan = how the rest is paid; sched = installment dates by intake. Fields left out were not stated on the pages that could be read. pf = the same policy as numbers, used to prefill the budget planner: dep = deposit (£, or % of the fee after scholarship); sep/jan = [date MM-DD, %, label] per intake, with ~ marking dates estimated from a month or term. Percentages are of the fee after scholarship (with bal: of what's left after the deposit; otherwise the deposit counts towards the first installments).",
  "_checked": "2026-10-04",
  "Imperial College London": {
   "dep": "10% of the first-year fee",
   "depNote": "Engineering, Medicine and Natural Sciences master's (Computing is in Engineering)",
   "plan": "Pay in full, or in 2 installments if you meet the criteria (not available if fully sponsored)",
-  "src": "https://www.imperial.ac.uk/study/fees-and-funding/tuition-fees/payment-terms/instalments/"
+  "src": "https://www.imperial.ac.uk/study/fees-and-funding/tuition-fees/payment-terms/instalments/",
+  "pf": {"dep": "10%", "sep": [["~10-15", 50.0], ["~01-15", 50.0]]}
  },
  "University of Warwick": {
   "plan": "Standard installment plan available to most self-funded students",
@@ -20,13 +21,15 @@
  "University of Sheffield": {
   "dep": "£2,000",
   "depNote": "Needed before your CAS unless a recognised sponsor covers at least half your fee",
-  "src": "https://sheffield.ac.uk/fees/fee-deposits"
+  "src": "https://sheffield.ac.uk/fees/fee-deposits",
+  "pf": {"dep": 2000}
  },
  "University of Manchester": {
   "dep": "£2,500",
   "plan": "At least one third at registration, the rest in 2 installments by set dates",
   "n": "3",
-  "src": "https://www.manchester.ac.uk/study/masters/fees-and-funding/international-student-fees/tuition-fee-deposits/"
+  "src": "https://www.manchester.ac.uk/study/masters/fees-and-funding/international-student-fees/tuition-fee-deposits/",
+  "pf": {"dep": 2500, "sep": [["~09-21", 33.4, "At registration (at least ⅓)"], ["~01-15", 33.3], ["~04-15", 33.3]]}
  },
  "Durham University": {
   "plan": "3 installments by Direct Debit (set up by 15 November)",
@@ -34,13 +37,15 @@
   "sched": {
    "September intake": "1 Dec · 1 Feb · 1 Jun"
   },
-  "src": "https://www.durham.ac.uk/study/postgraduate/tuition-fees-and-charges/how-to-pay-your-invoice/"
+  "src": "https://www.durham.ac.uk/study/postgraduate/tuition-fees-and-charges/how-to-pay-your-invoice/",
+  "pf": {"sep": [["12-01", 33.34], ["02-01", 33.33], ["06-01", 33.33]]}
  },
  "Queen Mary Univ. of London": {
   "dep": "£2,000",
   "depNote": "All overseas students needing a Student visa; some programmes also ask for a conditional deposit to hold the place (not for January starts)",
   "plan": "Installment plan available",
-  "src": "https://www.qmul.ac.uk/international-students/tuitionfees/deposits/"
+  "src": "https://www.qmul.ac.uk/international-students/tuitionfees/deposits/",
+  "pf": {"dep": 2000}
  },
  "University of Birmingham": {
   "dep": "Required before CAS (amount in your applicant portal)",
@@ -55,7 +60,8 @@
    "September intake": "Pay in full (or first 50%) by 12 Oct 2026",
    "January intake": "Pay in full (or first 50%) by 25 Jan 2027"
   },
-  "src": "https://www.bristol.ac.uk/students/support/finances/pay-your-fees/when-to-pay/"
+  "src": "https://www.bristol.ac.uk/students/support/finances/pay-your-fees/when-to-pay/",
+  "pf": {"sep": [["10-12", 50, "Fee due date (first 50%)"], ["~01-15", 50]], "jan": [["01-25", 50, "Fee due date (first 50%)"], ["~04-25", 50]]}
  },
  "University of St Andrews": {
   "plan": "Pay in one payment or by installment plan (2026–27 plans open from mid-June 2026)",
@@ -69,13 +75,15 @@
   "sched": {
    "September intake": "November · January"
   },
-  "src": "https://www.exeter.ac.uk/masters-degrees/fees/tuition-fee-deposit/"
+  "src": "https://www.exeter.ac.uk/masters-degrees/fees/tuition-fee-deposit/",
+  "pf": {"sep": [["~11-15", 50.0], ["~01-15", 50.0]]}
  },
  "University of Glasgow": {
   "dep": "£2,000",
   "depNote": "CAS issued once paid; 25% admin fee if refunded",
   "plan": "Direct Debit / installment plan available",
-  "src": "https://www.gla.ac.uk/myglasgow/students/payingyourfees/selffundedpaymentmethods/"
+  "src": "https://www.gla.ac.uk/myglasgow/students/payingyourfees/selffundedpaymentmethods/",
+  "pf": {"dep": 2000}
  },
  "University of Bath": {
   "dep": "£2,500",
@@ -85,13 +93,15 @@
   "sched": {
    "September intake": "Registration · following February"
   },
-  "src": "https://www.bath.ac.uk/guides/paying-your-tuition-fees/"
+  "src": "https://www.bath.ac.uk/guides/paying-your-tuition-fees/",
+  "pf": {"dep": 2500, "sep": [["~09-28", 50, "At registration"], ["~02-15", 50]]}
  },
  "University of Southampton": {
   "dep": "£2,000",
   "plan": "Fees due in full by 21 Sep 2026, or choose 3 installments if self-funding",
   "n": "3",
-  "src": "https://www.southampton.ac.uk/courses/fees/pay.page"
+  "src": "https://www.southampton.ac.uk/courses/fees/pay.page",
+  "pf": {"dep": 2000, "sep": [["09-21", 33.34], ["~01-15", 33.33], ["~04-15", 33.33]]}
  },
  "Heriot-Watt University": {
   "plan": "4 equal monthly installments, October to January",
@@ -99,12 +109,14 @@
   "sched": {
    "September intake": "Oct · Nov · Dec · Jan"
   },
-  "src": "https://www.hw.ac.uk/students/new-students/uk-campus-students/financial-matters/paying-your-tuition-fees"
+  "src": "https://www.hw.ac.uk/students/new-students/uk-campus-students/financial-matters/paying-your-tuition-fees",
+  "pf": {"sep": [["~10-15", 25.0], ["~11-15", 25.0], ["~12-15", 25.0], ["~01-15", 25.0]]}
  },
  "University of Sussex": {
   "dep": "£5,000",
   "depNote": "Self-funded international taught master's",
-  "src": "https://www.sussex.ac.uk/study/fees-funding/tuition-fees/deposits"
+  "src": "https://www.sussex.ac.uk/study/fees-funding/tuition-fees/deposits",
+  "pf": {"dep": 5000}
  },
  "Aston University": {
   "plan": "50% in term 1 (by 31 Oct), 25% in term 2, 25% in term 3 — card installments",
@@ -112,7 +124,8 @@
   "sched": {
    "September intake": "50% by 31 Oct · 25% term 2 · 25% term 3"
   },
-  "src": "https://www.aston.ac.uk/current-students/fees-and-finance"
+  "src": "https://www.aston.ac.uk/current-students/fees-and-finance",
+  "pf": {"sep": [["10-31", 50, "Term 1"], ["~01-15", 25, "Term 2"], ["~04-15", 25, "Term 3"]]}
  },
  "Wrexham University": {
   "plan": "Pay in full, or in 3 installments if the fee is over £1,000",
@@ -120,14 +133,16 @@
   "sched": {
    "September intake": "31 Oct · 31 Jan · 30 Apr"
   },
-  "src": "https://wrexham.ac.uk/fees-and-funding/how-to-pay/"
+  "src": "https://wrexham.ac.uk/fees-and-funding/how-to-pay/",
+  "pf": {"sep": [["10-31", 33.34], ["01-31", 33.33], ["04-30", 33.33]]}
  },
  "University of Chester": {
   "dep": "£5,000",
   "depNote": "Can be split: £1,500 initial deposit, then £3,500 by your deposit deadline",
   "plan": "Pay in full or in 2 installments",
   "n": "2",
-  "src": "https://www.chester.ac.uk/international/fees-scholarships-and-finance/how-to-pay/"
+  "src": "https://www.chester.ac.uk/international/fees-scholarships-and-finance/how-to-pay/",
+  "pf": {"dep": 5000, "sep": [["~09-21", 50.0], ["~01-15", 50.0]]}
  },
  "University of Liverpool": {
   "dep": "£2,000",
@@ -137,7 +152,8 @@
   "sched": {
    "September intake": "60% at start of term (28 Sep) · 40% later"
   },
-  "src": "https://www.liverpool.ac.uk/feespayment/tuition/self-funding/paying-in-instalments/"
+  "src": "https://www.liverpool.ac.uk/feespayment/tuition/self-funding/paying-in-instalments/",
+  "pf": {"dep": 2000, "sep": [["09-28", 60, "Start of term (60%)"], ["~01-15", 40]]}
  },
  "Coventry University": {
   "plan": "Installments may be available",
@@ -151,14 +167,16 @@
   "sched": {
    "September intake": "Deposit · balance by 15 Jan 2027"
   },
-  "src": "https://www.lincoln.ac.uk/studywithus/internationalstudents/internationalfeesandfunding/payingtuitionfees/"
+  "src": "https://www.lincoln.ac.uk/studywithus/internationalstudents/internationalfeesandfunding/payingtuitionfees/",
+  "pf": {"dep": 8000, "bal": true, "sep": [["01-15", 100, "Balance"]]}
  },
  "Birmingham City University": {
   "dep": "£1,000",
   "nepal": "£1,000 (Nepal is on the £1,000 list)",
   "plan": "50% at enrolment, the rest over 3 set installments",
   "n": "3",
-  "src": "https://www.bcu.ac.uk/international/how-to-pay"
+  "src": "https://www.bcu.ac.uk/international/how-to-pay",
+  "pf": {"dep": 1000, "sep": [["~09-21", 50, "At enrolment"], ["~11-15", 16.7], ["~01-15", 16.7], ["~03-15", 16.6]]}
  },
  "University of Wolverhampton": {
   "dep": "£8,000",
@@ -168,19 +186,22 @@
   "sched": {
    "September intake": "November · January · April"
   },
-  "src": "https://www.wlv.ac.uk/international/international-fees--scholarships/"
+  "src": "https://www.wlv.ac.uk/international/international-fees--scholarships/",
+  "pf": {"dep": 8000, "bal": true, "sep": [["~11-15", 33.34], ["~01-15", 33.33], ["~04-15", 33.33]]}
  },
  "University of Northampton": {
   "dep": "£7,000",
   "plan": "25% at registration, then 7 monthly installments",
   "n": "8",
-  "src": "https://www.northampton.ac.uk/student-life/fees-and-funding/"
+  "src": "https://www.northampton.ac.uk/student-life/fees-and-funding/",
+  "pf": {"dep": 7000, "sep": [["~09-21", 25, "At registration (25%)"], ["~10-21", 10.71], ["~11-21", 10.71], ["~12-21", 10.71], ["~01-21", 10.71], ["~02-21", 10.71], ["~03-21", 10.71], ["~04-21", 10.74]]}
  },
  "Manchester Metropolitan Univ.": {
   "dep": "£5,000",
   "plan": "3 installments or 6 monthly payments",
   "n": "3 or 6",
-  "src": "https://www.mmu.ac.uk/student-life/finance/paying-university-fees"
+  "src": "https://www.mmu.ac.uk/student-life/finance/paying-university-fees",
+  "pf": {"dep": 5000, "bal": true, "sep": [["~10-15", 33.34], ["~01-15", 33.33], ["~04-15", 33.33]]}
  },
  "Middlesex University": {
   "dep": "£1,000 up to 50% of the first-year fee (stated in your offer)",
@@ -189,7 +210,8 @@
   "sched": {
    "September intake": "50% end of September · balance in January"
   },
-  "src": "https://www.mdx.ac.uk/international/course-fees-and-costs-for-international-students/"
+  "src": "https://www.mdx.ac.uk/international/course-fees-and-costs-for-international-students/",
+  "pf": {"dep": 1000, "sep": [["09-30", 50], ["~01-31", 50]]}
  },
  "Edge Hill University": {
   "dep": "£4,000",
@@ -199,7 +221,8 @@
    "September intake": "31 Oct · 31 Jan · 30 Apr",
    "January intake": "28 Feb · 31 May · 31 Aug"
   },
-  "src": "https://www.edgehill.ac.uk/departments/support/international/fees-and-scholarships/"
+  "src": "https://www.edgehill.ac.uk/departments/support/international/fees-and-scholarships/",
+  "pf": {"dep": 4000, "bal": true, "sep": [["10-31", 33.34], ["01-31", 33.33], ["04-30", 33.33]], "jan": [["02-28", 33.34], ["05-31", 33.33], ["08-31", 33.33]]}
  },
  "Sheffield Hallam University": {
   "dep": "£5,000",
@@ -210,19 +233,22 @@
    "September intake": "50% before enrolment · balance 1 Feb",
    "January intake": "50% before enrolment · balance 1 Sep"
   },
-  "src": "https://www.shu.ac.uk/study-here/fees-and-funding/payment-dates"
+  "src": "https://www.shu.ac.uk/study-here/fees-and-funding/payment-dates",
+  "pf": {"dep": 5000, "sep": [["~09-15", 50, "Before enrolment"], ["02-01", 50]], "jan": [["~01-15", 50, "Before enrolment"], ["09-01", 50]]}
  },
  "University of Bradford": {
   "dep": "Required before CAS (£200 admin fee if refunded)",
   "plan": "Remaining balance in 2 equal installments; dates depend on intake (16 Jan & 1 Apr · 1 May & 1 Aug · 1 Jul & 1 Oct)",
   "n": "2",
-  "src": "https://www.bradford.ac.uk/international/support/visa-support/after-your-offer/paying-your-tuition-fees"
+  "src": "https://www.bradford.ac.uk/international/support/visa-support/after-your-offer/paying-your-tuition-fees",
+  "pf": {"bal": true, "sep": [["01-16", 50.0], ["04-01", 50.0]], "jan": [["05-01", 50.0], ["08-01", 50.0]]}
  },
  "University of Brighton": {
   "dep": "£5,000",
   "plan": "Remaining fees in full at the start, or in 2 installments",
   "n": "2",
-  "src": "https://www.brighton.ac.uk/studying-here/fees-and-finance/postgraduate/international-students/fees/index.aspx"
+  "src": "https://www.brighton.ac.uk/studying-here/fees-and-finance/postgraduate/international-students/fees/index.aspx",
+  "pf": {"dep": 5000, "bal": true, "sep": [["~09-21", 50.0], ["~01-15", 50.0]]}
  },
  "University of Portsmouth": {
   "plan": "2 installments, or 4 payments",
@@ -231,13 +257,15 @@
    "September intake": "Registration · early Jan (or registration · 4 Dec · 4 Feb · 4 Apr)",
    "January intake": "Registration · early Apr (or registration · 4 Apr · 4 Jun · 4 Aug)"
   },
-  "src": "https://www.port.ac.uk/study/masters-and-postgraduate-taught/fees-and-funding/tuition-fees-and-living-expenses"
+  "src": "https://www.port.ac.uk/study/masters-and-postgraduate-taught/fees-and-funding/tuition-fees-and-living-expenses",
+  "pf": {"sep": [["~09-21", 50, "At registration"], ["~01-05", 50]], "jan": [["~01-25", 50, "At registration"], ["~04-05", 50]]}
  },
  "University of East London": {
   "dep": "£1,500 to start pre-CAS checks",
   "plan": "After the deposit, pay the balance within 10 weeks of starting (5 monthly installments over the first term)",
   "n": "5",
-  "src": "https://www.uel.ac.uk/study/fees-funding/paying-your-fees-international-students"
+  "src": "https://www.uel.ac.uk/study/fees-funding/paying-your-fees-international-students",
+  "pf": {"dep": 1500}
  },
  "University of East Anglia": {
   "plan": "3 installments, or 9 monthly Direct Debits",
@@ -245,13 +273,15 @@
   "sched": {
    "September intake": "20 Oct 2026 · 20 Jan 2027 · 20 Apr 2027"
   },
-  "src": "https://www.uea.ac.uk/about/university-information/finance-and-procurement/finance-information-for-students/making-a-payment/instalments"
+  "src": "https://www.uea.ac.uk/about/university-information/finance-and-procurement/finance-information-for-students/making-a-payment/instalments",
+  "pf": {"sep": [["10-20", 33.34], ["01-20", 33.33], ["04-20", 33.33]]}
  },
  "University of Hull": {
   "dep": "£4,000",
   "nepal": "£6,000",
   "depNote": "£10,000 for Bangladesh, Ghana and Pakistan",
-  "src": "https://www.hull.ac.uk/study/international-students/how-to-apply/tuition-fee-deposits"
+  "src": "https://www.hull.ac.uk/study/international-students/how-to-apply/tuition-fee-deposits",
+  "pf": {"dep": 6000}
  },
  "Swansea University": {
   "dep": "£4,000",
@@ -261,41 +291,48 @@
   "sched": {
    "September intake": "50% at enrolment · 25% 1 Feb 2027 · 25% 3 May 2027"
   },
-  "src": "https://www.swansea.ac.uk/finance-swansea-university/paying-tuition-fees-and-other-information/pay-fees-new-applicant-deposit/"
+  "src": "https://www.swansea.ac.uk/finance-swansea-university/paying-tuition-fees-and-other-information/pay-fees-new-applicant-deposit/",
+  "pf": {"dep": 4000, "sep": [["~09-28", 50, "At enrolment"], ["02-01", 25], ["05-03", 25]]}
  },
  "Edinburgh Napier University": {
   "dep": "From £6,000 (see your offer email)",
-  "src": "https://www.napier.ac.uk/study-with-us/postgraduate/fees-and-funding/paying-your-fees"
+  "src": "https://www.napier.ac.uk/study-with-us/postgraduate/fees-and-funding/paying-your-fees",
+  "pf": {"dep": 6000}
  },
  "University of Kent": {
   "dep": "£5,000",
   "depNote": "Pre-CAS deposit for self-funded applicants needing a visa",
-  "src": "https://www.kent.ac.uk/applicants/policies/tuition-fee-deposit"
+  "src": "https://www.kent.ac.uk/applicants/policies/tuition-fee-deposit",
+  "pf": {"dep": 5000}
  },
  "Northumbria University": {
   "dep": "£5,500",
   "depNote": "Non-refundable; paid in one payment",
   "plan": "Balance in full at enrolment, or 2 equal, 3 equal, or 6 monthly installments (first due immediately)",
   "n": "2, 3 or 6",
-  "src": "https://www.northumbria.ac.uk/study-at-northumbria/fees-funding/"
+  "src": "https://www.northumbria.ac.uk/study-at-northumbria/fees-funding/",
+  "pf": {"dep": 5500, "bal": true, "sep": [["~09-21", 50.0, "At enrolment"], ["~01-15", 50.0]]}
  },
  "Brunel University of London": {
   "dep": "£5,000",
   "plan": "Pay 50% of the year's fee before enrolment (including the deposit), the rest later",
   "n": "2",
-  "src": "https://www.brunel.ac.uk/about/admissions/Deposits-and-tuition-fee-instalments"
+  "src": "https://www.brunel.ac.uk/about/admissions/Deposits-and-tuition-fee-instalments",
+  "pf": {"dep": 5000, "sep": [["~09-15", 50, "Before enrolment"], ["~01-15", 50]]}
  },
  "University of Plymouth": {
   "dep": "£3,500",
   "plan": "Pay in full at enrolment, or in 3 installments",
   "n": "3",
-  "src": "https://www.plymouth.ac.uk/study/fees/paying-your-fees"
+  "src": "https://www.plymouth.ac.uk/study/fees/paying-your-fees",
+  "pf": {"dep": 3500, "bal": true, "sep": [["~09-21", 33.34], ["~01-15", 33.33], ["~04-15", 33.33]]}
  },
  "University of Surrey": {
   "dep": "£3,000",
   "plan": "2 installments: 50% 10 days after your invoice (start of semester 1), then the rest",
   "n": "2",
-  "src": "https://www.surrey.ac.uk/fees-and-funding/tuition-fees-guidance"
+  "src": "https://www.surrey.ac.uk/fees-and-funding/tuition-fees-guidance",
+  "pf": {"dep": 3000, "sep": [["~10-05", 50, "Semester 1"], ["~02-15", 50, "Semester 2"]]}
  },
  "Lancaster University": {
   "plan": "2 equal installments",
@@ -303,25 +340,29 @@
   "sched": {
    "September intake": "First day of term 1 (Oct) · first day of term 2 (Jan)"
   },
-  "src": "https://www.lancaster.ac.uk/welcome/campus-learners/pay-your-fees/index.php"
+  "src": "https://www.lancaster.ac.uk/welcome/campus-learners/pay-your-fees/index.php",
+  "pf": {"sep": [["~10-02", 50, "Start of term 1"], ["~01-08", 50, "Start of term 2"]]}
  },
  "University of Stirling": {
   "plan": "Balance in 4 installments every 2 months, 3 equal installments at the start of each semester, or monthly",
   "n": "3, 4 or monthly",
-  "src": "https://www.stir.ac.uk/study/fees-funding/how-to-pay-your-fees/"
+  "src": "https://www.stir.ac.uk/study/fees-funding/how-to-pay-your-fees/",
+  "pf": {"bal": true, "sep": [["~09-15", 33.34], ["~01-15", 33.33], ["~05-15", 33.33]]}
  },
  "University of Salford": {
   "dep": "From £5,500",
   "plan": "7 consecutive monthly installments (starting a month after your course starts), or pay in full for a 3% discount",
   "n": "7",
-  "src": "https://www.salford.ac.uk/askus/money/self-funding-students-and-how-to-pay-your-fees"
+  "src": "https://www.salford.ac.uk/askus/money/self-funding-students-and-how-to-pay-your-fees",
+  "pf": {"dep": 5500, "bal": true, "sep": [["~10-21", 14.26], ["~11-21", 14.29], ["~12-21", 14.29], ["~01-21", 14.29], ["~02-21", 14.29], ["~03-21", 14.29], ["~04-21", 14.29]]}
  },
  "University of Westminster": {
   "dep": "£5,500",
   "depNote": "Non-refundable; overseas students must reach 50% of the fee before enrolment",
   "plan": "50% by enrolment (deposit + top-up), the rest by installments",
   "n": "2+",
-  "src": "https://www.westminster.ac.uk/study/fees-and-funding/fees/paying-your-fees"
+  "src": "https://www.westminster.ac.uk/study/fees-and-funding/fees/paying-your-fees",
+  "pf": {"dep": 5500, "sep": [["~09-15", 50, "By enrolment"], ["~01-15", 50]]}
  },
  "De Montfort University": {
   "plan": "Remaining fees in 2 installments",
@@ -329,12 +370,14 @@
   "sched": {
    "September intake": "November 2026 · January 2027"
   },
-  "src": "https://www.dmu.ac.uk/study/fees-funding/international-tuition-fees.aspx"
+  "src": "https://www.dmu.ac.uk/study/fees-funding/international-tuition-fees.aspx",
+  "pf": {"sep": [["~11-15", 50.0], ["~01-15", 50.0]]}
  },
  "Goldsmiths, Univ. of London": {
   "plan": "3 termly installments (by card for January/April starts)",
   "n": "3",
-  "src": "https://www.gold.ac.uk/students/fee-support/how-to-pay/"
+  "src": "https://www.gold.ac.uk/students/fee-support/how-to-pay/",
+  "pf": {"sep": [["~09-28", 33.34, "Term 1"], ["~01-11", 33.33, "Term 2"], ["~04-26", 33.33, "Term 3"]]}
  },
  "Abertay University": {
   "dep": "50% of your net tuition fee",
@@ -344,7 +387,8 @@
   "sched": {
    "September intake": "1 Nov · 1 Jan · 1 Mar"
   },
-  "src": "https://www.abertay.ac.uk/study-apply/money-fees-and-funding/tuition-fees/"
+  "src": "https://www.abertay.ac.uk/study-apply/money-fees-and-funding/tuition-fees/",
+  "pf": {"dep": "50%", "bal": true, "sep": [["11-01", 33.34], ["01-01", 33.33], ["03-01", 33.33]]}
  },
  "Queen's University Belfast": {
   "dep": "£2,500–£6,000 (set in your offer letter)",
@@ -356,7 +400,8 @@
   "depNote": "100% for Bangladesh and Pakistan",
   "plan": "Balance in one installment, or 7 equal monthly installments (full-time)",
   "n": "1 or 7",
-  "src": "https://www.uws.ac.uk/international/how-to-apply/cas-deposit-payments/cas-deposit-payments-new-offers"
+  "src": "https://www.uws.ac.uk/international/how-to-apply/cas-deposit-payments/cas-deposit-payments-new-offers",
+  "pf": {"dep": "75%"}
  },
  "Liverpool John Moores Univ.": {
   "dep": "£5,000",
@@ -366,7 +411,8 @@
   "sched": {
    "September intake": "Start of course · 4 Jan 2027 · 15 May 2027"
   },
-  "src": "https://www.ljmu.ac.uk/international/holding-offer-of-study/tuition-fee-deposit"
+  "src": "https://www.ljmu.ac.uk/international/holding-offer-of-study/tuition-fee-deposit",
+  "pf": {"dep": 5000, "bal": true, "sep": [["~09-21", 33.34, "Start of course"], ["01-04", 33.33], ["05-15", 33.33]]}
  },
  "Oxford Brookes University": {
   "dep": "£1,000 or £3,000 by country, then a £5,000 top-up before CAS",
@@ -375,7 +421,8 @@
   "sched": {
    "September intake": "21 Sep 2026 · 25 Jan 2027"
   },
-  "src": "https://www.brookes.ac.uk/study/fees/make-a-payment"
+  "src": "https://www.brookes.ac.uk/study/fees/make-a-payment",
+  "pf": {"sep": [["09-21", 50.0], ["01-25", 50.0]]}
  },
  "Robert Gordon University": {
   "plan": "Two 3-installment plans (e.g. 33% or 25% due by 1 November, then further installments)",
@@ -390,19 +437,22 @@
    "September intake": "21 Sep 2026 · 11 Jan 2027",
    "January intake": "11 Jan 2027 · 28 Apr 2027"
   },
-  "src": "https://www.royalholloway.ac.uk/studying-here/fees-and-funding/how-to-pay-your-fees/"
+  "src": "https://www.royalholloway.ac.uk/studying-here/fees-and-funding/how-to-pay-your-fees/",
+  "pf": {"dep": 3000, "sep": [["09-21", 50.0], ["01-11", 50.0]], "jan": [["01-11", 50.0], ["04-28", 50.0]]}
  },
  "Anglia Ruskin University": {
   "dep": "£4,000",
   "depNote": "Or a sponsorship letter",
   "plan": "Pay in full or in 2 installments",
   "n": "2",
-  "src": "https://www.aru.ac.uk/study/postgraduate/artificial-intelligence"
+  "src": "https://www.aru.ac.uk/study/postgraduate/artificial-intelligence",
+  "pf": {"dep": 4000, "bal": true, "sep": [["~09-21", 50.0], ["~01-15", 50.0]]}
  },
  "University for the Creative Arts": {
   "dep": "£2,500",
   "depNote": "£5,500 for some countries; 50% for India (outside Punjab and Haryana)",
-  "src": "https://www.uca.ac.uk/study-at-uca/fees-finance/how-to-pay/"
+  "src": "https://www.uca.ac.uk/study-at-uca/fees-finance/how-to-pay/",
+  "pf": {"dep": 2500}
  },
  "University of Lancashire (UCLan)": {
   "dep": "50% of the first-year fee",
@@ -411,7 +461,8 @@
   "sched": {
    "September intake": "50% before CAS · 50% by 18 Jan 2027"
   },
-  "src": "https://www.lancashire.ac.uk/study/fees-and-finance/paying-your-fees"
+  "src": "https://www.lancashire.ac.uk/study/fees-and-finance/paying-your-fees",
+  "pf": {"dep": "50%", "bal": true, "sep": [["01-18", 100, "Remaining 50%"]]}
  },
  "Solent University": {
   "plan": "Installment plans offered during online registration",
@@ -428,27 +479,32 @@
   "depNote": "Also £10,000 for Afghanistan, Bangladesh, Pakistan, Sri Lanka and Punjab",
   "plan": "Payment plan over 2 installments",
   "n": "2",
-  "src": "https://www.uos.ac.uk/international/fees-and-scholarships/paying-your-cas-deposit/"
+  "src": "https://www.uos.ac.uk/international/fees-and-scholarships/paying-your-cas-deposit/",
+  "pf": {"dep": 10000, "bal": true, "sep": [["~09-21", 50.0], ["~01-15", 50.0]]}
  },
  "Loughborough University": {
   "dep": "£2,500",
-  "src": "https://www.lboro.ac.uk/study/pg-offer/mshare/cost-and-deposit/"
+  "src": "https://www.lboro.ac.uk/study/pg-offer/mshare/cost-and-deposit/",
+  "pf": {"dep": 2500}
  },
  "Bath Spa University": {
   "dep": "From £3,000 (up to 100% of the fee)",
   "depNote": "Deposit deadline 23 August",
   "plan": "Full payment due before registration or by 18 September",
-  "src": "https://www.bathspa.ac.uk/students/student-finance/how-to-pay/"
+  "src": "https://www.bathspa.ac.uk/students/student-finance/how-to-pay/",
+  "pf": {"dep": 3000, "sep": [["09-18", 100, "Full payment"]]}
  },
  "Cranfield University": {
   "dep": "£1,000",
   "plan": "Pay in full or in 2 equal installments (depends on course)",
   "n": "2",
-  "src": "https://www.cranfield.ac.uk/study/taught-degrees/fees-and-funding/research-tuition-fees-2026"
+  "src": "https://www.cranfield.ac.uk/study/taught-degrees/fees-and-funding/research-tuition-fees-2026",
+  "pf": {"dep": 1000, "bal": true, "sep": [["~10-01", 50.0], ["~01-15", 50.0]]}
  },
  "Buckinghamshire New University": {
   "plan": "Pay in full or in 3 installments",
   "n": "3",
-  "src": "https://www.bucks.ac.uk/study/fees-and-funding/fees-liability-and-instalment-dates"
+  "src": "https://www.bucks.ac.uk/study/fees-and-funding/fees-liability-and-instalment-dates",
+  "pf": {"bal": true, "sep": [["~09-21", 33.34], ["~01-15", 33.33], ["~04-15", 33.33]]}
  }
 }
