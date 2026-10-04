@@ -62,38 +62,40 @@ function fillCourses() {
 }
 
 /* ---------------- prefill from the map ----------------
-   "Plan my budget" on a course card opens planner.html?u=&p=&f=&s=&sl=&l=[&rate=]. We fill in the fee and sure scholarship
+   "Plan my budget" on a course card opens planner.html?u=&p=&f=&s=&sl=&l=&in=[&rate=] (in = the intake picked there, "YYYY-MM"). We fill in the fee and sure scholarship
    (as shown on the map), the university's payment schedule (pf in payment_policies.json), living costs scaled to the
    city's typical cost, and the jobs from the map's Work card. The previous plan is kept so it can be undone. */
-const INTAKE = { sep: { m: 8, name: "September" }, jan: { m: 0, name: "January" } };
 const iso = (y, m, d) => `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 const todayIso = iso(now.getFullYear(), now.getMonth() + 1, now.getDate());
-// Intakes worth offering: the one that started up to 3 months ago, and the next ones, limited to what the
-// university publishes dates for (or, with only a deposit known, what the course runs).
+// A course's intakes (e.g. "Sept, Jan") as start months, from the one that began up to 3 months ago onwards.
+// Same rule as the intake picker on the map's course card; values are "YYYY-MM".
+const MON = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 function intakeChoices(u, p) {
-  const pf = DATA.unis[u]?.pay?.pf, row = DATA.rows.find(x => x.u === u && x.p === p);
-  const has = k => pf && pf[k] ? true : !pf?.sep && !pf?.jan && (!row || !row.i || (k === "sep" ? /sep/i : /jan/i).test(row.i));
+  const row = DATA.rows.find(x => x.u === u && x.p === p);
+  const ms = [...new Set((String(row?.i || "").toLowerCase().match(/[a-z]{3}/g) || []).map(m => MON[m]).filter(m => m != null))];
+  if (!ms.length) ms.push(8, 0);
   const out = [], m0 = mIdx(thisMonth) - 3;
-  for (let mi = m0; mi < m0 + 16 && out.length < 3; mi++) {
-    const k = mi % 12 === 8 ? "sep" : mi % 12 === 0 ? "jan" : null;
-    if (k && has(k)) out.push({ k, y: Math.floor(mi / 12), mi, name: `${INTAKE[k].name} ${Math.floor(mi / 12)}` });
-  }
+  for (let mi = m0; mi < m0 + 16 && out.length < 4; mi++) if (ms.includes(mi % 12)) out.push({ v: mStr(mi), mi, y: Math.floor(mi / 12), m: mi % 12, name: mLabel(mi, true) });
   return out;
 }
+// Universities publish dates for their September and January intakes; October starts follow the September
+// schedule and February starts the January one. Other intakes get the deposit only.
+const schedKey = m => m === 8 || m === 9 ? "sep" : m === 0 || m === 1 ? "jan" : null;
 // The installments for one intake, in £, from the fee after scholarship.
 function scheduleFor(u, intake, net, mapDepPct) {
-  const pf = DATA.unis[u]?.pay?.pf, rows = [];
+  const pf = DATA.unis[u]?.pay?.pf, rows = [], key = schedKey(intake.m);
   const at = (md, y) => {   // "MM-DD" (or "~MM-DD" when only the month/term is known) → a date in this intake's year
     const approx = md[0] === "~", [mm, dd] = md.replace("~", "").split("-").map(Number);
-    const yr = intake.k === "sep" ? (mm >= 7 ? y : y + 1) : (mm >= 10 ? y - 1 : y);
+    const yr = key === "sep" ? (mm >= 7 ? y : y + 1) : (mm >= 10 ? y - 1 : y);
     return { date: iso(yr, mm, dd), approx };
   };
   let dep = 0, depLabel = "Deposit (before CAS)";
   if (pf?.dep != null) dep = typeof pf.dep === "string" ? net * parseFloat(pf.dep) / 100 : pf.dep;
   else if (!pf && mapDepPct) { dep = net * mapDepPct / 100; depLabel = `Deposit (${mapDepPct}%, your estimate on the map)`; }
   dep = Math.min(net, Math.round(dep));
-  if (dep > 0) rows.push({ ...at(intake.k === "sep" ? "~07-15" : "~11-15", intake.y), amount: dep, label: depLabel });
-  const sched = pf?.[intake.k] || [];
+  // Deposit: before your CAS, roughly two months before the course starts.
+  if (dep > 0) rows.push({ date: iso(Math.floor((intake.mi - 2) / 12), (intake.mi - 2) % 12 + 1, 15), approx: true, amount: dep, label: depLabel });
+  const sched = (key && pf?.[key]) || [];
   if (sched.length) {
     const base = pf.bal ? net - dep : net;
     let owe = sched.map(x => x[1] / 100 * base), left = pf.bal ? 0 : dep;
@@ -139,15 +141,15 @@ function fromLink() {
     return { name: j.name || "", rate: rate ?? num(j.rate), hrs: wks < 52 ? Math.round(num(j.hrs) * wks / 52 * 2) / 2 : num(j.hrs), from: "", to: "" };
   });
   if (mIdx(P.start || thisMonth) < mIdx(thisMonth)) P.start = thisMonth;
-  const choices = intakeChoices(u, p);
+  const choices = intakeChoices(u, p), want = q.get("in");
   P.pre = { u, p, sl: q.get("sl") || "", liv, rate, jobs: P.jobs.length, wks: (S.jobs || []).some(j => j.wks != null && num(j.wks) < 52),
-    depPct: num(S.dep), intake: choices[0] ? `${choices[0].k}-${choices[0].y}` : "" };
+    depPct: num(S.dep), intake: (choices.find(c => c.v === want) || choices[0])?.v || "" };
   prefillSchedule();
   save();
 }
 function prefillSchedule() {
   const pre = P.pre; if (!pre) return { past: [], next: [] };
-  const intake = intakeChoices(pre.u, pre.p).find(c => `${c.k}-${c.y}` === pre.intake);
+  const intake = intakeChoices(pre.u, pre.p).find(c => c.v === pre.intake);
   if (!intake) { P.inst = []; return { past: [], next: [] }; }
   return applySchedule(scheduleFor(pre.u, intake, netFee(), pre.depPct));
 }
@@ -156,11 +158,13 @@ function renderPrefill() {
   box.hidden = !pre || P.uni !== pre.u;
   if (box.hidden) return;
   const pf = DATA.unis[pre.u]?.pay?.pf, choices = intakeChoices(pre.u, pre.p);
-  const sched = pf && (pf.sep || pf.jan), approx = P.inst.some(x => /date ≈$/.test(x.label));
+  const cur = choices.find(c => c.v === pre.intake) || choices[0], key = cur && schedKey(cur.m);
+  const sched = pf && key && pf[key], other = pf && (pf.sep || pf.jan) && !sched, approx = P.inst.some(x => /date ≈$/.test(x.label));
   const items = [
     `<li>Fee <b>${gbp(num(P.fee))}</b>${num(P.scholarship) ? ` and scholarship <b>${gbp(num(P.scholarship))}</b>${pre.sl ? ` <span class="muted">(${esc(pre.sl)})</span>` : ""}` : ""}, as shown on the map</li>`,
-    `<li>${sched ? `${esc(pre.u)}'s published payment schedule` : pf?.dep != null ? `${esc(pre.u)}'s deposit — <b>the rest has no published dates</b>, so add them from your invoice` : `A deposit using your ${pre.depPct}% estimate from the map — <b>${esc(pre.u)} hasn't published installment dates</b>, so add them from your invoice`}
-      for the <label class="pf-intake">${choices.length > 1 ? `<select id="prefillIntake" aria-label="Intake">${choices.map(c => `<option value="${c.k}-${c.y}"${`${c.k}-${c.y}` === pre.intake ? " selected" : ""}>${c.name}</option>`).join("")}</select>` : esc(choices[0]?.name || "")}</label> intake${approx ? ". Dates marked ≈ are estimates from the month or term the university gives — check your invoice" : ""}${num(P.paid) ? `. <b>${gbp(num(P.paid))}</b> due before today is counted as already paid` : ""}</li>`,
+    `<li>${sched ? `${esc(pre.u)}'s published payment schedule` : pf?.dep != null ? `${esc(pre.u)}'s deposit — <b>the rest has no published dates${other ? " for this intake" : ""}</b>, so add them from your invoice`
+      : other ? `<b>${esc(pre.u)} hasn't published installment dates for this intake</b>, so add them from your invoice` : `A deposit using your ${pre.depPct}% estimate from the map — <b>${esc(pre.u)} hasn't published installment dates</b>, so add them from your invoice`}
+      for the <label class="pf-intake">${choices.length > 1 ? `<select id="prefillIntake" aria-label="Intake">${choices.map(c => `<option value="${c.v}"${c.v === cur.v ? " selected" : ""}>${c.name}</option>`).join("")}</select>` : esc(cur?.name || "")}</label> intake${approx ? ". Dates marked ≈ are estimates from the month or term the university gives — check your invoice" : ""}${num(P.paid) ? `. <b>${gbp(num(P.paid))}</b> due before today is counted as already paid` : ""}</li>`,
     pre.liv ? `<li>Living costs scaled to this city's typical <b>${gbp(pre.liv / 12)}</b>/month</li>` : "",
     `<li>Your ${pre.jobs === 1 ? "job" : pre.jobs + " jobs"} from the map's Work card${pre.rate != null ? ` at the £${pre.rate.toFixed(2)}/hr you set for this course` : ""}${pre.wks ? " (weeks per year turned into average hours a week)" : ""}</li>`,
   ];

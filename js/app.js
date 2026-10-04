@@ -844,6 +844,13 @@ let openUni = null, placeReq = 0;
 const placeCache = {};
 function closeCard() { if (!openUni) return; openUni = null; $("card").hidden = true; refreshMarkers(); }
 $("cardClose").addEventListener("click", closeCard);
+// Intake picked on a course card: remembered per course and passed to the budget planner.
+$("cardCourses").addEventListener("change", e => {
+  const sel = e.target.closest("select[data-intake]"); if (!sel) return;
+  const r = ROWS[+sel.dataset.intake];
+  S.intakes = { ...S.intakes, [intakeKey(r)]: sel.value }; save();
+  sel.closest(".plan-row").querySelector("a[data-plan]").href = plannerLink(r, sel.value).replace(/&amp;/g, "&");
+});
 
 function openCard(u, focus) {
   openUni = u; $("card").hidden = false;
@@ -874,7 +881,7 @@ function courseHTML(r) {
       ${row("Placement", esc(r.pl))}
       <div class="full"><b>Other scholarships:</b> ${esc(otherSch(r))}</div>
       ${r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>` : ""}
-      <div class="full"><a href="${plannerLink(r)}" title="Opens the budget planner with this course's fee, scholarship, payment schedule, living costs and your work filled in">Enrolled here? Plan my budget →</a></div>
+      ${planRow(r)}
     </div>
   </article>`;
 }
@@ -887,11 +894,29 @@ function courseCheck(r) {
 // Fee payment policy for international postgraduate students, from the university's own pages.
 // Budget planner link: the planner fills itself in from this course (live fee, sure scholarship incl. grade-based awards,
 // typical living cost, any pay rate set for this row) plus the university's payment schedule and your work from this page.
-function plannerLink(r) {
+function plannerLink(r, intake) {
   const q = new URLSearchParams({ u: r.u, p: r.p, f: Math.round(r.f), s: Math.round(r.s || 0), l: Math.round(r.l || 0) });
+  if (intake) q.set("in", intake);
   if (r.s && r.sl) q.set("sl", r.sl);
   if (r.id in rowRate) q.set("rate", rowRate[r.id]);
   return "planner.html?" + esc(q.toString());
+}
+// The course's intakes ("Sept, Jan") as start months, from the one that began up to 3 months ago; values "YYYY-MM".
+// The planner uses the same rule and dates the installments from the intake picked here.
+const MON = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+function courseIntakes(r) {
+  const ms = [...new Set((String(r.i || "").toLowerCase().match(/[a-z]{3}/g) || []).map(m => MON[m]).filter(m => m != null))];
+  if (!ms.length) ms.push(8, 0);
+  const now = new Date(), m0 = now.getFullYear() * 12 + now.getMonth() - 3, out = [];
+  for (let mi = m0; mi < m0 + 16 && out.length < 4; mi++) if (ms.includes(mi % 12))
+    out.push({ v: `${Math.floor(mi / 12)}-${String(mi % 12 + 1).padStart(2, "0")}`, name: new Date(Math.floor(mi / 12), mi % 12, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" }) });
+  return out;
+}
+const intakeKey = r => r.u + "|" + r.p;
+function planRow(r) {
+  const opts = courseIntakes(r), pick = (opts.find(o => o.v === S.intakes?.[intakeKey(r)]) || opts[0])?.v;
+  return `<div class="full plan-row"><label class="intake-pick"><span class="plan-q">Enrolled here? Intake</span><select data-intake="${r.id}" aria-label="Your intake for ${esc(r.p)}">${opts.map(o => `<option value="${o.v}"${o.v === pick ? " selected" : ""}>${o.name}</option>`).join("")}</select></label>
+    <a href="${plannerLink(r, pick)}" data-plan="${r.id}" title="Opens the budget planner with this course's fee, scholarship, the installment dates for your intake, living costs and your work filled in">Plan my budget →</a></div>`;
 }
 function payHTML(u) {
   const P = UNIS[u].pay, when = window.UNIDATA.payChecked ? new Date(window.UNIDATA.payChecked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
