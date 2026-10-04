@@ -268,5 +268,8 @@ export default {
  "Buckinghamshire New University": [
   "https://www.bucks.ac.uk/courses/postgraduate/msc-computer-science",
   "https://www.bucks.ac.uk/courses/postgraduate/msc-artificial-intelligence"
+ ],
+ "University of Winchester": [
+  "https://www.winchester.ac.uk/study/Postgraduate/Courses/MSc-Cyber-Security/"
  ]
 };

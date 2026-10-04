@@ -35,7 +35,7 @@ export function htmlToText(html, { keepScripts = false } = {}) {
 
 const MONEY = /(?:£|GBP\s?)\s?(\d{1,3}(?:,\d{3})+|\d{4,6})(?:\.\d{2})?(?!\d)|(\d{1,3}(?:,\d{3})+)\s?GBP/g;
 const INTL = /international|overseas|non[- ]uk|outside (?:of )?the uk|\bintl\b/gi;
-const HOME = /\bhome\b|\buk students?\b|\b(?:uk|home) fees?\b|\bscottish\b|\bscotland\b|\bruk\b|rest of (?:the )?uk|\bengland\b|\(uk\)|\buk:|\buk\s*\/|\|\s*uk\s*\|/gi;
+const HOME = /\bhome\b|\buk students?\b|\b(?:uk|home) fees?\b|\bscottish\b|\bscotland\b|\bruk\b|rest of (?:the )?uk|\bengland\b|\(uk\)|\buk:|\buk\s*\/|\|\s*uk\s*\||republic of ireland|channel islands|isle of man/gi;
 const NOISE = /pre-?masters|pre-?sessional|foundation|scholarship|bursar|discount|deposit|award|reduction|waiver|alumni|living cost|accommodation|salary|earn|per (?:10|15|20|30|60) credits?|per credit|per module|bench fee|additional cost|loan|stipend/gi;
 const YEARS = /20(2\d)(?:\s?[\/–-]\s?(?:20)?(2\d))?/g;
 const matches = (re, s) => [...s.matchAll(new RegExp(re.source, "gi"))].map(m => ({ i: m.index, end: m.index + m[0].length }));
@@ -68,7 +68,8 @@ export function extractIntlFee(text, debug = false) {
     // three or more is a tab bar followed by the open panel's own title, which the proximity score already handles.
     let c = labels.length - 1;
     while (c > 0 && labels[c].i - labels[c - 1].end < 40 && !matches(MONEY, before.slice(labels[c - 1].end, labels[c].i)).length) c--;
-    const cluster = labels.slice(c), [l1, l2] = cluster;
+    // Several home labels in a row ("UK / Channel Islands / Isle of Man / Republic of Ireland") count as one column.
+    const cluster = labels.slice(c).filter((l, i, a) => !i || l.t !== a[i - 1].t), [l1, l2] = cluster;
     if (cluster.length === 2 && l1.t !== l2.t) {
       const k = matches(MONEY, before.slice(l2.end)).length; // amounts between the header and this one
       const isIntl = (l1.t === "I") === (k % 2 === 0);

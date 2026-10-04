@@ -774,6 +774,24 @@ function courseCheck(r) {
   const when = new Date(LIVE.checked).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   return x.ok ? ` <span class="muted">· checked ${when}</span>` : ` <span class="muted">· couldn't read fee (${esc(x.err)})</span>`;
 }
+// Fee payment policy for international postgraduate students, from the university's own pages.
+function payHTML(u) {
+  const P = UNIS[u].pay, when = window.UNIDATA.payChecked ? new Date(window.UNIDATA.payChecked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+  // Short badge: "Deposit £2,000", "Deposit from £1,000", "Deposit 50%" — the full wording is in the rows below.
+  const dep = P && P.dep, money = dep && dep.match(/£[\d,]+/), pct = dep && dep.match(/\d+%/);
+  const chip = !dep ? "" : /^£[\d,]+$/.test(dep) ? dep : money && (pct ? dep.indexOf(money[0]) < dep.indexOf(pct[0]) : true) ? `from ${money[0]}` : pct ? pct[0] : "";
+  const head = `<summary><span class="pp-ico" aria-hidden="true">£</span><span>Paying your fees</span>${chip ? `<span class="pp-chip">Deposit ${esc(chip)}</span>` : ""}</summary>`;
+  if (!P) return `<details class="pp" open>${head}<p class="pp-none">Deposit and installment rules aren't confirmed for this university yet — their pages couldn't be read automatically. Check their <a href="${esc(UNIS[u].web)}" target="_blank" rel="noopener">website ↗</a> or your offer letter.</p></details>`;
+  const row = (k, v, cls = "") => v ? `<div class="pp-row ${cls}"><span class="k">${k}</span><span class="v">${v}</span></div>` : "";
+  const sched = P.sched ? Object.entries(P.sched).map(([k, v]) => row(esc(k), esc(v), "sched")).join("") : "";
+  return `<details class="pp" open>${head}<div class="pp-body">
+    ${row("Minimum deposit<small>before your CAS</small>", P.dep ? esc(P.dep) + (P.depNote ? `<small>${esc(P.depNote)}</small>` : "") : `<span class="muted">Not stated on the pages read</span>`)}
+    ${row("From Nepal", P.nepal ? esc(P.nepal) : "", "nepal")}
+    ${row("Installments", P.plan ? esc(P.plan) + (P.n ? `<small>${esc(P.n)} payment${P.n === "1" ? "" : "s"} in total</small>` : "") : `<span class="muted">Not stated on the pages read</span>`)}
+    ${sched || (P.plan ? row("Dates", `<span class="muted">Not published — given on your invoice</span>`) : "")}
+    <p class="pp-src"><a href="${esc(P.src)}" target="_blank" rel="noopener">University's payment page ↗</a>${when ? ` · checked ${when}` : ""} · confirm with your offer letter</p>
+  </div></details>`;
+}
 function renderCard(u, withPlace) {
   const city = $("city").value, U = UNIS[u];
   const rs = LIST.filter(r => r.u === u);
@@ -782,6 +800,7 @@ function renderCard(u, withPlace) {
   $("cardTitle").textContent = u;
   $("cardSub").textContent = [U.c, f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
+  $("cardPay").innerHTML = payHTML(u);
   $("cardCourses").innerHTML = (rs.length ? rs : []).sort((a, b) => a.n - b.n).map(courseHTML).join("") || `<p class="gp-empty">No courses here match the current filters.</p>`;
   if (withPlace) loadPlace(u);
 }
