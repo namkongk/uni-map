@@ -1,0 +1,78 @@
+{
+ "_about": "Scholarships Nepali self-funded master's students can actually get, read from each university's own pages (checked 4–5 Oct 2026). kind: nepal = only for Nepal; auto = given automatically to eligible international students; grade = automatic if you reach the UK grade in `min`; apply = you must apply and awards are competitive; early = discount for paying the deposit or fees early; pathway = only via the university's pathway/pre-master's college; partner = only if your bachelor's is from a listed partner institution. amt is the £ value used for cost totals (only nepal/auto/grade awards count towards the 'sure scholarship'). courses limits an award to listed programmes.",
+ "_checked": "2026-10-05",
+ "University of Exeter": [
+  { "name": "PGT Scholarship for Nepal", "kind": "nepal", "amt": 7500, "amtText": "£7,500", "courses": ["MSc Computer Science"], "note": "Automatic for Nepali citizens on an eligible master's (January 2027 list includes MSc Computer Science, Data Science and Advanced Data Science — not Advanced Computer Science). Must meet offer conditions and pay the deposit. Can combine with Exeter Excellence up to £10,000.", "deadline": "1 Dec 2026", "src": "https://www.exeter.ac.uk/study/funding/award/?id=5676" },
+  { "name": "Exeter Excellence Scholarship", "kind": "apply", "amtText": "Up to £15,000 (2027/28)", "note": "Competitive, for high-achieving offer holders; apply after getting an offer (January 2027 applications under the 2026/27 scheme until 26 Nov 2026).", "src": "https://www.exeter.ac.uk/study/funding/exeterexcellence/" }
+ ],
+ "Swansea University": [
+  { "name": "Nepal and Sri Lanka Thrive Bursary", "kind": "pathway", "amtText": "£6,000", "note": "Automatic for students from Nepal — but offered by The College, Swansea University (the pathway / pre-master's college), not for direct MSc entry.", "src": "https://www.swansea.ac.uk/the-college/admissionandfees/scholarships/postgraduate/" }
+ ],
+ "Birmingham City University": [
+  { "name": "International Postgraduate Scholarship", "kind": "auto", "amt": 3000, "amtText": "£3,000", "note": "For self-funded international students on a full-time taught master's (listed on BCU's Nepal page).", "src": "https://www.bcu.ac.uk/international/bcu-in-your-country/nepal" }
+ ],
+ "Coventry University": [
+  { "name": "Coventry University Group Scholarship", "kind": "auto", "amt": 2000, "amtText": "£2,000 per year", "note": "All self-funded international (non-EU) students on full-time taught degrees at UK campuses; no application, but the full CAS deposit must be cleared by the date in your offer.", "src": "https://www.coventry.ac.uk/international-students-hub/apply-for-a-scholarship/coventry-university-group-scholarship/" }
+ ],
+ "Edge Hill University": [
+  { "name": "Global Vice-Chancellor's Award", "kind": "auto", "amt": 3000, "amtText": "£3,000", "note": "Automatic for international fee-paying students; shown on your offer letter.", "src": "https://www.edgehill.ac.uk/departments/support/international/fees-and-scholarships/" },
+  { "name": "Early payment discount", "kind": "early", "amtText": "£500", "note": "Pay full tuition fees before your CAS is issued.", "src": "https://www.edgehill.ac.uk/departments/support/international/fees-and-scholarships/" }
+ ],
+ "University of Lincoln": [
+  { "name": "Global Postgraduate Scholarship", "kind": "auto", "amt": 2000, "amtText": "£2,000 (2026/27) · £3,000 (2027/28)", "note": "Automatic for students who meet the entry requirements of a taught master's.", "src": "https://www.lincoln.ac.uk/studywithus/scholarshipsandbursaries/globalpostgraduatescholarship/" },
+  { "name": "Advance Full Payment Discount", "kind": "early", "amtText": "£1,000–£1,500", "note": "Pay the year's fees in full (minus scholarships) by the deadline for your country.", "src": "https://www.lincoln.ac.uk/studywithus/scholarshipsandbursaries/globalpostgraduatescholarship/" }
+ ],
+ "Solent University": [
+  { "name": "PGT International Excellence Scholarship", "kind": "grade", "min": "2:1", "amt": 1500, "amtText": "£1,500–£2,500", "note": "Automatic for international students with a 2:1 equivalent bachelor's or master's on a full-time master's of 12+ months.", "src": "https://www.solent.ac.uk/finance/scholarships-and-bursaries/solent-postgraduate-taught-international-excellence-scholarship" }
+ ],
+ "University of Salford": [
+  { "name": "Global Gold Excellence Scholarship", "kind": "grade", "min": "1st", "amt": 3000, "amtText": "£3,000", "note": "First-class degree (or equivalent); assessed automatically when you apply. Pay your deposit by the deadline to keep it.", "src": "https://www.salford.ac.uk/international/scholarships/global-gold-excellence-scholarship" },
+  { "name": "Global Silver Excellence Scholarship", "kind": "grade", "min": "2:2", "amt": 2500, "amtText": "£2,500", "note": "At least a 2:2 (or equivalent); assessed automatically when you apply. Pay your deposit by the deadline to keep it.", "src": "https://www.salford.ac.uk/international/scholarships/global-silver-excellence-scholarship" }
+ ],
+ "University of Northampton": [
+  { "name": "International Scholarship", "kind": "auto", "amt": 2000, "amtText": "£2,000–£4,000 per year", "note": "Merit-based, considered automatically from your application; the amount depends on your academic record (told in your offer letter). Pay £7,000 before CAS to accept.", "src": "https://www.northampton.ac.uk/bursaries-scholarships-and-funds/uon-international-scholarships/" }
+ ],
+ "University of Suffolk": [
+  { "name": "International Merit Scholarship", "kind": "auto", "amt": 1000, "amtText": "£1,000–£3,000", "note": "Automatic for international students who meet or exceed the entry requirements; the amount depends on your grades.", "src": "https://www.uos.ac.uk/international/fees-and-scholarships/" }
+ ],
+ "Buckinghamshire New University": [
+  { "name": "Vice-Chancellor's International Scholarship", "kind": "auto", "amt": 3000, "amtText": "£3,000", "note": "Self-funded international students on a full-time postgraduate degree, first year.", "src": "https://www.bucks.ac.uk/life/fees-and-funding/financial-support-bursaries-and-scholarships/international" },
+  { "name": "International Early Payment Discount", "kind": "early", "amtText": "£500", "note": "For paying fees in full early.", "src": "https://www.bucks.ac.uk/life/fees-and-funding/financial-support-bursaries-and-scholarships/international" }
+ ],
+ "University of Brighton": [
+  { "name": "Vice-Chancellor International Scholarship", "kind": "auto", "amt": 4000, "amtText": "£4,000", "note": "Automatically applied to eligible international students; can combine with some other Brighton awards (up to £3,500–£5,000 in total at postgraduate level).", "src": "https://www.brighton.ac.uk/international/applying-here/fees-and-scholarships/funding/index.aspx" }
+ ],
+ "Liverpool John Moores Univ.": [
+  { "name": "International Scholarship", "kind": "auto", "amt": 3000, "amtText": "£3,000–£4,500", "note": "Self-funded international students; considered automatically and confirmed in your unconditional offer. Courses with fees under £17,250 aren't eligible.", "src": "https://www.ljmu.ac.uk/international/thinking-of-applying/international-scholarships" },
+  { "name": "Early Payment Discount", "kind": "early", "amtText": "£500", "note": "All self-funded international students who pay early.", "src": "https://www.ljmu.ac.uk/international/thinking-of-applying/international-scholarships" }
+ ],
+ "Goldsmiths, Univ. of London": [
+  { "name": "International Early Bird Discount", "kind": "early", "amtText": "10% off tuition", "note": "Pay the £4,000 minimum deposit by the early-bird date (15 May for September 2026 entry).", "src": "https://www.gold.ac.uk/fees-funding/scholarships/international-early-bird-discount/" }
+ ],
+ "Queen's University Belfast": [
+  { "name": "South Asia Postgraduate Scholarship", "kind": "apply", "amtText": "£3,000–£5,000", "note": "For new students from South Asia on full-time taught master's; check the terms for how it is awarded.", "src": "https://www.qub.ac.uk/Study/international-students/your-country/nepal/" },
+  { "name": "Early Confirmation / full payment discount", "kind": "early", "amtText": "£1,500", "note": "Unconditional offer holders who pay tuition in full by the deadline (18 Sep 2026 for taught master's).", "src": "https://www.qub.ac.uk/Study/international-students/your-country/nepal/" }
+ ],
+ "University for the Creative Arts": [
+  { "name": "Full payment discount", "kind": "early", "amtText": "£1,000", "note": "Non-EU international students who pay full tuition (after scholarships) before or at CAS issue.", "src": "https://www.uca.ac.uk/study-at-uca/scholarships/" }
+ ],
+ "University of Surrey": [
+  { "name": "Vice-Chancellor's International Scholarship", "kind": "apply", "amtText": "£7,500", "note": "Competitive award for selected postgraduates with academic excellence (listed for Nepalese students; apply by 20 Aug 2027).", "src": "https://www.surrey.ac.uk/nepal" },
+  { "name": "International Excellence Award", "kind": "apply", "amtText": "£5,000", "note": "Self-funded international students; apply before your CAS is issued.", "src": "https://www.surrey.ac.uk/fees-and-funding/scholarships-and-bursaries/international-excellence-award-postgraduate" }
+ ],
+ "Brunel University of London": [
+  { "name": "VC's Postgraduate International Excellence Award", "kind": "apply", "amtText": "£6,000", "note": "Competitive; Brunel gives the single highest award you're eligible for.", "src": "https://www.brunel.ac.uk/scholarships/home" }
+ ],
+ "Newcastle University": [
+  { "name": "Vice-Chancellor's Excellence Scholarship (PG)", "kind": "apply", "amtText": "Up to 50% off tuition", "note": "30 awards for outstanding international applicants to full-time master's (listed on Newcastle's Nepal page).", "src": "https://www.ncl.ac.uk/international/country/nepal/" }
+ ],
+ "University of Bath": [
+  { "name": "Bath Global Excellence Scholarship", "kind": "apply", "amtText": "£10,000", "note": "Up to 250 competitive awards for high achievers on full-time taught master's (Engineering & Design, Humanities & Social Sciences, Science). Deadlines 4 Feb, 8 Apr, 11 Jun 2027.", "src": "https://www.bath.ac.uk/guides/applying-for-the-bath-global-excellence-scholarship/" }
+ ],
+ "University of Portsmouth": [
+  { "name": "Chancellor's Global Academic Merit Scholarship", "kind": "apply", "amtText": "£5,000", "note": "Merit-based; self-funded international students must complete the scholarship form with their application (January 2027 entry).", "src": "https://www.port.ac.uk/study/international-students/funding/scholarships" }
+ ],
+ "University of Lancashire (UCLan)": [
+  { "name": "Articulation Scholarship", "kind": "partner", "amtText": "£2,000", "note": "Automatic only if your bachelor's is from one of UCLan's partner institutions in Nepal (see their list).", "src": "https://www.lancashire.ac.uk/international-students/country/nepal" }
+ ]
+}

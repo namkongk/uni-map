@@ -50,6 +50,21 @@
           <label class="chip-t"><input type="checkbox" id="f-noflag"><span>Hide warnings</span></label>
           <label class="chip-t"><input type="checkbox" id="f-noest"><span>Hide est. fees</span></label>
         </div>
+        <fieldset class="grade-box" id="gradeBox">
+          <legend>Your bachelor's from Nepal <i class="opt">optional</i></legend>
+          <div class="row2">
+            <div class="field"><label for="gUni">University</label>
+              <select id="gUni"><option value="">Select…</option><option value="TU">Tribhuvan (TU)</option><option value="KU">Kathmandu (KU)</option><option value="PU">Pokhara (PU)</option><option value="PUR">Purbanchal</option><option value="OTHER">Other in Nepal</option></select></div>
+            <div class="field"><label for="gYears">Duration</label>
+              <select id="gYears"><option value="4">4 years</option><option value="3">3 years</option></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="gType">Grading</label>
+              <select id="gType"><option value="">Select…</option><option value="pct">Percentage</option><option value="gpa">CGPA (out of 4)</option><option value="letter">Letter grade</option><option value="div">Division</option></select></div>
+            <div class="field" id="gValWrap"><label for="gVal">Your result</label><input id="gVal" type="number" disabled placeholder="—"></div>
+          </div>
+          <div class="grade-out" id="gradeOut" role="status" hidden></div>
+        </fieldset>
         <button type="button" class="btn-plain" id="reset">Reset filters</button>
       </div>
     </section>
@@ -73,6 +88,7 @@
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
     </div>
     <div class="card-scroll">
+      <section class="paypol" id="cardAwards" aria-label="Scholarships for you"></section>
       <section class="paypol" id="cardPay" aria-label="Paying your fees"></section>
       <div id="cardCourses"></div>
       <section class="gplace" id="gplace"></section>

@@ -38,13 +38,13 @@ const r100 = n => Math.round(n / 100) * 100;
 const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX" };
 const PA = 12570, DED = 0.28; // personal allowance; 20% income tax + 8% NI above it
 
-ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; });
+ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 = r.sl; });
 
 /* ---------------- state ---------------- */
 const MOBILE = matchMedia("(max-width:760px)").matches;
 const GLASS_DEF = { theme: "auto", glassT: 45, glassBlur: 22 };
 const newJob = (o = {}) => ({ name: "", rate: 12.71, hrs: 20, wks: 52, ...o });
-const DEF = { lv: "ALL", subj: "ALL", dep: 50, jobs: [newJob()], sortK: "n", dir: 1, cur: COUNTRY.cur, budgetOpen: !MOBILE, filtersOpen: !MOBILE, alert: true, ...GLASS_DEF };
+const DEF = { lv: "ALL", subj: "ALL", dep: 50, jobs: [newJob()], sortK: "n", dir: 1, cur: COUNTRY.cur, grade: { uni: "", years: "4", type: "", val: "" }, budgetOpen: !MOBILE, filtersOpen: !MOBILE, alert: true, ...GLASS_DEF };
 let S = { ...DEF, colf: {} };
 try { Object.assign(S, JSON.parse(localStorage.getItem("ukmap-state") || "{}"), { colf: {} }); } catch (e) {}
 // Older saves had a single rate / hours / weeks — turn that into the first job.
@@ -71,6 +71,62 @@ const needHr = r => { const q = need(r), H = hours(); if (!H) return Infinity; c
 const rateOf = r => rowRate[r.id] ?? avgRate();
 const deficit = r => need(r) - takeHome(rateOf(r));
 const defText = d => d > 0 ? "~" + money(r100(d)) : "Covered" + (d < 0 ? " (+" + money(r100(-d)) + ")" : "");
+
+/* ---------------- your bachelor's grade (Nepal) → typical UK class ---------------- */
+// Typical conversions from UK universities' published Nepal tables (QMUL, LJMU, RGU, Surrey, Portsmouth, Suffolk…).
+// Tribhuvan University marks lower than KU / PU / Purbanchal, so TU percentages need ~5 points less for the same class.
+// A 3-year degree is treated as ~5 points (0.2 GPA) lower than a 4-year one; some universities need 4 years or a master's.
+const CLS_RANK = { "1st": 4, "2:1": 3, "2:2": 2, "3rd": 1 };
+const CLS_LABEL = { "1st": "First-class (1st)", "2:1": "Upper second (2:1)", "2:2": "Lower second (2:2)", "3rd": "Below a 2:2" };
+const LETTER_GPA = { "A": 4.0, "A-": 3.7, "B+": 3.3, "B": 3.0, "B-": 2.7, "C+": 2.3, "C": 2.0 };
+const NEPAL_UNI = { TU: "Tribhuvan University", KU: "Kathmandu University", PU: "Pokhara University", PUR: "Purbanchal University", OTHER: "another Nepali university" };
+function ukClassOf(g) {
+  if (!g || !g.type || g.val === "" || g.val == null) return null;
+  const three = g.years === "3";
+  if (g.type === "div") {
+    // Divisions are broad bands: First Division (60%+) is only a 2:1 at 65%+, so without a % we use the safer 2:2.
+    const c = { dist: "1st", first: "2:2", second: "3rd", third: "3rd" }[g.val];
+    return c && three && c === "1st" ? "2:1" : c || null;
+  }
+  if (g.type === "pct") {
+    let p = +g.val; if (!(p >= 0 && p <= 100)) return null;
+    if (three) p -= 5;
+    const [a, b, c] = g.uni === "TU" ? [75, 65, 55] : [80, 70, 60];
+    return p >= a ? "1st" : p >= b ? "2:1" : p >= c ? "2:2" : "3rd";
+  }
+  let gpa = g.type === "letter" ? LETTER_GPA[g.val] : +g.val;
+  if (!(gpa >= 0 && gpa <= 4)) return null;
+  if (three) gpa -= 0.2;
+  return gpa >= 3.6 ? "1st" : gpa >= 3.0 ? "2:1" : gpa >= 2.4 ? "2:2" : "3rd";
+}
+const myClass = () => ukClassOf(S.grade);
+
+/* ---------------- scholarships you can get (from scripts/scholarships.json) ---------------- */
+// Sorts each university's awards for one course: sure (automatic, incl. grade awards you meet), needs a higher grade,
+// apply (competitive), early-payment discounts, and conditional/other ones.
+function awardsFor(r, cls = myClass()) {
+  const res = { sure: [], grade: [], apply: [], early: [], other: [] };
+  if (r.lv !== "Masters") return res;
+  for (const a of UNIS[r.u].sch || []) {
+    if (a.courses && !a.courses.includes(r.p)) { res.other.push({ ...a, why: `Only for ${a.courses.join(", ")}` }); continue; }
+    if (a.kind === "nepal" || a.kind === "auto") res.sure.push(a);
+    else if (a.kind === "grade") (cls && CLS_RANK[cls] >= CLS_RANK[a.min] ? res.sure : res.grade).push(a);
+    else if (a.kind === "apply") res.apply.push(a);
+    else if (a.kind === "early") res.early.push(a);
+    else res.other.push({ ...a, why: a.kind === "pathway" ? "Pathway college only" : "Partner institutions only" });
+  }
+  return res;
+}
+// The best automatic award you qualify for becomes the course's "sure scholarship" (never added on top of another).
+function applyAwards() {
+  for (const r of ROWS) {
+    r.s = r.s0; r.sl = r.sl0; r.aw = null;
+    if (r.lv !== "Masters") continue;
+    const best = awardsFor(r).sure.filter(a => a.amt).sort((a, b) => b.amt - a.amt)[0];
+    if (best && best.amt > r.s0) { r.s = best.amt; r.sl = `${best.name} (${best.kind === "nepal" ? "Nepal, " : ""}${best.kind === "grade" ? "your grade, " : ""}automatic)`; r.aw = best; }
+    r.t = r.f + r.l; r.n = r.t - r.s;
+  }
+}
 
 /* ---------------- live data (fees re-read from university course pages via /api/refresh) ---------------- */
 const LIVE_KEY = "ukmap-live";
@@ -109,6 +165,7 @@ function applyLive() {
     r.f = Math.min(42000, Math.max(15000, Math.round(avg * 0.85 / 500) * 500));
     r.t = r.f + r.l; r.n = r.t - r.s;
   }
+  applyAwards();
 }
 applyLive();
 
@@ -136,6 +193,7 @@ const COLS = [
   { k: "hr", h: "Pay needed / hr<br>(fee + living)", type: "num", get: needHr },
   { k: "rt", h: `Your avg rate<br>${LSYM}/hr`, type: "num", get: rateOf },
   { k: "df", h: "Deficit / yr<br>(− = surplus)", type: "num", get: deficit, money: true },
+  { k: "aw", h: "Scholarships<br>for you", type: "text", get: r => awardsText(r) },
   { k: "o", h: "Other scholarships<br>(competitive)", type: "text", get: r => otherSch(r) },
   { k: "pl", h: "Placement", type: "text", get: r => r.pl },
   { k: "fl", h: "Warnings", type: "text", get: r => r.fl || "" },
@@ -149,6 +207,22 @@ function feeNote(r) {
   if (r.live) return `<a class="sub live" href="${esc(x.src || r.url)}" target="_blank" rel="noopener" title="${esc(x.ctx || "")}">${esc(r.fn)}${r.f !== r.f0 ? ` · was ${money(r.f0)}` : ""} ↗</a>`;
   if (st === "mismatch") return `<span class="sub warn" title="${esc(x.ctx || "")}">${esc(r.fn)}${r.fn ? " · " : ""}page shows ${money(x.fee)} — check</span>`;
   return r.fn ? `<span class="sub">${esc(r.fn)}</span>` : "";
+}
+// Plain text (for filtering/sorting) and HTML (for the table) of the scholarships matched to a course.
+function awardsText(r) {
+  const A = awardsFor(r); if (r.lv !== "Masters") return "";
+  return [...(r.s0 && !A.sure.some(a => a.amt >= r.s0) ? [money(r.s0) + " " + (r.sl0 || "")] : []), ...A.sure.map(a => a.amtText + " " + a.name), ...A.grade.map(a => a.amtText + " if " + a.min), ...A.apply.map(a => a.name), ...A.early.map(a => a.name)].join(" · ");
+}
+function awardsCell(r) {
+  if (r.lv !== "Masters") return `<span class="muted">—</span>`;
+  const A = awardsFor(r), cls = myClass(), out = [];
+  // A scholarship already in the built-in data (and not beaten by a newer award) still counts.
+  if (r.s0 && !A.sure.some(a => a.amt >= r.s0)) out.push(`<span class="awc ok">✓ ${money(r.s0)} <small>${esc(r.sl0 || "Built-in scholarship")}</small></span>`);
+  A.sure.forEach(a => out.push(`<span class="awc ok" title="${esc(a.note)}">✓ ${esc(a.amtText)} <small>${esc(a.name)}${a.kind === "nepal" ? " · Nepal" : ""}</small></span>`));
+  A.grade.forEach(a => out.push(`<span class="awc need" title="${esc(a.note)}">${esc(a.amtText)} <small>needs ${esc(a.min)}${cls ? ` (you ≈ ${esc(cls)})` : " — add your grade"}</small></span>`));
+  if (A.apply.length) out.push(`<span class="awc apply" title="${esc(A.apply.map(a => a.name + ": " + a.amtText).join("\n"))}">+${A.apply.length} to apply for <small>${esc(A.apply.map(a => a.amtText).join(", "))}</small></span>`);
+  A.early.forEach(a => out.push(`<span class="awc early" title="${esc(a.note)}">${esc(a.amtText)} <small>if you pay early</small></span>`));
+  return out.join("") || `<span class="muted">None found</span>`;
 }
 const otherSch = r => r.lv === "PhD" ? (r.o || "") : "Chevening (full)" + (r.o ? "; " + r.o : "");
 
@@ -221,6 +295,40 @@ function activeFilterCount() {
   return n;
 }
 
+/* ---------------- bachelor's grade form (filters card) ---------------- */
+if (!S.grade || typeof S.grade !== "object") S.grade = { uni: "", years: "4", type: "", val: "" };
+function renderGradeInput() {
+  const t = S.grade.type, wrap = $("gValWrap"), v = S.grade.val;
+  const opts = { letter: Object.keys(LETTER_GPA).map(k => [k, `${k} (${LETTER_GPA[k].toFixed(1)})`]),
+                 div: [["dist", "Distinction"], ["first", "First Division"], ["second", "Second Division"], ["third", "Third Division / Pass"]] }[t];
+  wrap.innerHTML = `<label for="gVal">Your result</label>` + (opts
+    ? `<select id="gVal"><option value="">Select…</option>${opts.map(([k, l]) => `<option value="${k}"${k === v ? " selected" : ""}>${l}</option>`).join("")}</select>`
+    : `<input id="gVal" type="number" inputmode="decimal" ${t === "pct" ? 'min="0" max="100" step="0.1" placeholder="e.g. 68"' : t === "gpa" ? 'min="0" max="4" step="0.01" placeholder="e.g. 3.2"' : 'disabled placeholder="—"'} value="${esc(v)}">`);
+  $("gVal").addEventListener("input", e => { S.grade.val = e.target.value; gradeChanged(); });
+}
+function syncGradeForm() {
+  $("gUni").value = S.grade.uni; $("gYears").value = S.grade.years || "4"; $("gType").value = S.grade.type;
+  renderGradeInput(); syncGradeOut();
+}
+function syncGradeOut() {
+  const g = S.grade, cls = ukClassOf(g), out = $("gradeOut");
+  out.hidden = !cls;
+  if (!cls) return;
+  const what = g.type === "pct" ? `${g.val}%` : g.type === "gpa" ? `CGPA ${g.val}` : g.type === "letter" ? `grade ${g.val}` : $("gVal").selectedOptions?.[0]?.textContent;
+  const notes = [];
+  if (g.type === "div" && g.val === "first") notes.push("First Division can be a 2:1 at 65%+ — enter your percentage for a more exact result.");
+  if (g.years === "3") notes.push("From a 3-year degree. Some universities (e.g. Edinburgh, QUB, Westminster, UCLan) need a 4-year bachelor's or a master's.");
+  if (cls === "3rd") notes.push("Most UK master's ask for at least a 2:2 equivalent.");
+  if (!g.uni && g.type === "pct") notes.push("Pick your university — Tribhuvan percentages convert more generously.");
+  out.innerHTML = `<div class="go-main"><span class="go-k">UK equivalent</span><b class="go-cls cls-${cls.replace(":", "")}">${cls === "3rd" ? "Below 2:2" : cls}</b></div>
+    <p class="go-sub">${esc(CLS_LABEL[cls])} · ${esc(what || "")}${g.uni ? " from " + esc(NEPAL_UNI[g.uni]) : ""}, ${g.years === "3" ? "3" : "4"}-year degree. Typical conversion — each university sets its own.</p>
+    ${notes.map(n => `<p class="go-note">${esc(n)}</p>`).join("")}`;
+}
+function gradeChanged() { save(); syncGradeOut(); applyLive(); fitMaxCost(); update(); }
+$("gUni").addEventListener("input", e => { S.grade.uni = e.target.value; gradeChanged(); });
+$("gYears").addEventListener("input", e => { S.grade.years = e.target.value; gradeChanged(); });
+$("gType").addEventListener("input", e => { S.grade.type = e.target.value; S.grade.val = ""; renderGradeInput(); gradeChanged(); });
+
 /* ---------------- display currency ---------------- */
 const FX_KEY = "ukmap-fx";
 try { const c = JSON.parse(localStorage.getItem(FX_KEY) || "null"); if (c && c.rates && c.rates.GBP) FX = c; } catch (e) {}
@@ -246,6 +354,7 @@ async function loadRates() {
   } catch (e) { /* keep the built-in rates */ }
 }
 syncCurrency();
+syncGradeForm();
 
 /* ---------------- appearance: theme, glass transparency, blur ---------------- */
 // Transparency 0 → nearly solid windows (tint .94); 100 → almost clear (tint .08).
@@ -537,6 +646,7 @@ function renderTable() {
     <td class="num hr ${h > 20 ? "hi" : ""}"><b>${LSYM}${isFinite(h) ? h.toFixed(2) : "—"}</b><span class="sub">needs ~${money(r100(need(r)))}/yr</span></td>
     <td class="rate"><input type="number" min="0" max="200" step="0.01" data-id="${r.id}" class="${r.id in rowRate ? "ovr" : ""}" value="${rateOf(r).toFixed(2)}" aria-label="Hourly rate for ${esc(r.u)}"></td>
     <td class="num def ${d > 0 ? "short" : "ok"}" data-def="${r.id}">${defText(d)}</td>
+    <td class="aw">${awardsCell(r)}</td>
     <td>${esc(otherSch(r))}</td>
     <td class="pl ${r.pl.startsWith("Yes") ? "yes" : ""}">${esc(r.pl)}</td>
     <td class="fl ${r.fl ? "has" : ""}">${esc(r.fl || "")}</td>
@@ -792,6 +902,30 @@ function payHTML(u) {
     <p class="pp-src"><a href="${esc(P.src)}" target="_blank" rel="noopener">University's payment page ↗</a>${when ? ` · checked ${when}` : ""} · confirm with your offer letter</p>
   </div></details>`;
 }
+// Scholarships for this university, matched to your grade (if given) and to its courses.
+function awardsHTML(u) {
+  const rows = ROWS.filter(r => r.u === u && r.lv === "Masters"), list = UNIS[u].sch || [], cls = myClass();
+  const when = window.UNIDATA.schChecked ? new Date(window.UNIDATA.schChecked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+  const gradeChip = cls ? `<span class="pp-chip">Your grade ≈ ${cls === "3rd" ? "below 2:2" : cls}</span>` : "";
+  const head = `<summary><span class="pp-ico aw-ico" aria-hidden="true">★</span><span>Scholarships for you</span>${gradeChip}</summary>`;
+  if (!list.length) return `<details class="pp" open>${head}<p class="pp-none">No Nepal-specific or automatic scholarships found on this university's pages${rows.some(r => r.s0) ? " (the course card shows any built-in scholarship)" : ""}. Check their scholarships page and the competitive awards listed with each course.</p></details>`;
+  const status = a => {
+    if (a.courses && !rows.some(r => a.courses.includes(r.p))) return ["muted", `Only for ${a.courses.join(", ")}`];
+    if (a.kind === "nepal") return ["ok", "✓ Automatic for Nepal"];
+    if (a.kind === "auto") return ["ok", "✓ Automatic"];
+    if (a.kind === "grade") return cls ? (CLS_RANK[cls] >= CLS_RANK[a.min] ? ["ok", `✓ Automatic — you meet the ${a.min}`] : ["need", `Needs a ${a.min} — you're ≈ ${cls === "3rd" ? "below 2:2" : cls}`]) : ["need", `Needs a ${a.min} — add your grade in Filters`];
+    if (a.kind === "apply") return ["apply", "Apply · competitive"];
+    if (a.kind === "early") return ["early", "Discount for paying early"];
+    if (a.kind === "pathway") return ["muted", "Pathway college only"];
+    return ["muted", "Partner institutions only"];
+  };
+  return `<details class="pp" open>${head}<div class="pp-body">
+    ${list.map(a => { const [c, t] = status(a); return `<div class="aw-row"><div class="aw-top"><b>${esc(a.name)}</b><span class="aw-amt">${esc(a.amtText)}</span></div>
+      <span class="aw-st ${c}">${esc(t)}${a.courses && rows.some(r => a.courses.includes(r.p)) ? ` · ${esc(a.courses.join(", "))}` : ""}${a.deadline ? ` · deadline ${esc(a.deadline)}` : ""}</span>
+      <p class="aw-note">${esc(a.note)} <a href="${esc(a.src)}" target="_blank" rel="noopener">Source ↗</a></p></div>`; }).join("")}
+    <p class="pp-src">Automatic awards you qualify for are counted in each course's "Sure scholarship"${when ? ` · checked ${when}` : ""} · confirm terms with the university</p>
+  </div></details>`;
+}
 function renderCard(u, withPlace) {
   const city = $("city").value, U = UNIS[u];
   const rs = LIST.filter(r => r.u === u);
@@ -800,6 +934,7 @@ function renderCard(u, withPlace) {
   $("cardTitle").textContent = u;
   $("cardSub").textContent = [U.c, f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
+  $("cardAwards").innerHTML = awardsHTML(u);
   $("cardPay").innerHTML = payHTML(u);
   $("cardCourses").innerHTML = (rs.length ? rs : []).sort((a, b) => a.n - b.n).map(courseHTML).join("") || `<p class="gp-empty">No courses here match the current filters.</p>`;
   if (withPlace) loadPlace(u);

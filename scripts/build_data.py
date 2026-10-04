@@ -49,7 +49,12 @@ PAY = json.load(open(os.path.join(HERE, "payment_policies.json")))
 for u in unis:
     if u in PAY: unis[u]["pay"] = PAY[u]
 
-data = {"rows": out, "unis": unis, "cities": GEO, "payChecked": PAY.get("_checked")}
+# Scholarships Nepali students can get (Nepal-specific, automatic, grade-based, apply, early-payment).
+SCH = json.load(open(os.path.join(HERE, "scholarships.json")))
+for u in unis:
+    if u in SCH: unis[u]["sch"] = SCH[u]
+
+data = {"rows": out, "unis": unis, "cities": GEO, "payChecked": PAY.get("_checked"), "schChecked": SCH.get("_checked")}
 
 # Allowlist for api/refresh.js: the only pages the live refresher will fetch, grouped by university.
 sources = {}

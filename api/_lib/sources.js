@@ -54,7 +54,8 @@ export default {
   "https://www.bath.ac.uk/courses/postgraduate-2019/taught-postgraduate-courses/msc-human-computer-interaction/"
  ],
  "University of Exeter": [
-  "https://www.exeter.ac.uk/masters-degrees/msc-advanced-computer-science/"
+  "https://www.exeter.ac.uk/masters-degrees/msc-advanced-computer-science/",
+  "https://www.exeter.ac.uk/masters-degrees/msc-computer-science/"
  ],
  "University of Liverpool": [
   "https://www.liverpool.ac.uk/courses/advanced-computer-science-with-a-year-in-industry-msc",
