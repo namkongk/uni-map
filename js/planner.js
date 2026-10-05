@@ -224,10 +224,10 @@ const X = `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8
 const LISTS = {
   inst: {
     el: "instRows",
-    get head() { return `<div class="rh inst5"><span>Due date</span><span>Amount (${P.instMode === "pct" ? "% of fee" : "£"})</span><span>Extra cost (£) <i class="opt">optional</i></span><span>Label</span><span class="r">Total</span><span></span></div>`; },
+    get head() { return `<div class="rh inst5"><span>Due date</span><span>Amount (${P.instMode === "pct" ? "% of still to pay" : "£"})</span><span>Extra cost (£) <i class="opt">optional</i></span><span>Label</span><span class="r">Total</span><span></span></div>`; },
     row: (r, i) => `<div class="row inst5" data-i="${i}">
       <input type="date" data-f="date" value="${esc(r.date)}" aria-label="Installment ${i + 1} due date">
-      <input type="number" data-f="amount" min="0" ${P.instMode === "pct" ? 'max="100" step="0.5"' : 'step="10"'} inputmode="decimal" value="${esc(r.amount)}" placeholder="${P.instMode === "pct" ? "Amount %" : "Amount"}" aria-label="Installment ${i + 1} amount (${P.instMode === "pct" ? "% of fee after scholarship" : "£"})">
+      <input type="number" data-f="amount" min="0" ${P.instMode === "pct" ? 'max="100" step="0.5"' : 'step="10"'} inputmode="decimal" value="${esc(r.amount)}" placeholder="${P.instMode === "pct" ? "Amount %" : "Amount"}" aria-label="Installment ${i + 1} amount (${P.instMode === "pct" ? "% of what you still have to pay" : "£"})">
       <input type="number" data-f="extra" min="0" step="5" inputmode="decimal" value="${esc(r.extra ?? "")}" placeholder="Extra (opt.)" aria-label="Installment ${i + 1} extra cost (£, optional), e.g. a fee paid with it">
       <input data-f="label" value="${esc(r.label)}" placeholder="Installment ${i + 1}" maxlength="40" aria-label="Installment ${i + 1} label">
       <output class="tot" data-out="it${i}" aria-label="Installment ${i + 1} total"></output>
@@ -345,7 +345,7 @@ FIELDS.forEach(f => { $(f).addEventListener("input", () => onField(f)); $(f).add
 
 // Fit the installments to what's owed (scale them, or split evenly if they're empty).
 function fitInst() {
-  const target = P.instMode === "pct" ? pctOf(owed()) : owed();
+  const target = P.instMode === "pct" ? (owed() > 0 ? 100 : 0) : owed();
   const cur = P.inst.map(x => num(x.amount)), sum = cur.reduce((a, b) => a + b, 0);
   if (!P.inst.length || target <= 0) return;
   const dp = P.instMode === "pct" ? 100 : 1;
@@ -375,7 +375,8 @@ function syncFolds() {
 /* ---------------- £ / % switches (already paid, installments) ---------------- */
 // Percentages are of the fee after scholarship. Switching converts what's typed so the money doesn't change.
 const r2 = n => Math.round(n * 100) / 100;
-const pctOf = v => netFee() ? v / netFee() * 100 : 0;
+const pctOf = v => netFee() ? v / netFee() * 100 : 0;          // "Already paid" in %: share of the fee after scholarship
+const pctOw = v => owed() ? v / owed() * 100 : 0;               // installments in %: share of what's still to pay
 const pctTxt = v => r2(v).toLocaleString("en-GB", { maximumFractionDigits: 2 }) + "%";
 function syncModes() {
   [["paidMode", P.paidMode], ["instMode", P.instMode]].forEach(([id, v]) =>
@@ -383,7 +384,7 @@ function syncModes() {
   $("paidUnit").textContent = P.paidMode === "pct" ? "(% of fee)" : "(£)";
   $("paid").step = P.paidMode === "pct" ? "0.5" : "10";
   $("instModeHint").hidden = P.instMode !== "pct";
-  $("instModeHint").textContent = `Enter each installment as a percentage of your fee after scholarship${netFee() ? ` (${gbp(netFee())})` : " — fill in the fee above first"}.`;
+  $("instModeHint").textContent = `Enter each installment as a percentage of what you still have to pay${owed() ? ` (${gbp(owed())})` : " — fill in the fee above first"}.`;
 }
 function setMode(which, v) {
   if (P[which] === v) return;
@@ -392,7 +393,7 @@ function setMode(which, v) {
     if (canConvert && P.paid !== "") P.paid = r2(v === "pct" ? pctOf(paidGBP()) : paidGBP());
     P.paidMode = v; $("paid").value = P.paid;
   } else {
-    if (canConvert) P.inst.forEach(x => { if (x.amount !== "") x.amount = r2(v === "pct" ? pctOf(instGBP(x.amount)) : instGBP(x.amount)); });
+    if (canConvert) P.inst.forEach(x => { if (x.amount !== "") x.amount = r2(v === "pct" ? pctOw(instGBP(x.amount)) : instGBP(x.amount)); });
     P.instMode = v; renderList("inst");
   }
   unlink(); syncModes(); save(); refresh();
@@ -402,12 +403,12 @@ function setMode(which, v) {
 /* split what's owed into equal monthly installments */
 $("splitInst").addEventListener("click", () => {
   const box = $("splitBox"); box.hidden = !box.hidden;
-  $("splitAmt").textContent = gbp(owed()) + (P.instMode === "pct" && netFee() ? ` (${pctTxt(pctOf(owed()))})` : "");
+  $("splitAmt").textContent = gbp(owed()) + (P.instMode === "pct" && owed() ? " (100%)" : "");
   if (!$("splitFrom").value) { const d = new Date(); d.setMonth(d.getMonth() + 1, 1); $("splitFrom").value = d.toISOString().slice(0, 10); }
 });
 $("splitGo").addEventListener("click", () => {
   const n = Math.min(24, Math.max(1, Math.round(num($("splitN").value)))), from = $("splitFrom").value;
-  const total = P.instMode === "pct" ? pctOf(owed()) : owed();
+  const total = P.instMode === "pct" ? (owed() > 0 ? 100 : 0) : owed();
   if (!from || total <= 0) return;
   const each = Math.floor(total / n * 100) / 100;
   P.inst = Array.from({ length: n }, (_, i) => {
@@ -428,7 +429,7 @@ $("resetPlan").addEventListener("click", e => {
 /* ---------------- the projection ---------------- */
 const netFee = () => Math.max(0, num(P.fee) - num(P.scholarship));               // fee after scholarship
 const paidGBP = () => P.paidMode === "pct" ? netFee() * num(P.paid) / 100 : num(P.paid);
-const instGBP = v => P.instMode === "pct" ? netFee() * num(v) / 100 : num(v);
+const instGBP = v => P.instMode === "pct" ? owed() * num(v) / 100 : num(v);
 const owed = () => Math.max(0, netFee() - paidGBP());
 const costPerMonth = c => num(c.amount) * (c.freq === "week" ? WPM : c.freq === "year" ? 1 / 12 : 1);
 const jobActive = (j, mi) => (!j.from || mIdx(j.from) <= mi) && (!j.to || mIdx(j.to) >= mi);
@@ -483,7 +484,7 @@ function compute() {
   const instSum = all.filter(x => x.kind === "inst").reduce((a, x) => a + x.tuition, 0);
   const instExtra = all.filter(x => x.kind === "inst").reduce((a, x) => a + x.extra, 0);
   const extraSum = sumOf("extra") + instExtra, nExtra = all.filter(x => x.kind === "extra" || x.extra > 0).length;
-  const money = v => P.instMode === "pct" && netFee() ? `${pctTxt(pctOf(v))} = ${gbp(v)}` : gbp(v);
+  const money = v => P.instMode === "pct" && ow ? `${pctTxt(pctOw(v))} = ${gbp(v)}` : gbp(v);
   const avg = k => M.reduce((a, m) => a + m[k], 0) / Math.max(1, M.length);
   const net = avg("net"), gross = avg("gross"), flow = avg("flow");
   const endBal = M.length ? M[M.length - 1].end : num(P.savings);
@@ -546,7 +547,7 @@ function compute() {
   P.inst.forEach((x, i) => {
     const el = document.querySelector(`[data-out="it${i}"]`); if (!el) return;
     const t = instGBP(x.amount), e = num(x.extra);
-    el.innerHTML = t + e ? `<b>${gbp(t + e)}</b>${e && t ? `<small>${gbp(t)} + ${gbp(e)}</small>` : P.instMode === "pct" && t ? `<small>${pctTxt(num(x.amount))} of fee</small>` : ""}` : `<span class="muted">—</span>`;
+    el.innerHTML = t + e ? `<b>${gbp(t + e)}</b>${e && t ? `<small>${gbp(t)} + ${gbp(e)}</small>` : P.instMode === "pct" && t ? `<small>${pctTxt(num(x.amount))} of still to pay</small>` : ""}` : `<span class="muted">—</span>`;
   });
   const instAll = P.inst.reduce((a, x) => a + instGBP(x.amount) + num(x.extra), 0);
   $("instTotal").innerHTML = P.inst.length ? `Total <b>${gbp(instAll)}</b>${instExtra ? ` <small>(incl. ${gbp(instExtra)} extra costs)</small>` : ""}` : "";
@@ -554,7 +555,7 @@ function compute() {
     ? (netFee() ? `= ${gbp(paidGBP())} of ${gbp(netFee())} (fee after scholarship)` : "Enter your fee first to turn this into pounds")
     : P.sched && P.schedPaid?.dep && num(P.paid) ? `Includes the ${gbp(P.schedPaid.dep)} ${P.schedPaid.depLabel}${P.schedPaid.past ? ` and ${gbp(P.schedPaid.past)} due before today` : ""} · ${pctTxt(pctOf(num(P.paid)))} of your fee after scholarship`
     : (netFee() && num(P.paid) ? `${pctTxt(pctOf(num(P.paid)))} of your fee after scholarship · your deposit and anything else paid so far` : "Your deposit and anything else paid so far");
-  $("instModeHint").textContent = `Enter each installment as a percentage of your fee after scholarship${netFee() ? ` (${gbp(netFee())})` : " — fill in the fee above first"}.`;
+  $("instModeHint").textContent = `Enter each installment as a percentage of what you still have to pay${owed() ? ` (${gbp(owed())})` : " — fill in the fee above first"}.`;
   $("extraTotal").innerHTML = sumOf("extra") ? `Total <b>${gbp(sumOf("extra"))}</b>` : "";
   $("extraSum").textContent = P.extras.length ? `${P.extras.length} · ${gbp(P.extras.reduce((a, x) => a + num(x.amount), 0))}` : "visa, health surcharge, graduation…";
 
@@ -575,7 +576,7 @@ function compute() {
     <div class="kpi"><span>Payments on time</span><b class="${R.inst.length && !allPaid ? "neg" : ""}">${R.inst.length ? `${okCount} of ${R.inst.length}` : "—"}</b><small>${R.inst.length ? (allPaid ? "all covered" : `first short ${dLabel(firstShort.date).replace(/ \d{4}$/, "")}`) : "none scheduled"}</small></div>
     <div class="kpi"><span>Lowest point</span><b class="${low.end < -0.5 ? "neg" : ""}">${gbp(low.end)}</b><small>${low.mi >= R.S0 ? mLabel(low.mi) : "today"}</small></div>
     <div class="kpi"><span>At the end</span><b class="${endBal < -0.5 ? "neg" : ""}">${gbp(endBal)}</b><small>${mLabel(lastM)}</small></div>
-    <nav class="jump" aria-label="Jump to"><a href="#sec-course">Course</a><a href="#sec-fees">Tuition</a><a href="#sec-living">Living</a><a href="#sec-income">Income</a><span aria-hidden="true"></span><a href="#hero">Verdict</a><a href="#h-pay">Payments</a><a href="#h-chart">Chart</a></nav>
+    <nav class="jump" aria-label="Jump to"><a href="#sec-course">Course</a><a href="#sec-fees">Tuition</a><a href="#sec-living">Living</a><a href="#sec-income">Income</a><span aria-hidden="true"></span><a href="#hero">Verdict</a><a href="#h-chart">Chart</a><a href="#h-pay">Payments</a></nav>
     <a class="btn-plain sm to-res" href="#results">Details ↓</a>`;
 
   /* section headers: a live total for each part of the plan */
@@ -613,7 +614,7 @@ function compute() {
 
   /* installment list */
   $("instOut").innerHTML = R.inst.length ? `<ul class="inst-list">${R.inst.map(d => `
-      <li class="${d.ok ? "ok" : "bad"}"><div class="il-main"><b>${esc(d.label)}</b><span>${dLabel(d.date)} · ${d.kind === "extra" ? "Additional fee" : "Installment"}${d.pct != null ? ` · ${pctTxt(d.pct)} of fee` : ""}${d.kind === "inst" && d.extra ? ` · ${gbp(d.tuition)} + ${gbp(d.extra)} extra cost` : ""}</span></div>
+      <li class="${d.ok ? "ok" : "bad"}"><div class="il-main"><b>${esc(d.label)}</b><span>${dLabel(d.date)} · ${d.kind === "extra" ? "Additional fee" : "Installment"}${d.pct != null ? ` · ${pctTxt(d.pct)} of still to pay` : ""}${d.kind === "inst" && d.extra ? ` · ${gbp(d.tuition)} + ${gbp(d.extra)} extra cost` : ""}</span></div>
         <div class="il-amt">${gbp(d.amount)}</div>
         <div class="il-st"><span class="pill ${d.ok ? "good" : "bad"}"><span aria-hidden="true">${d.ok ? "✓" : "⚠"}</span> ${d.ok ? "Covered" : "Short " + gbp(d.short)}</span>
           <small>${gbp(d.avail)} in hand on the day</small></div>
