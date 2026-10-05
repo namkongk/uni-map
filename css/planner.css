@@ -20,7 +20,8 @@ html:has(body.page){height:auto;overflow-x:hidden}
 
 /* layout: inputs left, results right (results stay in view while you type) */
 .pl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:var(--gap);align-items:start;
-  max-width:1320px;margin:0 auto;padding:calc(var(--hdr) + 28px) 16px 40px}
+  max-width:1320px;margin:0 auto;padding:calc(var(--hdr) + 26px) 16px 40px}
+.sumbar{grid-column:1/-1}
 .pl-inputs,.pl-results{display:flex;flex-direction:column;gap:var(--gap);min-width:0}
 /* Both columns scroll with the page, so nothing is clipped at the bottom. */
 .pl-card{position:relative;padding:18px 20px 20px;border-radius:var(--r-xl);display:flex;flex-direction:column;gap:12px;animation:float-in .5s var(--spring) both}
@@ -107,6 +108,7 @@ html:has(body.page){height:auto;overflow-x:hidden}
 .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 11px;font-size:12px;font-weight:700;white-space:nowrap}
 .pill.good{background:var(--green);color:var(--green-ink)}
 .pill.bad{background:var(--red);color:var(--red-ink)}
+.pill:not(.good):not(.bad){background:var(--fill);color:var(--ink-2)}
 .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .tile{background:rgb(var(--tint) / calc(var(--glass-a) * .6 + .08));border-radius:var(--r-md);padding:10px 12px;display:flex;flex-direction:column;gap:2px;
   box-shadow:0 0 0 .5px var(--line), inset 0 1px 0 rgb(var(--rim) / calc(var(--rim-a) * .6))}
@@ -216,3 +218,82 @@ details.tbl summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--
 .prefill ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.5;display:grid;gap:3px}
 .prefill .muted{color:var(--muted)}
 .prefill select{font:inherit;font-weight:600;color:var(--accent);background:var(--accent-soft);border:0;border-radius:8px;padding:1px 6px;cursor:pointer}
+
+/* ---------- always-visible summary bar ---------- */
+.sumbar{position:sticky;top:calc(var(--hdr) + 20px);z-index:20;display:flex;align-items:center;gap:6px 22px;flex-wrap:wrap;
+  padding:10px 14px 10px 16px;border-radius:var(--r-xl);min-height:var(--bar-h)}
+.sumbar .kpi{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.sumbar .kpi span{font-size:10.5px;font-weight:650;color:var(--muted);letter-spacing:.02em}
+.sumbar .kpi b{font-size:17px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.sumbar .kpi small{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.sumbar .to-res{margin-left:auto;display:none;text-decoration:none}
+.jump{margin-left:auto;display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.jump a{font-size:12.5px;font-weight:600;color:var(--ink-2);text-decoration:none;padding:5px 9px;border-radius:999px;transition:background .2s,color .2s}
+.jump a:hover{background:var(--fill);color:var(--ink)}
+.jump span{width:1px;height:16px;background:var(--line);margin:0 5px}
+.pl-card,.pl-card h2{scroll-margin-top:calc(var(--hdr) + 104px)}
+details.more > summary{flex-wrap:wrap}
+.sumbar .pill{font-size:12.5px;padding:4px 12px}
+
+/* ---------- section cards: header with a live total + collapse ---------- */
+.card-h{display:flex;align-items:center;gap:10px}
+.card-h h2{flex:none}
+.h-sum{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fold{display:grid;place-items:center;width:28px;height:28px;border:0;border-radius:50%;background:var(--fill);color:var(--ink-2);cursor:pointer;flex:none;transition:transform .3s var(--spring), background .2s}
+.fold svg{width:15px;height:15px}
+.fold:hover{background:var(--fill-2);color:var(--ink)}
+.pl-card.shut .fold{transform:rotate(-90deg)}
+.pl-card.shut{padding-bottom:18px}
+.card-b{display:flex;flex-direction:column;gap:12px}
+.card-b.grid2{display:grid}
+.warn-dot{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--amber);color:var(--amber-ink);font-size:11px;font-weight:800;margin-left:3px;vertical-align:1px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:end}
+.grid3 + .hint{margin-top:-6px}
+.sub-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;padding-top:12px;border-top:1px solid var(--line)}
+.sub-h h3{margin:0;font-size:14px;letter-spacing:-.01em}
+.field.savings{max-width:360px}
+
+/* university payment plan note */
+.sched{display:flex;align-items:center;gap:10px;font-size:12.5px;line-height:1.45;border-radius:var(--r-sm);padding:9px 11px;background:var(--fill);color:var(--ink-2)}
+.sched > div{flex:1;min-width:0}
+.sched b{color:var(--ink)}
+.sched.on{background:var(--accent-soft);align-items:flex-start}
+.sched-ic{display:grid;place-items:center;flex:none;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;margin-top:1px}
+.sched .btn-plain{flex:none}
+.check .chk-act{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.check .chk-act .btn-plain{background:rgb(var(--tint) / .75)}
+
+/* other one-off costs (folded by default) */
+details.more{border-top:1px solid var(--line);padding-top:10px}
+details.more > summary{cursor:pointer;display:flex;align-items:baseline;gap:8px;font-size:14px;font-weight:650;list-style:none}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .25s;align-self:center;margin-right:2px}
+details.more[open] > summary::before{transform:rotate(45deg)}
+details.more > summary small{font-size:12px;font-weight:500;color:var(--muted)}
+details.more[open]{display:flex;flex-direction:column;gap:10px}
+details.more .sub{margin:0}
+
+/* verdict */
+.verdict{margin:0;font-size:19px;line-height:1.35;font-weight:600;letter-spacing:-.015em;color:var(--ink)}
+.verdict b.pos{color:var(--green-ink)} .verdict b.neg{color:var(--red-ink)}
+
+@media (max-width:1060px){
+  .sumbar{position:fixed;top:auto;bottom:max(10px,env(safe-area-inset-bottom));left:10px;right:10px;gap:4px 16px;padding:8px 10px 8px 12px;min-height:0;
+    box-shadow:var(--shadow)}
+  .sumbar .to-res{display:inline-flex}
+  .jump{display:none}
+  .pl-card,.pl-card h2{scroll-margin-top:calc(var(--hdr) + 24px)}
+  .pl{padding-bottom:110px}
+}
+@media (max-width:620px){
+  .grid3{grid-template-columns:1fr 1fr}
+  .grid3 .field:last-child{grid-column:1/-1}
+  .sumbar .kpi:nth-of-type(3),.sumbar .kpi:nth-of-type(4){display:none}
+  .sumbar .kpi b{font-size:15px}
+  .sumbar{flex-wrap:nowrap;gap:12px;padding:8px 8px 8px 10px}
+  .sumbar .kpi small{display:none}
+  .sumbar .pill{padding:4px 9px;max-width:38%;overflow:hidden;text-overflow:ellipsis}
+  .sumbar .to-res{padding:6px 10px;white-space:nowrap}
+  .verdict{font-size:17px}
+  .card-h h2{font-size:15px}
+}

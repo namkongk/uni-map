@@ -31,7 +31,8 @@ const DEF_COSTS = [
 ];
 function freshPlan() {
   const p = { country: "uk", uni: "", course: "", fee: "", scholarship: "", paid: "", paidMode: "gbp", savings: "", start: thisMonth, end: mStr(mIdx(thisMonth) + 11),
-    inst: [], instMode: "gbp", extras: [], costs: DEF_COSTS.map(c => ({ ...c })), jobs: [] };
+    inst: [], instMode: "gbp", extras: [], costs: DEF_COSTS.map(c => ({ ...c })), jobs: [],
+    intake: "", sched: false, feeAuto: true, schAuto: true, folded: {} };
   // Start with the jobs already entered on the map page, if any.
   try {
     const s = JSON.parse(localStorage.getItem("ukmap-state") || "{}");
@@ -54,17 +55,16 @@ const DATA = window.UNIDATA || { rows: [], unis: {} };
 const UNI_NAMES = Object.keys(DATA.unis).sort((a, b) => a.localeCompare(b));
 $("uniList").innerHTML = UNI_NAMES.map(u => `<option value="${esc(u)}"></option>`).join("");
 const coursesOf = u => DATA.rows.filter(r => r.u === u);
+const courseRow = () => coursesOf(P.uni).find(x => x.p === P.course);
 function fillCourses() {
-  const rs = coursesOf(P.uni);
+  const rs = coursesOf(P.uni), r = courseRow();
   $("courseList").innerHTML = rs.map(r => `<option value="${esc(r.p)}">${esc(r.lv)} · ~${gbp(r.f)}/yr</option>`).join("");
-  const r = rs.find(x => x.p === P.course);
-  $("courseHint").textContent = r ? `Listed fee ~${gbp(r.f)}/yr${r.fn ? ` (${r.fn})` : ""} · typical living ~${gbp(r.l)}/yr (≈${gbp(r.l / 12)}/month)` : rs.length ? `${rs.length} course${rs.length === 1 ? "" : "s"} on the map for this university — pick one to fill in its listed fee.` : "";
+  $("courseHint").textContent = r ? `Listed fee ~${gbp(r.f)}/yr${r.fn ? ` (${r.fn})` : ""} · typical living here ~${gbp(r.l / 12)}/month · intakes: ${r.i}`
+    : rs.length ? `${rs.length} course${rs.length === 1 ? "" : "s"} on the map for this university — pick one to fill in its fee.` : "";
+  fillIntakes();
 }
 
-/* ---------------- prefill from the map ----------------
-   "Plan my budget" on a course card opens planner.html?u=&p=&f=&s=&sl=&l=&in=[&rate=] (in = the intake picked there, "YYYY-MM"). We fill in the fee and sure scholarship
-   (as shown on the map), the university's payment schedule (pf in payment_policies.json), living costs scaled to the
-   city's typical cost, and the jobs from the map's Work card. The previous plan is kept so it can be undone. */
+/* ---------------- intakes & the university's payment schedule ---------------- */
 const iso = (y, m, d) => `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 const todayIso = iso(now.getFullYear(), now.getMonth() + 1, now.getDate());
 // A course's intakes (e.g. "Sept, Jan") as start months, from the one that began up to 3 months ago onwards.
@@ -78,47 +78,68 @@ function intakeChoices(u, p) {
   for (let mi = m0; mi < m0 + 16 && out.length < 4; mi++) if (ms.includes(mi % 12)) out.push({ v: mStr(mi), mi, y: Math.floor(mi / 12), m: mi % 12, name: mLabel(mi, true) });
   return out;
 }
+const curIntake = () => intakeChoices(P.uni, P.course).find(c => c.v === P.intake);
+function fillIntakes() {
+  const cs = intakeChoices(P.uni, P.course);
+  if (!cs.some(c => c.v === P.intake)) P.intake = cs[0]?.v || "";
+  $("intake").innerHTML = cs.map(c => `<option value="${c.v}"${c.v === P.intake ? " selected" : ""}>${c.name}</option>`).join("");
+}
 // Universities publish dates for their September and January intakes; October starts follow the September
 // schedule and February starts the January one. Other intakes get the deposit only.
 const schedKey = m => m === 8 || m === 9 ? "sep" : m === 0 || m === 1 ? "jan" : null;
-// The installments for one intake, in £, from the fee after scholarship.
-function scheduleFor(u, intake, net, mapDepPct) {
-  const pf = DATA.unis[u]?.pay?.pf, rows = [], key = schedKey(intake.m);
-  const at = (md, y) => {   // "MM-DD" (or "~MM-DD" when only the month/term is known) → a date in this intake's year
+const uniPF = () => DATA.unis[P.uni]?.pay?.pf;
+// What the university publishes for the chosen intake: a deposit and/or installment dates.
+// Without any policy, a deposit % carried over from the map counts as an estimate.
+function schedInfo() {
+  const pf = uniPF(), it = curIntake(), key = it && schedKey(it.m);
+  const dates = !!(pf && key && pf[key]?.length), dep = pf ? pf.dep != null : !!(P.pre && P.pre.u === P.uni && P.pre.depPct);
+  return { pf, it, key, dates, dep, any: !!it && (dates || dep), otherDates: !!(pf && (pf.sep || pf.jan)) && !dates };
+}
+// The deposit and installments for the chosen intake, in £, from the fee after scholarship.
+function scheduleFor(net) {
+  const { pf, it, key } = schedInfo(), rows = [];
+  if (!it) return { dep: 0, depLabel: "", rows };
+  const at = md => {   // "MM-DD" (or "~MM-DD" when only the month/term is known) → a date in this intake's year
     const approx = md[0] === "~", [mm, dd] = md.replace("~", "").split("-").map(Number);
-    const yr = key === "sep" ? (mm >= 7 ? y : y + 1) : (mm >= 10 ? y - 1 : y);
+    const yr = key === "sep" ? (mm >= 7 ? it.y : it.y + 1) : (mm >= 10 ? it.y - 1 : it.y);
     return { date: iso(yr, mm, dd), approx };
   };
-  let dep = 0, depLabel = "Deposit (before CAS)";
+  let dep = 0, depLabel = "pre-CAS deposit";
   if (pf?.dep != null) dep = typeof pf.dep === "string" ? net * parseFloat(pf.dep) / 100 : pf.dep;
-  else if (!pf && mapDepPct) { dep = net * mapDepPct / 100; depLabel = `Deposit (${mapDepPct}%, your estimate on the map)`; }
+  else if (!pf && P.pre?.u === P.uni && P.pre.depPct) { dep = net * P.pre.depPct / 100; depLabel = `deposit (your ${P.pre.depPct}% estimate from the map)`; }
   dep = Math.min(net, Math.round(dep));
-  // Deposit: before your CAS, roughly two months before the course starts.
-  if (dep > 0) rows.push({ date: iso(Math.floor((intake.mi - 2) / 12), (intake.mi - 2) % 12 + 1, 15), approx: true, amount: dep, label: depLabel });
   const sched = (key && pf?.[key]) || [];
   if (sched.length) {
     const base = pf.bal ? net - dep : net;
-    let owe = sched.map(x => x[1] / 100 * base), left = pf.bal ? 0 : dep;
-    owe = owe.map(a => { const t = Math.min(a, left); left -= t; return a - t; });   // the deposit counts towards the first payments
-    const target = net - dep;
-    let amts = owe.map(a => Math.round(a));
-    const lastPos = amts.map(a => a > 0).lastIndexOf(true);
-    if (lastPos >= 0) amts[lastPos] += Math.round(target) - amts.reduce((a, b) => a + b, 0);   // rounding goes on the last one
-    const n = sched.length;
-    sched.forEach((x, k) => { if (amts[k] > 0) rows.push({ ...at(x[0], intake.y), amount: amts[k], label: x[2] || (n === 1 ? "Balance" : `Installment ${k + 1} of ${n}`) }); });
+    let left = pf.bal ? 0 : dep;
+    const owe = sched.map(x => x[1] / 100 * base).map(a => { const t = Math.min(a, left); left -= t; return a - t; });   // the deposit counts towards the first payments
+    const amts = owe.map(a => Math.round(a)), lastPos = amts.map(a => a > 0).lastIndexOf(true);
+    if (lastPos >= 0) amts[lastPos] += Math.round(net - dep) - amts.reduce((a, b) => a + b, 0);   // rounding goes on the last one
+    sched.forEach((x, k) => { if (amts[k] > 0) { const d = at(x[0]); rows.push({ ...d, amount: amts[k], label: (x[2] || (sched.length === 1 ? "Balance" : `Installment ${k + 1} of ${sched.length}`)) + (d.approx ? " · date ≈" : "") }); } });
   }
-  return rows.map(r => ({ date: r.date, amount: r.amount, extra: "", label: r.label + (r.approx ? " · date ≈" : ""), approx: r.approx }));
+  return { dep, depLabel, rows };
 }
-function readMap() { try { return JSON.parse(localStorage.getItem("ukmap-state") || "{}"); } catch (e) { return {}; } }
-// Apply a schedule: payments dated before today count as already paid.
-function applySchedule(rows) {
+// Use the schedule: the deposit (and anything due before today) goes into "Already paid", the rest into installments.
+// While P.sched is on, changing the fee, scholarship, course or intake recalculates it; editing an installment or
+// "Already paid" yourself turns it off (the plan is then yours, with a one-click "fit to what I owe").
+function applySchedule() {
+  const { dep, depLabel, rows } = scheduleFor(netFee());
   const past = rows.filter(r => r.date < todayIso), next = rows.filter(r => r.date >= todayIso);
-  P.inst = next.map(({ approx, ...r }) => r); P.instMode = "gbp";
-  P.paidMode = "gbp"; P.paid = past.length ? past.reduce((a, r) => a + r.amount, 0) : "";
+  const pastSum = past.reduce((a, r) => a + r.amount, 0);
+  P.inst = next.map(r => ({ date: r.date, amount: r.amount, extra: "", label: r.label }));
+  P.instMode = "gbp"; P.paidMode = "gbp"; P.paid = dep + pastSum || "";
+  P.sched = true; P.schedPaid = { dep, depLabel, past: pastSum, n: past.length };
   const last = next.reduce((m, r) => Math.max(m, mIdx(r.date.slice(0, 7))), 0);
   if (last && last > mIdx(P.end || thisMonth)) P.end = mStr(last);
-  return { past, next };
 }
+const unlink = () => { P.sched = false; };
+function readMap() { try { return JSON.parse(localStorage.getItem("ukmap-state") || "{}"); } catch (e) { return {}; } }
+
+/* ---------------- prefill from the map ----------------
+   "Plan my budget" on a course card opens planner.html?u=&p=&f=&s=&sl=&l=&in=[&rate=] (in = the intake picked there).
+   We fill in the fee and sure scholarship (as shown on the map), the university's payment schedule for that intake
+   (pf in payment_policies.json), living costs scaled to the city's typical cost, and the jobs from the map's Work card.
+   The previous plan is kept so it can be undone. */
 let undoPlan = null;
 function fromLink() {
   const q = new URLSearchParams(location.search), u = q.get("u"), p = q.get("p") || "";
@@ -126,8 +147,9 @@ function fromLink() {
   history.replaceState(null, "", location.pathname);
   undoPlan = JSON.parse(JSON.stringify(P));
   const r = DATA.rows.find(x => x.u === u && x.p === p), S = readMap();
-  const fee = q.has("f") ? num(q.get("f")) : r ? r.f : num(P.fee), sch = q.has("s") ? num(q.get("s")) : r ? r.s : 0;
-  P.uni = u; P.course = p; P.fee = fee || ""; P.scholarship = sch || "";
+  P.uni = u; P.course = p;
+  P.fee = (q.has("f") ? num(q.get("f")) : r ? r.f : num(P.fee)) || ""; P.feeAuto = true;
+  P.scholarship = (q.has("s") ? num(q.get("s")) : r ? r.s : 0) || ""; P.schAuto = true;
   // Living costs: keep the usual split, scaled to this city's typical cost.
   const liv = q.has("l") ? num(q.get("l")) : r ? r.l : 0;
   if (liv > 0) {
@@ -141,45 +163,60 @@ function fromLink() {
     return { name: j.name || "", rate: rate ?? num(j.rate), hrs: wks < 52 ? Math.round(num(j.hrs) * wks / 52 * 2) / 2 : num(j.hrs), from: "", to: "" };
   });
   if (mIdx(P.start || thisMonth) < mIdx(thisMonth)) P.start = thisMonth;
-  const choices = intakeChoices(u, p), want = q.get("in");
-  P.pre = { u, p, sl: q.get("sl") || "", liv, rate, jobs: P.jobs.length, wks: (S.jobs || []).some(j => j.wks != null && num(j.wks) < 52),
-    depPct: num(S.dep), intake: (choices.find(c => c.v === want) || choices[0])?.v || "" };
-  prefillSchedule();
+  const cs = intakeChoices(u, p), want = q.get("in");
+  P.intake = (cs.find(c => c.v === want) || cs[0])?.v || "";
+  P.pre = { u, p, sl: q.get("sl") || "", liv, rate, jobs: P.jobs.length, wks: (S.jobs || []).some(j => j.wks != null && num(j.wks) < 52), depPct: num(S.dep) };
+  if (schedInfo().any) applySchedule(); else { P.inst = []; P.paid = ""; unlink(); }
   save();
-}
-function prefillSchedule() {
-  const pre = P.pre; if (!pre) return { past: [], next: [] };
-  const intake = intakeChoices(pre.u, pre.p).find(c => c.v === pre.intake);
-  if (!intake) { P.inst = []; return { past: [], next: [] }; }
-  return applySchedule(scheduleFor(pre.u, intake, netFee(), pre.depPct));
 }
 function renderPrefill() {
   const box = $("prefill"), pre = P.pre;
   box.hidden = !pre || P.uni !== pre.u;
   if (box.hidden) return;
-  const pf = DATA.unis[pre.u]?.pay?.pf, choices = intakeChoices(pre.u, pre.p);
-  const cur = choices.find(c => c.v === pre.intake) || choices[0], key = cur && schedKey(cur.m);
-  const sched = pf && key && pf[key], other = pf && (pf.sep || pf.jan) && !sched, approx = P.inst.some(x => /date ≈$/.test(x.label));
+  const it = curIntake(), sp = P.sched && P.schedPaid;
   const items = [
-    `<li>Fee <b>${gbp(num(P.fee))}</b>${num(P.scholarship) ? ` and scholarship <b>${gbp(num(P.scholarship))}</b>${pre.sl ? ` <span class="muted">(${esc(pre.sl)})</span>` : ""}` : ""}, as shown on the map</li>`,
-    `<li>${sched ? `${esc(pre.u)}'s published payment schedule` : pf?.dep != null ? `${esc(pre.u)}'s deposit — <b>the rest has no published dates${other ? " for this intake" : ""}</b>, so add them from your invoice`
-      : other ? `<b>${esc(pre.u)} hasn't published installment dates for this intake</b>, so add them from your invoice` : `A deposit using your ${pre.depPct}% estimate from the map — <b>${esc(pre.u)} hasn't published installment dates</b>, so add them from your invoice`}
-      for the <label class="pf-intake">${choices.length > 1 ? `<select id="prefillIntake" aria-label="Intake">${choices.map(c => `<option value="${c.v}"${c.v === cur.v ? " selected" : ""}>${c.name}</option>`).join("")}</select>` : esc(cur?.name || "")}</label> intake${approx ? ". Dates marked ≈ are estimates from the month or term the university gives — check your invoice" : ""}${num(P.paid) ? `. <b>${gbp(num(P.paid))}</b> due before today is counted as already paid` : ""}</li>`,
+    `<li>Fee and scholarship${pre.sl ? ` <span class="muted">(${esc(pre.sl)})</span>` : ""} as shown on the map</li>`,
+    sp ? `<li>${esc(pre.u)}'s payment plan for the <b>${esc(it?.name || "")}</b> intake${sp.dep ? ` — the ${gbp(sp.dep)} ${esc(sp.depLabel)} is in <b>Already paid</b>` : ""}</li>` : "",
     pre.liv ? `<li>Living costs scaled to this city's typical <b>${gbp(pre.liv / 12)}</b>/month</li>` : "",
-    `<li>Your ${pre.jobs === 1 ? "job" : pre.jobs + " jobs"} from the map's Work card${pre.rate != null ? ` at the £${pre.rate.toFixed(2)}/hr you set for this course` : ""}${pre.wks ? " (weeks per year turned into average hours a week)" : ""}</li>`,
+    `<li>Your ${pre.jobs === 1 ? "job" : pre.jobs + " jobs"} from the map${pre.rate != null ? ` at the £${pre.rate.toFixed(2)}/hr you set for this course` : ""}${pre.wks ? " (weeks per year turned into average hours a week)" : ""}</li>`,
   ];
   box.innerHTML = `<div class="pf-top"><b>Filled in from the map</b>
       <span class="pf-act">${undoPlan ? `<button type="button" class="btn-plain sm ghost" id="prefillUndo">Undo</button>` : ""}
       <button type="button" class="icon-btn sm" id="prefillClose" aria-label="Dismiss">${X}</button></span></div>
-    <ul>${items.join("")}</ul><p class="fine">Change anything below — it's your plan.</p>`;
+    <ul>${items.join("")}</ul>`;
 }
-$("prefill").addEventListener("change", e => {
-  if (e.target.id !== "prefillIntake") return;
-  P.pre.intake = e.target.value; prefillSchedule(); save(); init();
-});
 $("prefill").addEventListener("click", e => {
   if (e.target.closest("#prefillClose")) { P.pre = null; undoPlan = null; save(); renderPrefill(); }
   if (e.target.closest("#prefillUndo")) { P = undoPlan; undoPlan = null; P.pre = null; save(); init(); }
+});
+// The schedule note above the installments: following the university's plan, or an offer to use it.
+function renderSched() {
+  const box = $("schedBox"), si = schedInfo();
+  box.hidden = !P.uni || !DATA.unis[P.uni];
+  if (box.hidden) return;
+  const u = esc(P.uni), it = esc(si.it?.name || "this");
+  if (P.sched && si.any && !netFee()) {
+    box.className = "sched on";
+    box.innerHTML = `<span class="sched-ic" aria-hidden="true">✓</span><div><b>${u}'s payment plan for ${it} starts is ready.</b> Enter your tuition fee (or pick a course) and the deposit and installment dates fill in.</div>`;
+  } else if (P.sched && si.any) {
+    const sp = P.schedPaid || {}, approx = P.inst.some(x => /date ≈$/.test(x.label));
+    box.className = "sched on";
+    box.innerHTML = `<span class="sched-ic" aria-hidden="true">✓</span><div><b>Following ${u}'s payment plan for ${it} starts.</b>
+      ${sp.dep ? `Your ${gbp(sp.dep)} ${esc(sp.depLabel)} is counted in Already paid${sp.past ? `, with ${gbp(sp.past)} due before today` : ""}. ` : sp.past ? `${gbp(sp.past)} due before today is counted in Already paid. ` : ""}
+      ${si.dates ? "" : `${u} hasn't published installment dates${si.otherDates ? " for this intake" : ""} — add them from your invoice. `}
+      ${approx ? "Dates marked ≈ are estimates from the month or term given. " : ""}It updates with your fee, scholarship and intake until you edit an amount.</div>`;
+  } else if (si.any) {
+    box.className = "sched";
+    box.innerHTML = `<div>${u} publishes ${si.dates ? "a deposit and payment dates" : "its deposit"} for ${it} starts.</div>
+      <button type="button" class="btn-plain sm" id="useSched">Use ${si.dates ? "these dates" : "this deposit"}</button>`;
+  } else {
+    box.className = "sched none";
+    box.innerHTML = `<div>${u} hasn't published payment dates${si.otherDates ? ` for ${it} starts` : ""} — add your installments from your offer or invoice.</div>`;
+  }
+}
+$("schedBox").addEventListener("click", e => {
+  if (!e.target.closest("#useSched")) return;
+  applySchedule(); save(); init();
 });
 
 /* ---------------- editable lists ---------------- */
@@ -202,11 +239,11 @@ const LISTS = {
     el: "extraRows",
     head: `<div class="rh inst"><span>Due date</span><span>Amount (£)</span><span>What for</span><span></span></div>`,
     row: (r, i) => `<div class="row inst" data-i="${i}">
-      <input type="date" data-f="date" value="${esc(r.date)}" aria-label="Additional fee ${i + 1} due date">
-      <input type="number" data-f="amount" min="0" step="5" inputmode="decimal" value="${esc(r.amount)}" placeholder="0" aria-label="Additional fee ${i + 1} amount (£)">
-      <input data-f="label" value="${esc(r.label)}" placeholder="e.g. Visa & IHS" maxlength="40" aria-label="Additional fee ${i + 1} description">
-      <button type="button" class="rm" data-rm="${i}" aria-label="Remove ${esc(r.label || "additional fee " + (i + 1))}">${X}</button></div>`,
-    empty: `<p class="empty-row">No additional fees.</p>`,
+      <input type="date" data-f="date" value="${esc(r.date)}" aria-label="One-off cost ${i + 1} due date">
+      <input type="number" data-f="amount" min="0" step="5" inputmode="decimal" value="${esc(r.amount)}" placeholder="0" aria-label="One-off cost ${i + 1} amount (£)">
+      <input data-f="label" value="${esc(r.label)}" placeholder="e.g. Visa & IHS" maxlength="40" aria-label="One-off cost ${i + 1} description">
+      <button type="button" class="rm" data-rm="${i}" aria-label="Remove ${esc(r.label || "one-off cost " + (i + 1))}">${X}</button></div>`,
+    empty: `<p class="empty-row">None added.</p>`,
     make: () => ({ date: "", amount: "", label: "" }),
   },
   costs: {
@@ -242,39 +279,98 @@ function renderList(k) {
   const L = LISTS[k], list = P[k];
   $(L.el).innerHTML = list.length ? L.head + list.map(L.row).join("") : L.empty;
 }
+// Every edit, in any list, recalculates everything straight away (input fires on each keystroke and on
+// date / select changes). Changing an installment's money or date makes the schedule your own.
 for (const [k, L] of Object.entries(LISTS)) {
   const box = $(L.el);
-  box.addEventListener("input", e => {
+  const onEdit = e => {
     const f = e.target.dataset.f, row = e.target.closest("[data-i]"); if (!f || !row) return;
-    const item = P[k][+row.dataset.i];
-    item[f] = ["amount", "extra", "rate", "hrs"].includes(f) ? (e.target.value === "" ? "" : +e.target.value) : e.target.value;
+    const item = P[k][+row.dataset.i]; if (!item) return;
+    const v = ["amount", "extra", "rate", "hrs"].includes(f) ? (e.target.value === "" ? "" : +e.target.value) : e.target.value;
+    if (item[f] === v) return;
+    item[f] = v;
+    if (k === "inst" && (f === "amount" || f === "date") && P.sched) { unlink(); renderSched(); }
     save(); compute();
-  });
+  };
+  box.addEventListener("input", onEdit); box.addEventListener("change", onEdit);
   box.addEventListener("click", e => {
     const b = e.target.closest("[data-rm]"); if (!b) return;
-    P[k].splice(+b.dataset.rm, 1); save(); renderList(k); compute();
+    P[k].splice(+b.dataset.rm, 1);
+    if (k === "inst") unlink();
+    save(); renderList(k); refresh();
   });
 }
 const adder = (btn, k, focusSel) => $(btn).addEventListener("click", () => {
-  P[k].push(LISTS[k].make()); save(); renderList(k); compute();
+  P[k].push(LISTS[k].make()); if (k === "inst") unlink();
+  save(); renderList(k); refresh();
   $(LISTS[k].el).querySelector(`[data-i="${P[k].length - 1}"] ${focusSel}`)?.focus();
 });
 adder("addInst", "inst", "input"); adder("addExtra", "extras", "input"); adder("addCost", "costs", "input"); adder("addJob", "jobs", "input");
 
 /* ---------------- top fields ---------------- */
-const FIELDS = ["country", "uni", "course", "fee", "scholarship", "paid", "savings", "start", "end"];
-function fillFields() { if (P.country !== "uk") P.country = "uk"; FIELDS.forEach(f => { $(f).value = P[f] ?? ""; }); fillCourses(); syncModes(); }
-FIELDS.forEach(f => $(f).addEventListener("input", () => {
-  P[f] = ["fee", "scholarship", "paid", "savings"].includes(f) ? ($(f).value === "" ? "" : +$(f).value) : $(f).value;
-  if (f === "uni") { fillCourses(); renderPrefill(); }
-  if (f === "course") {
-    // Picking a listed course fills in its fee if you haven't typed one.
-    const r = coursesOf(P.uni).find(x => x.p === P.course);
-    if (r && !num(P.fee)) { P.fee = r.f; $("fee").value = r.f; }
+// Fee and scholarship follow the chosen course until you type your own; a linked schedule follows the fee.
+const FIELDS = ["country", "uni", "course", "intake", "fee", "scholarship", "paid", "savings", "start", "end"];
+const NUMF = ["fee", "scholarship", "paid", "savings"];
+function fillFields() {
+  if (P.country !== "uk") P.country = "uk";
+  fillCourses();
+  FIELDS.forEach(f => { if (f !== "intake" && document.activeElement !== $(f)) $(f).value = P[f] ?? ""; });
+  syncModes();
+}
+function onField(f) {
+  const el = $(f), v = NUMF.includes(f) ? (el.value === "" ? "" : +el.value) : el.value;
+  if (P[f] === v) return;
+  P[f] = v;
+  let relink = false;
+  if (f === "uni" || f === "course") {
+    if (f === "uni" && P.course && !courseRow()) P.course = "";
+    const r = courseRow();
+    if (r) {
+      if (P.feeAuto !== false || !num(P.fee)) { P.fee = r.f; P.feeAuto = true; }
+      if (P.schAuto !== false || !num(P.scholarship)) { P.scholarship = r.s || ""; P.schAuto = true; }
+    }
     fillCourses();
+    // A university with a published plan: use it straight away if nothing has been entered yet.
+    if (DATA.unis[P.uni] && !P.sched && !P.inst.length && !num(P.paid) && schedInfo().any) applySchedule();
+    relink = true;
   }
-  save(); compute();
+  if (f === "intake") relink = true;
+  if (f === "fee") { P.feeAuto = false; relink = true; }
+  if (f === "scholarship") { P.schAuto = false; relink = true; }
+  if (f === "paid") unlink();
+  if (relink && P.sched) { if (schedInfo().any) applySchedule(); else unlink(); }
+  save(); refresh();
+}
+FIELDS.forEach(f => { $(f).addEventListener("input", () => onField(f)); $(f).addEventListener("change", () => onField(f)); });
+
+// Fit the installments to what's owed (scale them, or split evenly if they're empty).
+function fitInst() {
+  const target = P.instMode === "pct" ? pctOf(owed()) : owed();
+  const cur = P.inst.map(x => num(x.amount)), sum = cur.reduce((a, b) => a + b, 0);
+  if (!P.inst.length || target <= 0) return;
+  const dp = P.instMode === "pct" ? 100 : 1;
+  const amts = cur.map(a => Math.round((sum > 0 ? a / sum : 1 / cur.length) * target * dp) / dp);
+  amts[amts.length - 1] = Math.round((amts[amts.length - 1] + target - amts.reduce((a, b) => a + b, 0)) * dp) / dp;
+  P.inst.forEach((x, i) => { x.amount = amts[i]; });
+  save(); renderList("inst"); refresh();
+}
+$("instCheck").addEventListener("click", e => {
+  if (e.target.closest("#fitInst")) fitInst();
+  if (e.target.closest("#useSched2")) { applySchedule(); save(); init(); }
+});
+
+/* ---------------- collapsible sections ---------------- */
+document.querySelectorAll(".pl-card .fold").forEach(b => b.addEventListener("click", () => {
+  const sec = b.closest(".pl-card"); P.folded = { ...P.folded, [sec.id]: !P.folded?.[sec.id] }; save(); syncFolds();
 }));
+function syncFolds() {
+  document.querySelectorAll(".pl-card .fold").forEach(b => {
+    const sec = b.closest(".pl-card"), shut = !!P.folded?.[sec.id];
+    sec.classList.toggle("shut", shut); b.setAttribute("aria-expanded", String(!shut));
+    b.setAttribute("aria-label", (shut ? "Expand " : "Collapse ") + sec.querySelector("h2").textContent.replace(/^\d/, ""));
+    sec.querySelector(".card-b").hidden = shut;
+  });
+}
 
 /* ---------------- £ / % switches (already paid, installments) ---------------- */
 // Percentages are of the fee after scholarship. Switching converts what's typed so the money doesn't change.
@@ -299,7 +395,7 @@ function setMode(which, v) {
     if (canConvert) P.inst.forEach(x => { if (x.amount !== "") x.amount = r2(v === "pct" ? pctOf(instGBP(x.amount)) : instGBP(x.amount)); });
     P.instMode = v; renderList("inst");
   }
-  syncModes(); save(); compute();
+  unlink(); syncModes(); save(); refresh();
 }
 ["paidMode", "instMode"].forEach(id => $(id).addEventListener("click", e => { const b = e.target.closest("button[data-v]"); if (b) setMode(id, b.dataset.v); }));
 
@@ -319,7 +415,7 @@ $("splitGo").addEventListener("click", () => {
     return { date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
       amount: i === n - 1 ? Math.round((total - each * (n - 1)) * 100) / 100 : each, label: `Installment ${i + 1}` };
   });
-  $("splitBox").hidden = true; save(); renderList("inst"); compute();
+  unlink(); $("splitBox").hidden = true; save(); renderList("inst"); refresh();
 });
 
 $("resetPlan").addEventListener("click", e => {
@@ -439,9 +535,11 @@ function compute() {
   const chk = $("instCheck"), gap = ow - instSum;
   chk.hidden = !(num(P.fee) && (P.inst.length || ow > 0));
   chk.className = "check " + (Math.abs(gap) < 1 ? "ok" : "warn");
-  chk.innerHTML = Math.abs(gap) < 1 ? `✓ Installments add up to what you owe (${money(ow)}).`
+  const si = schedInfo();
+  const fixes = Math.abs(gap) < 1 ? "" : `<span class="chk-act">${P.inst.length ? `<button type="button" class="btn-plain sm" id="fitInst">Fit installments to ${money(ow)}</button>` : ""}${si.any && !P.sched ? `<button type="button" class="btn-plain sm ghost" id="useSched2">Use ${esc(P.uni)}'s dates</button>` : ""}</span>`;
+  chk.innerHTML = (Math.abs(gap) < 1 ? `✓ Installments add up to what you owe (${money(ow)}).`
     : gap > 0 ? `⚠ Installments add up to ${money(instSum)} — <b>${money(gap)} of what you owe isn't scheduled yet.</b>`
-    : `⚠ Installments add up to ${money(instSum)}, which is ${money(-gap)} more than you owe (${money(ow)}). Check the fee and amount paid.`;
+    : `⚠ Installments add up to ${money(instSum)}, which is ${money(-gap)} more than you owe (${money(ow)}).`) + fixes;
   if (R.before.length) chk.innerHTML += `<br>${R.before.length} payment${R.before.length === 1 ? " is" : "s are"} dated before ${mLabel(R.S0, true)} and ${R.before.length === 1 ? "isn't" : "aren't"} included in the projection.`;
 
   /* £ shown beside % inputs, and the already-paid hint */
@@ -454,9 +552,11 @@ function compute() {
   $("instTotal").innerHTML = P.inst.length ? `Total <b>${gbp(instAll)}</b>${instExtra ? ` <small>(incl. ${gbp(instExtra)} extra costs)</small>` : ""}` : "";
   $("paidHint").textContent = P.paidMode === "pct"
     ? (netFee() ? `= ${gbp(paidGBP())} of ${gbp(netFee())} (fee after scholarship)` : "Enter your fee first to turn this into pounds")
-    : (netFee() && num(P.paid) ? `${pctTxt(pctOf(num(P.paid)))} of your fee after scholarship · deposit and anything else paid so far` : "Deposit and anything else paid so far");
+    : P.sched && P.schedPaid?.dep && num(P.paid) ? `Includes the ${gbp(P.schedPaid.dep)} ${P.schedPaid.depLabel}${P.schedPaid.past ? ` and ${gbp(P.schedPaid.past)} due before today` : ""} · ${pctTxt(pctOf(num(P.paid)))} of your fee after scholarship`
+    : (netFee() && num(P.paid) ? `${pctTxt(pctOf(num(P.paid)))} of your fee after scholarship · your deposit and anything else paid so far` : "Your deposit and anything else paid so far");
   $("instModeHint").textContent = `Enter each installment as a percentage of your fee after scholarship${netFee() ? ` (${gbp(netFee())})` : " — fill in the fee above first"}.`;
-  $("extraTotal").innerHTML = nExtra ? `Total <b>${gbp(extraSum)}</b>` : "";
+  $("extraTotal").innerHTML = sumOf("extra") ? `Total <b>${gbp(sumOf("extra"))}</b>` : "";
+  $("extraSum").textContent = P.extras.length ? `${P.extras.length} · ${gbp(P.extras.reduce((a, x) => a + num(x.amount), 0))}` : "visa, health surcharge, graduation…";
 
   /* section 3/4 totals */
   $("costTotal").innerHTML = `Total <b>${gbp(R.cost)}</b>/month`;
@@ -466,17 +566,37 @@ function compute() {
   $("visaWarn").hidden = !busy.length;
   if (busy.length) $("visaWarn").innerHTML = `⚠ In ${busy.length === M.length ? "every month" : busy.length + " month" + (busy.length === 1 ? "" : "s")} your jobs add up to more than ${VISA_HRS} h/week (up to ${Math.max(...busy.map(m => m.hrsWk))} h). Student visas allow ${VISA_HRS} h/week in term time — more only in official vacations. Use each job's From/Until months to model vacation work.`;
 
-  /* hero */
-  const status = onTrack ? ["good", "✓", "On track"] : ["bad", "⚠", allPaid ? "Runs out of money" : "Shortfall"];
+  /* always-visible summary bar */
+  const status = !M.length || (!num(P.fee) && !R.inst.length) ? ["", "•", "Fill in your plan"] : onTrack ? ["good", "✓", "On track"] : ["bad", "⚠", allPaid ? "Runs out of money" : "Shortfall"];
+  const lastM = M.length ? M[M.length - 1].mi : R.S0;
+  $("sumbar").innerHTML = `
+    <span class="pill ${status[0]}"><span aria-hidden="true">${status[1]}</span> ${status[2]}</span>
+    <div class="kpi"><span>Each month</span><b class="${flow >= 0.5 ? "pos" : flow <= -0.5 ? "neg" : ""}">${signed(flow)}</b><small>take-home − living</small></div>
+    <div class="kpi"><span>Payments on time</span><b class="${R.inst.length && !allPaid ? "neg" : ""}">${R.inst.length ? `${okCount} of ${R.inst.length}` : "—"}</b><small>${R.inst.length ? (allPaid ? "all covered" : `first short ${dLabel(firstShort.date).replace(/ \d{4}$/, "")}`) : "none scheduled"}</small></div>
+    <div class="kpi"><span>Lowest point</span><b class="${low.end < -0.5 ? "neg" : ""}">${gbp(low.end)}</b><small>${low.mi >= R.S0 ? mLabel(low.mi) : "today"}</small></div>
+    <div class="kpi"><span>At the end</span><b class="${endBal < -0.5 ? "neg" : ""}">${gbp(endBal)}</b><small>${mLabel(lastM)}</small></div>
+    <nav class="jump" aria-label="Jump to"><a href="#sec-course">Course</a><a href="#sec-fees">Tuition</a><a href="#sec-living">Living</a><a href="#sec-income">Income</a><span aria-hidden="true"></span><a href="#hero">Verdict</a><a href="#h-pay">Payments</a><a href="#h-chart">Chart</a></nav>
+    <a class="btn-plain sm to-res" href="#results">Details ↓</a>`;
+
+  /* section headers: a live total for each part of the plan */
+  const it = curIntake();
+  $("sum-course").textContent = P.uni ? [P.uni.replace(/^University of /, "").replace(/ University$/, ""), it && it.name].filter(Boolean).join(" · ") : "Not set";
+  $("sum-fees").innerHTML = num(P.fee) ? `${gbp(ow)} to pay${Math.abs(gap) >= 1 && (P.inst.length || ow > 0) ? ` <span class="warn-dot" title="Installments don't match what you owe">!</span>` : ""}` : "";
+  $("sum-living").textContent = `${gbp(R.cost)}/month`;
+  $("sum-income").textContent = `${gbp(net)}/month${num(P.savings) ? ` + ${gbp(num(P.savings))} saved` : ""}`;
+
+  /* verdict */
+  const headline = status[0] === "" ? "Fill in your fee, installments, costs and work to see whether your plan works."
+    : onTrack ? `You can make every payment on time and finish with <b class="pos">${gbp(endBal)}</b>.`
+    : allPaid ? `Your payments are covered, but <b class="neg">you run out of money in ${mLabel(firstNeg.mi, true)}</b>.`
+    : `You'll be <b class="neg">${gbp(firstShort.short)} short</b> for ${esc(firstShort.label)} on ${dLabel(firstShort.date)}${R.inst.length - okCount > 1 ? `, and ${R.inst.length - okCount - 1} more payment${R.inst.length - okCount - 1 === 1 ? "" : "s"} after it` : ""}.`;
   $("hero").innerHTML = `
-    <div class="hero-top"><span class="pill ${status[0]}"><span aria-hidden="true">${status[1]}</span> ${status[2]}</span>
-      <span class="hero-k">${flow >= 0 ? "Monthly surplus" : "Monthly deficit"} <small>take-home − living costs, before fees</small></span></div>
-    <div class="hero-v ${flow >= 0 ? "pos" : "neg"}">${signed(flow)}<span>/month</span></div>
+    <p class="verdict">${headline}</p>
     <div class="tiles">
       <div class="tile"><span>Take-home pay</span><b>${gbp(net)}</b><small>per month (avg)</small></div>
       <div class="tile"><span>Living costs</span><b>${gbp(R.cost)}</b><small>per month</small></div>
-      <div class="tile"><span>Payments due</span><b>${R.inst.length ? `${okCount} / ${R.inst.length}` : "—"}</b><small>${R.inst.length ? "covered on time" : "none scheduled"}</small></div>
-      <div class="tile"><span>Balance at end</span><b class="${endBal < -0.5 ? "neg" : ""}">${gbp(endBal)}</b><small>${M.length ? mLabel(M[M.length - 1].mi) : ""}</small></div>
+      <div class="tile"><span>${flow >= 0 ? "Left over" : "Shortfall"}</span><b class="${flow >= 0.5 ? "pos" : flow <= -0.5 ? "neg" : ""}">${signed(flow)}</b><small>per month, before fees</small></div>
+      <div class="tile"><span>Fees still due</span><b>${gbp(R.inst.reduce((a, d) => a + d.amount, 0))}</b><small>${R.inst.length} payment${R.inst.length === 1 ? "" : "s"}</small></div>
     </div>
     ${needPerMonth > 0.5 ? (workCanFix
       ? `<p class="need">To make every payment on time you need about <b>${gbp(needPerMonth)} more per month</b> from now — roughly <b>${extraHrs < 0.1 ? "<0.1" : extraHrs.toFixed(1)} extra hours a week</b> at ${rateTxt}/hr${hrs ? " (your average rate)" : ""}${needRate ? `, or <b>£${needRate.toFixed(2)} more per hour</b> on your current hours (£${(rate + needRate).toFixed(2)}/hr)` : ""}, or ${gbp(needPerMonth)} less spending a month.</p>`
@@ -594,7 +714,9 @@ new ResizeObserver(() => { const w = $("chart").clientWidth; if (Math.abs(w - la
 /* ---------------- boot ---------------- */
 const syncHdr = () => document.documentElement.style.setProperty("--hdr", $("hdr").getBoundingClientRect().height + "px");
 new ResizeObserver(syncHdr).observe($("hdr")); syncHdr();
-function init() { fillFields(); Object.keys(LISTS).forEach(renderList); renderPrefill(); compute(); }
+// After anything that can change several sections at once (schedule, course, fee): sync fields, then recalc.
+function refresh() { fillFields(); renderList("inst"); renderSched(); renderPrefill(); compute(); }
+function init() { fillFields(); Object.keys(LISTS).forEach(renderList); syncFolds(); renderSched(); renderPrefill(); compute(); }
 fromLink();
 init();
 })();

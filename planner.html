@@ -60,13 +60,17 @@
 </section>
 
 <main class="pl">
-  <!-- ================= INPUTS ================= -->
-  <div class="pl-inputs">
-    <section class="pl-card glass prefill" id="prefill" hidden aria-label="Filled in from the map" aria-live="polite"></section>
+  <!-- Always-visible answer: updates on every edit -->
+  <section class="sumbar glass" id="sumbar" aria-label="Plan summary" aria-live="polite"></section>
 
-    <section class="pl-card glass" aria-labelledby="h-uni">
-      <h2 id="h-uni"><span class="num">1</span>University &amp; fees</h2>
-      <div class="grid2">
+  <!-- ================= YOUR PLAN (inputs) ================= -->
+  <div class="pl-inputs">
+    <section class="pl-card glass prefill" id="prefill" hidden aria-label="Filled in from the map"></section>
+
+    <section class="pl-card glass" id="sec-course" aria-labelledby="h-course">
+      <header class="card-h"><h2 id="h-course"><span class="num">1</span>Course &amp; dates</h2><span class="h-sum" id="sum-course"></span>
+        <button type="button" class="fold" aria-expanded="true" aria-label="Collapse Course and dates"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 8 4.5 4.5L14.5 8" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></header>
+      <div class="card-b grid2">
         <div class="field"><label for="country">Country</label>
           <select id="country">
             <option value="uk">🇬🇧 United Kingdom</option>
@@ -76,76 +80,97 @@
             <option value="de" disabled>🇩🇪 Germany — coming soon</option>
           </select></div>
         <div class="field"><label for="uni">University</label><input id="uni" list="uniList" autocomplete="off" placeholder="Start typing… e.g. University of Glasgow"><datalist id="uniList"></datalist></div>
-        <div class="field span2"><label for="course">Course <i class="opt">(optional)</i></label><input id="course" list="courseList" autocomplete="off" placeholder="e.g. MSc Computing Science"><datalist id="courseList"></datalist>
-          <span class="hint" id="courseHint"></span></div>
-        <div class="field"><label for="fee">Total tuition fee (£)</label><input id="fee" type="number" min="0" step="10" inputmode="decimal" placeholder="0"></div>
-        <div class="field"><label for="scholarship">Scholarship / discount (£)</label><input id="scholarship" type="number" min="0" step="10" inputmode="decimal" placeholder="0"></div>
-        <div class="field"><div class="lbl-row"><label for="paid">Already paid <span id="paidUnit">(£)</span></label>
-            <div class="seg tiny" role="group" aria-label="Enter already paid as" id="paidMode"><button type="button" data-v="gbp">£</button><button type="button" data-v="pct">%</button></div></div>
-          <input id="paid" type="number" min="0" step="10" inputmode="decimal" placeholder="0">
-          <span class="hint" id="paidHint">Deposit and anything else paid so far</span></div>
-        <div class="field"><label for="savings">Money you have now (£)</label><input id="savings" type="number" step="10" inputmode="decimal" placeholder="0">
-          <span class="hint">Savings available for fees &amp; living</span></div>
+        <div class="field"><label for="course">Course <i class="opt">(optional)</i></label><input id="course" list="courseList" autocomplete="off" placeholder="e.g. MSc Computing Science"><datalist id="courseList"></datalist></div>
+        <div class="field"><label for="intake">Intake</label><select id="intake"></select></div>
+        <span class="hint span2" id="courseHint"></span>
         <div class="field"><label for="start">Plan from</label><input id="start" type="month"></div>
-        <div class="field"><label for="end">Plan until</label><input id="end" type="month"><span class="hint">e.g. when your visa or course ends</span></div>
-      </div>
-      <div class="owed" id="owed"></div>
-    </section>
-
-    <section class="pl-card glass" aria-labelledby="h-inst">
-      <div class="sec-head"><h2 id="h-inst"><span class="num">2</span>Installments still to pay</h2>
-        <div class="seg tiny" role="group" aria-label="Enter installment amounts as" id="instMode"><button type="button" data-v="gbp">£</button><button type="button" data-v="pct">%</button></div></div>
-      <p class="sub" id="instModeHint" hidden></p>
-      <div class="rows" id="instRows"></div>
-      <div class="row-actions">
-        <button type="button" class="btn-plain sm" id="addInst"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add installment</button>
-        <button type="button" class="btn-plain sm ghost" id="splitInst" title="Replace the list with equal monthly installments covering what you still owe">Split what I owe…</button>
-        <span class="total" id="instTotal"></span>
-      </div>
-      <div class="split" id="splitBox" hidden>
-        <label>Split <b id="splitAmt"></b> into <input type="number" id="splitN" min="1" max="24" value="3"> monthly payments starting <input type="date" id="splitFrom"></label>
-        <button type="button" class="btn-primary sm" id="splitGo">Create</button>
-      </div>
-      <p class="check" id="instCheck" hidden></p>
-    </section>
-
-    <section class="pl-card glass" aria-labelledby="h-extra">
-      <h2 id="h-extra"><span class="num">3</span>Additional fees</h2>
-      <p class="sub">One-off payments on their own dates, e.g. visa application, Immigration Health Surcharge, graduation. For a cost paid together with an installment, use that installment's “Extra cost” instead.</p>
-      <div class="rows" id="extraRows"></div>
-      <div class="row-actions">
-        <button type="button" class="btn-plain sm" id="addExtra"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add fee</button>
-        <span class="total" id="extraTotal"></span>
+        <div class="field"><label for="end">Plan until</label><input id="end" type="month"><span class="hint">e.g. when your course or visa ends</span></div>
       </div>
     </section>
 
-    <section class="pl-card glass" aria-labelledby="h-cost">
-      <h2 id="h-cost"><span class="num">4</span>Living costs</h2>
-      <div class="rows" id="costRows"></div>
-      <div class="row-actions">
-        <button type="button" class="btn-plain sm" id="addCost"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add cost</button>
-        <span class="total" id="costTotal"></span>
+    <section class="pl-card glass" id="sec-fees" aria-labelledby="h-fees">
+      <header class="card-h"><h2 id="h-fees"><span class="num">2</span>Tuition &amp; payments</h2><span class="h-sum" id="sum-fees"></span>
+        <button type="button" class="fold" aria-expanded="true" aria-label="Collapse Tuition and payments"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 8 4.5 4.5L14.5 8" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></header>
+      <div class="card-b">
+        <div class="grid3">
+          <div class="field"><label for="fee">Tuition fee (£)</label><input id="fee" type="number" min="0" step="10" inputmode="decimal" placeholder="0"></div>
+          <div class="field"><label for="scholarship">Scholarship (£)</label><input id="scholarship" type="number" min="0" step="10" inputmode="decimal" placeholder="0"></div>
+          <div class="field"><div class="lbl-row"><label for="paid">Already paid <span id="paidUnit">(£)</span></label>
+              <div class="seg tiny" role="group" aria-label="Enter already paid as" id="paidMode"><button type="button" data-v="gbp">£</button><button type="button" data-v="pct">%</button></div></div>
+            <input id="paid" type="number" min="0" step="10" inputmode="decimal" placeholder="0"></div>
+        </div>
+        <span class="hint" id="paidHint">Your deposit and anything else paid so far</span>
+        <div class="owed" id="owed"></div>
+
+        <div class="sub-h"><h3>Installments still to pay</h3>
+          <div class="seg tiny" role="group" aria-label="Enter installment amounts as" id="instMode"><button type="button" data-v="gbp">£</button><button type="button" data-v="pct">%</button></div></div>
+        <div class="sched" id="schedBox" hidden></div>
+        <p class="sub" id="instModeHint" hidden></p>
+        <div class="rows" id="instRows"></div>
+        <div class="row-actions">
+          <button type="button" class="btn-plain sm" id="addInst"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add installment</button>
+          <button type="button" class="btn-plain sm ghost" id="splitInst" title="Replace the list with equal monthly installments covering what you still owe">Split what I owe…</button>
+          <span class="total" id="instTotal"></span>
+        </div>
+        <div class="split" id="splitBox" hidden>
+          <label>Split <b id="splitAmt"></b> into <input type="number" id="splitN" min="1" max="24" value="3"> monthly payments starting <input type="date" id="splitFrom"></label>
+          <button type="button" class="btn-primary sm" id="splitGo">Create</button>
+        </div>
+        <div class="check" id="instCheck" hidden></div>
+
+        <details class="more" id="extraBox">
+          <summary><span>Other one-off costs</span> <small id="extraSum">visa, health surcharge, graduation…</small></summary>
+          <p class="sub">Payments on their own dates. For a cost paid together with an installment, use that installment's “Extra cost” instead.</p>
+          <div class="rows" id="extraRows"></div>
+          <div class="row-actions">
+            <button type="button" class="btn-plain sm" id="addExtra"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add cost</button>
+            <span class="total" id="extraTotal"></span>
+          </div>
+        </details>
       </div>
     </section>
 
-    <section class="pl-card glass" aria-labelledby="h-work">
-      <h2 id="h-work"><span class="num">5</span>Work</h2>
-      <div class="rows" id="jobRows"></div>
-      <div class="row-actions">
-        <button type="button" class="btn-plain sm" id="addJob"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add job</button>
-        <span class="total" id="jobTotal"></span>
+    <section class="pl-card glass" id="sec-living" aria-labelledby="h-living">
+      <header class="card-h"><h2 id="h-living"><span class="num">3</span>Living costs</h2><span class="h-sum" id="sum-living"></span>
+        <button type="button" class="fold" aria-expanded="true" aria-label="Collapse Living costs"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 8 4.5 4.5L14.5 8" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></header>
+      <div class="card-b">
+        <div class="rows" id="costRows"></div>
+        <div class="row-actions">
+          <button type="button" class="btn-plain sm" id="addCost"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add cost</button>
+          <span class="total" id="costTotal"></span>
+        </div>
       </div>
-      <p class="check warn" id="visaWarn" hidden></p>
-      <p class="fine">Take-home uses UK rules: 20% income tax + 8% National Insurance on earnings above £12,570 a year (≈£1,048 a month). Months use 52 ÷ 12 ≈ 4.33 weeks. Leave a job's dates empty if it runs the whole plan.</p>
+    </section>
+
+    <section class="pl-card glass" id="sec-income" aria-labelledby="h-income">
+      <header class="card-h"><h2 id="h-income"><span class="num">4</span>Money coming in</h2><span class="h-sum" id="sum-income"></span>
+        <button type="button" class="fold" aria-expanded="true" aria-label="Collapse Money coming in"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 8 4.5 4.5L14.5 8" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></header>
+      <div class="card-b">
+        <div class="field savings"><label for="savings">Money you have now (£)</label><input id="savings" type="number" step="10" inputmode="decimal" placeholder="0">
+          <span class="hint">Savings or family money available for fees and living</span></div>
+        <div class="sub-h"><h3>Work</h3></div>
+        <div class="rows" id="jobRows"></div>
+        <div class="row-actions">
+          <button type="button" class="btn-plain sm" id="addJob"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add job</button>
+          <span class="total" id="jobTotal"></span>
+        </div>
+        <p class="check warn" id="visaWarn" hidden></p>
+        <p class="fine">Take-home uses UK rules: 20% income tax + 8% National Insurance on earnings above £12,570 a year (≈£1,048 a month). Months use 52 ÷ 12 ≈ 4.33 weeks. Leave a job's dates empty if it runs the whole plan.</p>
+      </div>
     </section>
   </div>
 
   <!-- ================= RESULTS ================= -->
-  <div class="pl-results" aria-live="polite">
-    <section class="pl-card glass hero" id="hero"></section>
+  <div class="pl-results" id="results">
+    <section class="pl-card glass hero" id="hero" aria-live="polite"></section>
 
-    <section class="pl-card glass">
-      <h2>Your money, month by month</h2>
+    <section class="pl-card glass" aria-labelledby="h-pay">
+      <h2 id="h-pay">Payments due</h2>
+      <div id="instOut"></div>
+    </section>
+
+    <section class="pl-card glass" aria-labelledby="h-chart">
+      <h2 id="h-chart">Your money, month by month</h2>
       <p class="sub" id="chartSub"></p>
       <div class="chart" id="chart"></div>
       <details class="tbl">
@@ -154,13 +179,8 @@
       </details>
     </section>
 
-    <section class="pl-card glass">
-      <h2>Payments due</h2>
-      <div id="instOut"></div>
-    </section>
-
-    <section class="pl-card glass">
-      <h2>What this means</h2>
+    <section class="pl-card glass" aria-labelledby="h-story">
+      <h2 id="h-story">What this means</h2>
       <div class="story" id="story"></div>
     </section>
   </div>
