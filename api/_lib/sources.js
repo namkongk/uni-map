@@ -14,12 +14,15 @@ export default {
  ],
  "University of Manchester": [
   "https://www.manchester.ac.uk/study/masters/courses/list/21573/msc-advanced-computer-science/",
-  "https://www.manchester.ac.uk/study/masters/courses/list/21574/msc-artificial-intelligence/"
+  "https://www.manchester.ac.uk/study/masters/courses/list/21574/msc-artificial-intelligence/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/21021/mph-master-of-public-health-on-campus/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/18749/msc-adult-nursing/"
  ],
  "University of Bristol": [
   "https://www.bristol.ac.uk/study/outreach/virtual-resources-for-students/access-virtual-resources/virtual-resources/computer-science-resources/",
   "https://www.bristol.ac.uk/study/postgraduate/taught/msc-artificial-intelligence/",
-  "https://www.bristol.ac.uk/study/postgraduate/taught/msc-immersive-technologies-virtual-and-augmented-reality/"
+  "https://www.bristol.ac.uk/study/postgraduate/taught/msc-immersive-technologies-virtual-and-augmented-reality/",
+  "https://www.bristol.ac.uk/study/postgraduate/taught/msc-global-health-policy/"
  ],
  "University of Warwick": [
   "https://warwick.ac.uk/study/postgraduate/courses/msc-computer-science/",
@@ -39,14 +42,18 @@ export default {
  ],
  "University of Sheffield": [
   "https://sheffield.ac.uk/postgraduate/taught/courses/2027/advanced-computer-science-msc",
-  "https://sheffield.ac.uk/postgraduate/taught/courses/2027/artificial-intelligence-msc"
+  "https://sheffield.ac.uk/postgraduate/taught/courses/2027/artificial-intelligence-msc",
+  "https://sheffield.ac.uk/postgraduate/taught/courses/2027/public-health-management-and-leadership-mph"
  ],
  "Durham University": [
   "https://www.durham.ac.uk/study/postgraduate/taught-degrees/your-choices/computer-science/"
  ],
  "University of Southampton": [
   "https://www.southampton.ac.uk/courses/advanced-computer-science-masters-msc",
-  "https://www.southampton.ac.uk/courses/artificial-intelligence-masters-msc"
+  "https://www.southampton.ac.uk/courses/artificial-intelligence-masters-msc",
+  "https://www.southampton.ac.uk/courses/global-health-masters-msc",
+  "https://www.southampton.ac.uk/courses/public-health-masters-mph",
+  "https://www.southampton.ac.uk/courses/nursing-adult-masters-msc"
  ],
  "University of Bath": [
   "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-computer-science/",
@@ -55,7 +62,8 @@ export default {
  ],
  "University of Exeter": [
   "https://www.exeter.ac.uk/masters-degrees/msc-advanced-computer-science/",
-  "https://www.exeter.ac.uk/masters-degrees/msc-computer-science/"
+  "https://www.exeter.ac.uk/masters-degrees/msc-computer-science/",
+  "https://www.exeter.ac.uk/masters-degrees/msc-global-healthcare-management/"
  ],
  "University of Liverpool": [
   "https://www.liverpool.ac.uk/courses/advanced-computer-science-with-a-year-in-industry-msc",
@@ -78,20 +86,25 @@ export default {
   "https://www.hw.ac.uk/study/postgraduate/artificial-intelligence"
  ],
  "Aston University": [
-  "https://www.aston.ac.uk/study/courses/advanced-computer-science-msc/april-2027"
+  "https://www.aston.ac.uk/study/courses/advanced-computer-science-msc/april-2027",
+  "https://www.aston.ac.uk/study/courses/public-health-mph/september-2027"
  ],
  "University of Greenwich": [
-  "https://www.gre.ac.uk/postgraduate-courses/engsci/computer-science-msc"
+  "https://www.gre.ac.uk/postgraduate-courses/engsci/computer-science-msc",
+  "https://www.gre.ac.uk/postgraduate-courses/eduhea/global-health-management-msc",
+  "https://www.gre.ac.uk/postgraduate-courses/eduhea/msc-global-public-health"
  ],
  "Wrexham University": [
-  "https://wrexham.ac.uk/courses/postgraduate-courses/computer-science/"
+  "https://wrexham.ac.uk/courses/postgraduate-courses/computer-science/",
+  "https://wrexham.ac.uk/courses/postgraduate-courses/international-health-services-management/"
  ],
  "Edge Hill University": [
   "https://www.edgehill.ac.uk/course/computing-msc/",
   "https://www.edgehill.ac.uk/course/data-science-and-artificial-intelligence/"
  ],
  "University of Chester": [
-  "https://www.chester.ac.uk/study/course-search/advanced-computer-science-msc/"
+  "https://www.chester.ac.uk/study/course-search/advanced-computer-science-msc/",
+  "https://www.chester.ac.uk/study/course-search/adult-nursing-msc/"
  ],
  "University of Sunderland": [
   "https://www.sunderland.ac.uk/postgraduate/msc-computing"
@@ -119,7 +132,8 @@ export default {
  ],
  "Sheffield Hallam University": [
   "https://www.shu.ac.uk/courses/computing/msc-computing/full-time",
-  "https://www.shu.ac.uk/courses/computing/msc-artificial-intelligence/full-time"
+  "https://www.shu.ac.uk/courses/computing/msc-artificial-intelligence/full-time",
+  "https://www.shu.ac.uk/courses/nursing-and-midwifery/msc-nursing-adult/full-time/2027"
  ],
  "Birmingham City University": [
   "https://www.bcu.ac.uk/courses/computer-science-msc-2027-28",
@@ -137,7 +151,8 @@ export default {
   "https://www.port.ac.uk/study/courses/postgraduate-taught/msc-artificial-intelligence-and-machine-learning"
  ],
  "Middlesex University": [
-  "https://www.mdx.ac.uk/courses/postgraduate/computer-science-msc-honours/"
+  "https://www.mdx.ac.uk/courses/postgraduate/computer-science-msc-honours/",
+  "https://www.mdx.ac.uk/courses/postgraduate/adult-nursing-msc-with-nmc-registration/"
  ],
  "University of East London": [
   "https://www.uel.ac.uk/postgraduate/courses/msc-computer-science",
@@ -155,16 +170,20 @@ export default {
   "https://www.bbk.ac.uk/courses/postgraduate/computer-science"
  ],
  "University of East Anglia": [
-  "https://www.uea.ac.uk/course/postgraduate/msc-computing-science"
+  "https://www.uea.ac.uk/course/postgraduate/msc-computing-science",
+  "https://www.uea.ac.uk/course/postgraduate/msc-adult-nursing-preregistration-february-start"
  ],
  "Northumbria University": [
   "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-advanced-computer-science-dtfava6/",
   "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-artificial-intelligence-dtfari6/",
-  "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-human-computer-interaction-dtfhct6/"
+  "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-human-computer-interaction-dtfhct6/",
+  "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-nursing-science-registered-nurse-mental-health-dtfnmx6/"
  ],
  "Edinburgh Napier University": [
   "https://www.napier.ac.uk/courses/msc-computing-postgraduate-fulltime",
-  "https://www.napier.ac.uk/courses/msc-user-experience-design-postgraduate-fulltime"
+  "https://www.napier.ac.uk/courses/msc-user-experience-design-postgraduate-fulltime",
+  "https://www.napier.ac.uk/courses/msc-nursing-adult-health-postgraduate-fulltime",
+  "https://www.napier.ac.uk/courses/msc-nursing-mental-health-postgraduate-fulltime"
  ],
  "Swansea University": [
   "https://www.swansea.ac.uk/postgraduate/taught/maths-comp-sci/computer-science/msc-advanced-computer-science/"
@@ -188,7 +207,10 @@ export default {
  ],
  "Brunel University of London": [
   "https://www.brunel.ac.uk/study/courses/artificial-intelligence-msc",
-  "https://www.brunel.ac.uk/study/courses/human-ai-interaction-msc"
+  "https://www.brunel.ac.uk/study/courses/human-ai-interaction-msc",
+  "https://www.brunel.ac.uk/study/courses/global-healthcare-management-msc",
+  "https://www.brunel.ac.uk/study/courses/public-health-and-health-promotion-msc",
+  "https://www.brunel.ac.uk/study/courses/nursing-adult-msc"
  ],
  "Abertay University": [
   "https://www.abertay.ac.uk/course-search/postgraduate-taught/applied-artificial-intelligence-and-user-experience/"
@@ -204,7 +226,8 @@ export default {
   "https://www.ljmu.ac.uk/study/courses/postgraduates/2027/36223-artificial-intelligence-machine-learning-msc"
  ],
  "University of Salford": [
-  "https://www.salford.ac.uk/courses/postgraduate/artificial-intelligence"
+  "https://www.salford.ac.uk/courses/postgraduate/artificial-intelligence",
+  "https://www.salford.ac.uk/courses/postgraduate/nursing-adult"
  ],
  "De Montfort University": [
   "https://www.dmu.ac.uk/study/courses/postgraduate-courses/artificial-intelligence-msc/artificial-intelligence-msc.aspx"
@@ -228,7 +251,9 @@ export default {
   "https://www.uws.ac.uk/study/postgraduate/postgraduate-course-search/artificial-intelligence"
  ],
  "Oxford Brookes University": [
-  "https://www.brookes.ac.uk/courses/postgraduate/artificial-intelligence"
+  "https://www.brookes.ac.uk/courses/postgraduate/artificial-intelligence",
+  "https://www.brookes.ac.uk/courses/postgraduate/public-health",
+  "https://www.brookes.ac.uk/courses/postgraduate/mental-health-nursing-pre-registration"
  ],
  "Anglia Ruskin University": [
   "https://www.aru.ac.uk/study/postgraduate/artificial-intelligence"
@@ -246,7 +271,8 @@ export default {
   "https://www.uca.ac.uk/study/courses/msc-human-computer-interaction/"
  ],
  "University of Lancashire (UCLan)": [
-  "https://www.lancashire.ac.uk/postgraduate/courses/user-experience-ux-design-msc"
+  "https://www.lancashire.ac.uk/postgraduate/courses/user-experience-ux-design-msc",
+  "https://www.lancashire.ac.uk/postgraduate/courses/nursing-with-registered-nurse-adult-msc"
  ],
  "University of Roehampton": [
   "https://www.roehampton.ac.uk/study/postgraduate-taught-courses/computing/",
@@ -260,7 +286,9 @@ export default {
  ],
  "University of Suffolk": [
   "https://www.uos.ac.uk/study/msc-computer-science/",
-  "https://www.uos.ac.uk/study/msc-data-science-artificial-intelligence/"
+  "https://www.uos.ac.uk/study/msc-data-science-artificial-intelligence/",
+  "https://www.uos.ac.uk/study/msc-public-health-and-wellbeing/",
+  "https://www.uos.ac.uk/study/msc-adult-nursing-preregistration/"
  ],
  "Bath Spa University": [
   "https://www.bathspa.ac.uk/courses/pg-computer-science/",
@@ -268,9 +296,13 @@ export default {
  ],
  "Buckinghamshire New University": [
   "https://www.bucks.ac.uk/courses/postgraduate/msc-computer-science",
-  "https://www.bucks.ac.uk/courses/postgraduate/msc-artificial-intelligence"
+  "https://www.bucks.ac.uk/courses/postgraduate/msc-artificial-intelligence",
+  "https://www.bucks.ac.uk/courses/postgraduate/msc-adult-nursing"
  ],
  "University of Winchester": [
   "https://www.winchester.ac.uk/study/Postgraduate/Courses/MSc-Cyber-Security/"
+ ],
+ "University of Kent": [
+  "https://www.kent.ac.uk/courses/postgraduate/3267/global-healthcare-management"
  ]
 };

@@ -35,7 +35,7 @@ function money(n) {
   return (v < 0 ? "−" : "") + c.sym + Math.abs(v).toLocaleString(c.grp || "en-GB");
 }
 const r100 = n => Math.round(n / 100) * 100;
-const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX" };
+const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health & public health", NUR: "Nursing" };
 const PA = 12570, DED = 0.28; // personal allowance; 20% income tax + 8% NI above it
 
 ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 = r.sl; });
@@ -250,7 +250,7 @@ function filtered() {
     if ($("f-london").checked && r.c === "London") return false;
     if ($("f-noflag").checked && r.fl) return false;
     if ($("f-noest").checked && /est/.test(r.fn)) return false;
-    if (q && ![r.u, r.c, r.p, r.i, r.sl, otherSch(r), r.pl, r.fl, r.lv, PNAME[r.g]].join(" ").toLowerCase().includes(q)) return false;
+    if (q && ![r.u, r.c, r.p, r.i, r.sl, otherSch(r), r.pl, r.fl, r.lv, PNAME[r.g], r.en].join(" ").toLowerCase().includes(q)) return false;
     for (const c of COLS) {
       const f = S.colf[c.k]; if (!f || c.type === "none") continue;
       if (c.type === "num") {
@@ -867,6 +867,7 @@ function courseHTML(r) {
       <b>${esc(r.p)}</b>
     </div>
     <div class="kv">
+      ${r.en ? row("Entry", esc(r.en)) : ""}
       ${row("Intakes", esc(r.i))}
       ${row("Tuition / yr (intl)", `~${money(r.f)}${feeNote(r)}`)}
       ${row("Living / yr", "~" + money(r.l))}

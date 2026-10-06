@@ -4,7 +4,7 @@
 
 It was built for international students (particularly from Nepal), for whom the real question isn't only "which university?" but "can I afford it?". Each university is a pin on a map. Each course shows its international tuition, living costs, the deposit and scholarships open to Nepali students. You enter the jobs you expect to do while studying, and the map shows which courses your earnings would cover.
 
-> **Current scope: United Kingdom 🇬🇧**: 101 universities · 273 courses (Master's + PhD), currently in Computer Science, AI and HCI/UX.
+> **Current scope: United Kingdom 🇬🇧**: 102 universities · 306 courses (Master's + PhD), currently in Computer Science, AI, HCI/UX, health & public health, and nursing.
 > More countries and subjects are planned; see [Future scope](#future-scope).
 
 ---
@@ -65,4 +65,4 @@ The UK is the first country. The plan is to cover the main study destinations, e
 
 Each new country will bring the same features: map pins, filters, the budget & work calculator with that country's tax and student-visa work limits, and live fee refresh where university sites allow it.
 
-Courses will also widen beyond Computer Science, AI and HCI/UX to other subjects, so the map can be used for any field of study.
+Courses will keep widening to other subjects, so the map can be used for any field of study.

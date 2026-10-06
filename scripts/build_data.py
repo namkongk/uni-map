@@ -27,7 +27,9 @@ SPECIAL = {
  "Imperial College London": "President's PhD Scholarships (full)",
 }
 by_uni = {}
-for r in rows: by_uni.setdefault(r["u"], []).append(r)
+# (Computing PhDs: estimated from that university's CS / AI / HCI master's only, not its health or nursing courses.)
+for r in rows:
+    if r["g"] in ("CS", "AI", "HCI"): by_uni.setdefault(r["u"], []).append(r)
 for u, rs in by_uni.items():
     first = rs[0]
     fee = sum(x["f"] for x in rs) / len(rs) * 0.85
