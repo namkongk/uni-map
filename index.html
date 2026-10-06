@@ -112,15 +112,8 @@
       <option value="PhD">PhD</option>
     </select></label>
 
-  <label class="pill-pick" id="subjPick"><span class="sr">Subject</span>
-    <select id="subj">
-      <option value="ALL">All subjects</option>
-      <option value="CS">Computer Science</option>
-      <option value="AI">AI</option>
-      <option value="HCI">HCI / UX</option>
-      <option value="HM">Health &amp; public health</option>
-      <option value="NUR">Nursing</option>
-    </select></label>
+  <div class="pill-pick" id="subjPick">
+    <button type="button" class="mp-btn" id="subjBtn" aria-haspopup="true" aria-expanded="false" aria-controls="subjMenu"><span class="sr">Subjects: </span><span id="subjLbl">All subjects</span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 
   <button type="button" class="btn-plain vt-btn" id="viewToggle" aria-pressed="false">
     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5.5h9M7 10h9M7 14.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="3.8" cy="5.5" r="1.2" fill="currentColor"/><circle cx="3.8" cy="10" r="1.2" fill="currentColor"/><circle cx="3.8" cy="14.5" r="1.2" fill="currentColor"/></svg>
@@ -167,6 +160,17 @@
   <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇨🇦</span><span class="c-t">Canada</span><span class="soon">Coming soon</span></button>
   <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇦🇺</span><span class="c-t">Australia</span><span class="soon">Coming soon</span></button>
   <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇩🇪</span><span class="c-t">Germany</span><span class="soon">Coming soon</span></button>
+</div>
+
+<!-- Subjects: tick any number (none ticked = all subjects) -->
+<div class="mp-menu glass" id="subjMenu" role="group" aria-label="Subjects" hidden>
+  <label class="mp-all"><input type="checkbox" value="ALL"><span>All subjects</span><small id="subjN-ALL"></small></label>
+  <div class="mp-sep" aria-hidden="true"></div>
+  <label><input type="checkbox" value="CS"><span>Computer Science</span><small id="subjN-CS"></small></label>
+  <label><input type="checkbox" value="AI"><span>AI</span><small id="subjN-AI"></small></label>
+  <label><input type="checkbox" value="HCI"><span>HCI / UX</span><small id="subjN-HCI"></small></label>
+  <label><input type="checkbox" value="HM"><span>Health &amp; public health</span><small id="subjN-HM"></small></label>
+  <label><input type="checkbox" value="NUR"><span>Nursing</span><small id="subjN-NUR"></small></label>
 </div>
 
 <!-- Appearance settings -->

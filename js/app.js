@@ -44,12 +44,16 @@ ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 =
 const MOBILE = matchMedia("(max-width:760px)").matches;
 const GLASS_DEF = { theme: "auto", glassT: 45, glassBlur: 22 };
 const newJob = (o = {}) => ({ name: "", rate: 12.71, hrs: 20, wks: 52, ...o });
-const DEF = { lv: "ALL", subj: "ALL", dep: 50, jobs: [newJob()], sortK: "n", dir: 1, cur: COUNTRY.cur, grade: { uni: "", years: "4", type: "", val: "" }, budgetOpen: !MOBILE, filtersOpen: !MOBILE, alert: true, ...GLASS_DEF };
+const DEF = { lv: "ALL", dep: 50, jobs: [newJob()], sortK: "n", dir: 1, cur: COUNTRY.cur, grade: { uni: "", years: "4", type: "", val: "" }, subjs: [], budgetOpen: !MOBILE, filtersOpen: !MOBILE, alert: true, ...GLASS_DEF };
 let S = { ...DEF, colf: {} };
 try { Object.assign(S, JSON.parse(localStorage.getItem("ukmap-state") || "{}"), { colf: {} }); } catch (e) {}
 // Older saves had a single rate / hours / weeks — turn that into the first job.
 if (!Array.isArray(S.jobs) || !S.jobs.length || S.jobs === DEF.jobs) S.jobs = [newJob("rate" in S ? { rate: +S.rate || 0, hrs: +S.hrs || 0, wks: +S.wks || 0 } : {})];
 delete S.rate; delete S.hrs; delete S.wks;
+// Subjects became a multi-select (empty = all); older saves had a single subject.
+if (!Array.isArray(S.subjs)) S.subjs = [];
+if (typeof S.subj === "string" && S.subj !== "ALL" && !S.subjs.length) S.subjs = [S.subj];
+delete S.subj;
 const save = () => { try { const { colf, ...rest } = S; localStorage.setItem("ukmap-state", JSON.stringify(rest)); } catch (e) {} };
 const rowRate = {};
 
@@ -239,7 +243,7 @@ function filtered() {
   const max = +$("maxcost").value, city = $("city").value, rank = $("rank").value, rad = +$("radius").value || 0;
   return ROWS.filter(r => {
     if (S.lv !== "ALL" && r.lv !== S.lv) return false;
-    if (S.subj !== "ALL" && !r.subj.includes(S.subj)) return false;
+    if (S.subjs.length && !r.subj.some(g => S.subjs.includes(g))) return false;
     if (r.n > max) return false;
     if (city) { if (rad > 0 ? uniKm(r.u, city) > rad : r.c !== city) return false; }
     if (rank === "ranked" && r.qs == null) return false;
@@ -265,7 +269,37 @@ function filtered() {
 
 /* ---------------- header controls ---------------- */
 $("lv").addEventListener("input", () => { S.lv = $("lv").value; save(); update(); });
-$("subj").addEventListener("input", () => { S.subj = $("subj").value; save(); update(); });
+/* subjects: a dropdown of checkboxes, any combination; ticking "All subjects" clears the rest */
+function setSubjMenu(open) {
+  const btn = $("subjBtn"), menu = $("subjMenu");
+  menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+  if (open) {
+    const r = btn.getBoundingClientRect();
+    menu.style.top = r.bottom + 10 + "px";
+    menu.style.left = Math.max(8, Math.min(r.left, innerWidth - menu.offsetWidth - 8)) + "px";
+    menu.querySelector("input:checked, input").focus();
+  }
+}
+function syncSubj() {
+  const all = !S.subjs.length;
+  $("subjMenu").querySelectorAll("input").forEach(i => { i.checked = i.value === "ALL" ? all : S.subjs.includes(i.value); });
+  $("subjLbl").textContent = all ? "All subjects" : S.subjs.length === 1 ? PNAME[S.subjs[0]] : `${S.subjs.length} subjects`;
+  $("subjBtn").classList.toggle("on", !all);
+  // how many courses each subject has at the chosen level
+  const lv = ROWS.filter(r => S.lv === "ALL" || r.lv === S.lv);
+  $("subjN-ALL").textContent = lv.length;
+  Object.keys(PNAME).forEach(g => { $("subjN-" + g).textContent = lv.filter(r => r.subj.includes(g)).length; });
+}
+$("subjBtn").addEventListener("click", e => { e.stopPropagation(); setSubjMenu($("subjMenu").hidden); });
+$("subjMenu").addEventListener("change", e => {
+  const i = e.target; if (i.type !== "checkbox") return;
+  if (i.value === "ALL") S.subjs = [];
+  else S.subjs = i.checked ? [...new Set([...S.subjs, i.value])] : S.subjs.filter(g => g !== i.value);
+  if (S.subjs.length === Object.keys(PNAME).length) S.subjs = [];   // everything ticked = all subjects
+  save(); update();
+});
+document.addEventListener("pointerdown", e => { if (!$("subjMenu").hidden && !e.target.closest("#subjMenu, #subjBtn")) setSubjMenu(false); });
+addEventListener("resize", () => { if (!$("subjMenu").hidden) setSubjMenu(false); });
 Object.keys(CITY).sort().forEach(c => { const o = document.createElement("option"); o.value = o.textContent = c; $("city").appendChild(o); });
 function fitMaxCost() {
   const el = $("maxcost"), atMax = el.value === el.max;
@@ -278,7 +312,7 @@ $("reset").addEventListener("click", () => {
   $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = "";
   ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).checked = false);
   document.querySelectorAll("#frow input").forEach(i => i.value = ""); S.colf = {};
-  S.lv = "ALL"; S.subj = "ALL"; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
+  S.lv = "ALL"; S.subjs = []; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
 });
 if (!S.alert) $("alert").hidden = true;
 $("alertX").addEventListener("click", () => { $("alert").hidden = true; S.alert = false; save(); });
@@ -579,6 +613,7 @@ $("tableClose").addEventListener("click", () => { setView(false); $("viewToggle"
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape" || $("liveReport").open) return;
   if (!$("countryMenu").hidden) { setCountryMenu(false); $("countryBtn").focus(); }
+  else if (!$("subjMenu").hidden) { setSubjMenu(false); $("subjBtn").focus(); }
   else if (!$("settings").hidden) { setSettings(false); $("settingsBtn").focus(); } else if (tableOpen) setView(false); else closeCard();
 });
 
@@ -1084,7 +1119,7 @@ syncLiveBar();
 /* ---------------- main update ---------------- */
 function update(opts = {}) {
   $("lv").value = S.lv;
-  $("subj").value = S.subj;
+  syncSubj();
   $("maxv").textContent = money(+$("maxcost").value);
   const nf = activeFilterCount(); $("fCount").hidden = !nf; $("fCount").textContent = nf;
   fillRanges();
