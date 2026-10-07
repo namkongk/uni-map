@@ -728,5 +728,23 @@
   "lng": -2.438,
   "l": 11000,
   "new": true
+ },
+ "SOAS University of London": {
+  "web": "https://www.soas.ac.uk",
+  "c": "London",
+  "lat": 51.5225,
+  "lng": -0.129
+ },
+ "London School of Economics": {
+  "web": "https://www.lse.ac.uk",
+  "c": "London",
+  "lat": 51.5144,
+  "lng": -0.1165
+ },
+ "University of Reading": {
+  "web": "https://www.reading.ac.uk",
+  "c": "Reading",
+  "lat": 51.4414,
+  "lng": -0.9418
  }
 }

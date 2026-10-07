@@ -35,7 +35,7 @@ function money(n) {
   return (v < 0 ? "−" : "") + c.sym + Math.abs(v).toLocaleString(c.grp || "en-GB");
 }
 const r100 = n => Math.round(n / 100) * 100;
-const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health & public health", NUR: "Nursing" };
+const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health & public health", NUR: "Nursing", DEV: "Development economics & finance", SF: "Sustainable & green finance" };
 const PA = 12570, DED = 0.28; // personal allowance; 20% income tax + 8% NI above it
 
 ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 = r.sl; });
