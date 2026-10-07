@@ -4,7 +4,7 @@
 
 It was built for international students (particularly from Nepal), for whom the real question isn't only "which university?" but "can I afford it?". Each university is a pin on a map. Each course shows its international tuition, living costs, the deposit and scholarships open to Nepali students. You enter the jobs you expect to do while studying, and the map shows which courses your earnings would cover.
 
-> **Current scope: United Kingdom 🇬🇧**: 105 universities · 330 courses (Master's + PhD), currently in Computer Science, AI, HCI/UX, health & public health, nursing, development economics & finance, and sustainable & green finance.
+> **Current scope: United Kingdom 🇬🇧**: 108 universities · 414 courses (Master's + PhD), currently in Computer Science, AI, HCI/UX, health & public health, nursing, international development & NGO management, development economics & finance, and sustainable & green finance.
 > More countries and subjects are planned; see [Future scope](#future-scope).
 
 ---

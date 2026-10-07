@@ -746,5 +746,17 @@
   "c": "Reading",
   "lat": 51.4414,
   "lng": -0.9418
+ },
+ "Liverpool School of Tropical Medicine": {
+  "web": "https://www.lstmed.ac.uk",
+  "c": "Liverpool",
+  "lat": 53.4089,
+  "lng": -2.9707
+ },
+ "St Mary's University, Twickenham": {
+  "web": "https://www.stmarys.ac.uk",
+  "c": "London",
+  "lat": 51.4386,
+  "lng": -0.3378
  }
 }

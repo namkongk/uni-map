@@ -11,7 +11,8 @@ export default {
  ],
  "King's College London": [
   "https://www.kcl.ac.uk/study/postgraduate-taught/courses/advanced-computing-msc",
-  "https://www.kcl.ac.uk/study/postgraduate-taught/courses/artificial-intelligence-msc"
+  "https://www.kcl.ac.uk/study/postgraduate-taught/courses/artificial-intelligence-msc",
+  "https://www.kcl.ac.uk/study/postgraduate-taught/courses/emerging-economies-and-international-development-msc"
  ],
  "University of Manchester": [
   "https://www.manchester.ac.uk/study/masters/courses/list/21573/msc-advanced-computer-science/",
@@ -19,39 +20,65 @@ export default {
   "https://www.manchester.ac.uk/study/masters/courses/list/21021/mph-master-of-public-health-on-campus/",
   "https://www.manchester.ac.uk/study/masters/courses/list/18749/msc-adult-nursing/",
   "https://www.manchester.ac.uk/study/masters/courses/list/06537/msc-development-finance/",
-  "https://www.manchester.ac.uk/study/masters/courses/list/06012/msc-development-economics-and-policy/"
+  "https://www.manchester.ac.uk/study/masters/courses/list/06012/msc-development-economics-and-policy/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/20470/msc-global-development/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/20472/msc-global-development-development-management/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/20488/msc-global-development-environment-and-climate-change/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/20490/msc-global-development-globalisation-trade-and-industry/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/20494/msc-global-development-politics-governance-and-development-policy/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/20496/msc-global-development-poverty-and-inequality/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/01211/msc-international-development-public-policy-and-management/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/08264/ma-humanitarianism-and-conflict-response/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/11845/msc-research-methods-with-international-development/",
+  "https://www.manchester.ac.uk/study/masters/courses/list/02242/msc-management-and-implementation-of-development-projects/"
  ],
  "University of Bristol": [
   "https://www.bristol.ac.uk/study/outreach/virtual-resources-for-students/access-virtual-resources/virtual-resources/computer-science-resources/",
   "https://www.bristol.ac.uk/study/postgraduate/taught/msc-artificial-intelligence/",
   "https://www.bristol.ac.uk/study/postgraduate/taught/msc-immersive-technologies-virtual-and-augmented-reality/",
-  "https://www.bristol.ac.uk/study/postgraduate/taught/msc-global-health-policy/"
+  "https://www.bristol.ac.uk/study/postgraduate/taught/msc-global-health-policy/",
+  "https://www.bristol.ac.uk/study/postgraduate/taught/msc-global-development-and-environment/",
+  "https://www.bristol.ac.uk/study/postgraduate/taught/msc-east-asian-development-and-the-global-economy/",
+  "https://www.bristol.ac.uk/study/postgraduate/taught/msc-social-innovation-and-entrepreneurship/"
  ],
  "University of Warwick": [
   "https://warwick.ac.uk/study/postgraduate/courses/msc-computer-science/",
-  "https://warwick.ac.uk/study/postgraduate/courses/msc-applied-artificial-intelligence/"
+  "https://warwick.ac.uk/study/postgraduate/courses/msc-applied-artificial-intelligence/",
+  "https://warwick.ac.uk/study/postgraduate/courses/ma-international-development/"
  ],
  "University of Birmingham": [
   "https://www.birmingham.ac.uk/study/postgraduate/subjects/computer-science-and-data-science-courses/advanced-computer-science-msc",
   "https://www.birmingham.ac.uk/study/postgraduate/subjects/computer-science-and-data-science-courses/artificial-intelligence-machine-learning-msc",
   "https://www.birmingham.ac.uk/study/postgraduate/subjects/computer-science-and-data-science-courses/human-computer-interaction-msc",
   "https://www.birmingham.ac.uk/study/postgraduate/subjects/politics-development-and-international-relations-courses/poverty-inequality-and-development-msc",
-  "https://www.birmingham.ac.uk/study/postgraduate/subjects/accounting-and-finance-courses/msc-sustainable-finance"
+  "https://www.birmingham.ac.uk/study/postgraduate/subjects/accounting-and-finance-courses/msc-sustainable-finance",
+  "https://www.birmingham.ac.uk/study/postgraduate/subjects/politics-development-and-international-relations-courses/international-development-msc",
+  "https://www.birmingham.ac.uk/study/postgraduate/subjects/politics-development-and-international-relations-courses/development-policy-and-politics-msc",
+  "https://www.birmingham.ac.uk/study/postgraduate/subjects/politics-development-and-international-relations-courses/conflict-security-and-development-msc",
+  "https://www.birmingham.ac.uk/study/postgraduate/subjects/politics-development-and-international-relations-courses/environment-development-and-politics-msc",
+  "https://www.birmingham.ac.uk/study/postgraduate/subjects/politics-development-and-international-relations-courses/ai-and-sustainable-development-msc"
  ],
  "University of Leeds": [
-  "https://courses.leeds.ac.uk/F753/advanced_computer_science_msc"
+  "https://courses.leeds.ac.uk/F753/advanced_computer_science_msc",
+  "https://courses.leeds.ac.uk/f823/global-development-ma",
+  "https://courses.leeds.ac.uk/f825/global-development-and-education-ma",
+  "https://courses.leeds.ac.uk/j985/sustainability-environment-and-development-msc"
  ],
  "University of Glasgow": [
   "https://www.gla.ac.uk/postgraduate/taught/computingscience/",
-  "https://www.gla.ac.uk/postgraduate/taught/humancomputerinteraction/"
+  "https://www.gla.ac.uk/postgraduate/taught/humancomputerinteraction/",
+  "https://www.gla.ac.uk/postgraduate/taught/environmentsustainabledevelopment/"
  ],
  "University of Sheffield": [
   "https://sheffield.ac.uk/postgraduate/taught/courses/2027/advanced-computer-science-msc",
   "https://sheffield.ac.uk/postgraduate/taught/courses/2027/artificial-intelligence-msc",
-  "https://sheffield.ac.uk/postgraduate/taught/courses/2027/public-health-management-and-leadership-mph"
+  "https://sheffield.ac.uk/postgraduate/taught/courses/2027/public-health-management-and-leadership-mph",
+  "https://sheffield.ac.uk/postgraduate/taught/courses/2027/international-development-msc"
  ],
  "Durham University": [
-  "https://www.durham.ac.uk/study/postgraduate/taught-degrees/your-choices/computer-science/"
+  "https://www.durham.ac.uk/study/postgraduate/taught-degrees/your-choices/computer-science/",
+  "https://www.durham.ac.uk/study/courses/defence-development-and-diplomacy-l2k609/",
+  "https://www.durham.ac.uk/study/courses/sustainability-energy-and-development-l6k907/"
  ],
  "University of Southampton": [
   "https://www.southampton.ac.uk/courses/advanced-computer-science-masters-msc",
@@ -64,14 +91,22 @@ export default {
  "University of Bath": [
   "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-computer-science/",
   "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-artificial-intelligence/",
-  "https://www.bath.ac.uk/courses/postgraduate-2019/taught-postgraduate-courses/msc-human-computer-interaction/"
+  "https://www.bath.ac.uk/courses/postgraduate-2019/taught-postgraduate-courses/msc-human-computer-interaction/",
+  "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-international-development-full-time/",
+  "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-international-development-management-full-time/",
+  "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-international-development-with-conflict-and-humanitarian-action-full-time/",
+  "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-international-development-with-education-full-time/",
+  "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-international-development-social-justice-and-sustainability-full-time/",
+  "https://www.bath.ac.uk/courses/postgraduate-2027/taught-postgraduate-courses/msc-international-development-with-economics-full-time/"
  ],
  "University of Exeter": [
   "https://www.exeter.ac.uk/masters-degrees/msc-advanced-computer-science/",
   "https://www.exeter.ac.uk/masters-degrees/msc-computer-science/",
   "https://www.exeter.ac.uk/masters-degrees/msc-global-healthcare-management/",
   "https://www.exeter.ac.uk/masters-degrees/msc-economics-international-development/",
-  "https://www.exeter.ac.uk/masters-degrees/msc-sustainable-finance-and-climate-change/"
+  "https://www.exeter.ac.uk/masters-degrees/msc-sustainable-finance-and-climate-change/",
+  "https://www.exeter.ac.uk/masters-degrees/ma-international-development/",
+  "https://www.exeter.ac.uk/masters-degrees/ma-conflict-security-and-development/"
  ],
  "University of Liverpool": [
   "https://www.liverpool.ac.uk/courses/advanced-computer-science-with-a-year-in-industry-msc",
@@ -92,7 +127,12 @@ export default {
   "https://www.sussex.ac.uk/study/masters/courses/advanced-computer-science-msc",
   "https://www.sussex.ac.uk/study/masters/courses/artificial-intelligence-and-adaptive-systems-msc",
   "https://www.sussex.ac.uk/study/masters/courses/development-economics-msc",
-  "https://www.sussex.ac.uk/study/masters/courses/sustainable-finance-and-accounting-msc"
+  "https://www.sussex.ac.uk/study/masters/courses/sustainable-finance-and-accounting-msc",
+  "https://www.sussex.ac.uk/study/masters/courses/development-studies-ma",
+  "https://www.sussex.ac.uk/study/masters/courses/poverty-policy-and-development-practice-ma",
+  "https://www.sussex.ac.uk/study/masters/courses/international-education-and-development-ma",
+  "https://www.sussex.ac.uk/study/masters/courses/international-business-and-development-msc",
+  "https://www.sussex.ac.uk/study/masters/courses/social-development-ma"
  ],
  "Heriot-Watt University": [
   "https://www.hw.ac.uk/study/subjects/computer-science",
@@ -142,7 +182,10 @@ export default {
   "https://www.mmu.ac.uk/study/postgraduate/course/msc-artificial-intelligence"
  ],
  "University of Bradford": [
-  "https://www.bradford.ac.uk/courses/pg/applied-computer-science-artificial-intelligence"
+  "https://www.bradford.ac.uk/courses/pg/applied-computer-science-artificial-intelligence",
+  "https://www.bradford.ac.uk/courses/pg/international-development-management",
+  "https://www.bradford.ac.uk/courses/pg/sustainable-development",
+  "https://www.bradford.ac.uk/courses/pg/peace-conflict-and-development"
  ],
  "Sheffield Hallam University": [
   "https://www.shu.ac.uk/courses/computing/msc-computing/full-time",
@@ -166,11 +209,13 @@ export default {
  ],
  "Middlesex University": [
   "https://www.mdx.ac.uk/courses/postgraduate/computer-science-msc-honours/",
-  "https://www.mdx.ac.uk/courses/postgraduate/adult-nursing-msc-with-nmc-registration/"
+  "https://www.mdx.ac.uk/courses/postgraduate/adult-nursing-msc-with-nmc-registration/",
+  "https://www.mdx.ac.uk/courses/postgraduate/global-governance-and-sustainable-development-ma/"
  ],
  "University of East London": [
   "https://www.uel.ac.uk/postgraduate/courses/msc-computer-science",
-  "https://www.uel.ac.uk/postgraduate/courses/msc-artificial-intelligence"
+  "https://www.uel.ac.uk/postgraduate/courses/msc-artificial-intelligence",
+  "https://www.uel.ac.uk/postgraduate/courses/msc-ngo-development-management"
  ],
  "University of Brighton": [
   "https://www.brighton.ac.uk/courses/study/computer-science-msc.aspx",
@@ -186,13 +231,21 @@ export default {
  ],
  "University of East Anglia": [
   "https://www.uea.ac.uk/course/postgraduate/msc-computing-science",
-  "https://www.uea.ac.uk/course/postgraduate/msc-adult-nursing-preregistration-february-start"
+  "https://www.uea.ac.uk/course/postgraduate/msc-adult-nursing-preregistration-february-start",
+  "https://www.uea.ac.uk/course/postgraduate/ma-global-development",
+  "https://www.uea.ac.uk/course/postgraduate/msc-global-development-management",
+  "https://www.uea.ac.uk/course/postgraduate/ma-education-and-development",
+  "https://www.uea.ac.uk/course/postgraduate/ma-media-communication-and-global-development",
+  "https://www.uea.ac.uk/course/postgraduate/msc-climate-change-and-global-development",
+  "https://www.uea.ac.uk/course/postgraduate/msc-policy-behaviour-and-data-for-global-development"
  ],
  "Northumbria University": [
   "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-advanced-computer-science-dtfava6/",
   "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-artificial-intelligence-dtfari6/",
   "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-human-computer-interaction-dtfhct6/",
-  "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-nursing-science-registered-nurse-mental-health-dtfnmx6/"
+  "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-nursing-science-registered-nurse-mental-health-dtfnmx6/",
+  "https://www.northumbria.ac.uk/study-at-northumbria/courses/msc-global-development-dtfglb6/",
+  "https://www.northumbria.ac.uk/study-at-northumbria/courses/disaster-management-and-sustainable-development-msc-ft-dtfdsd6/"
  ],
  "Edinburgh Napier University": [
   "https://www.napier.ac.uk/courses/msc-computing-postgraduate-fulltime",
@@ -208,24 +261,30 @@ export default {
   "https://www.hull.ac.uk/study/postgraduate-taught/courses/artificial-intelligence-and-data-science-msc"
  ],
  "Queen Mary Univ. of London": [
-  "https://www.qmul.ac.uk/postgraduate/taught/coursefinder/courses/artificial-intelligence-msc/"
+  "https://www.qmul.ac.uk/postgraduate/taught/coursefinder/courses/artificial-intelligence-msc/",
+  "https://www.qmul.ac.uk/postgraduate/taught/coursefinder/courses/global-development-ma/",
+  "https://www.qmul.ac.uk/postgraduate/taught/coursefinder/courses/development-and-international-business-msc/",
+  "https://www.qmul.ac.uk/postgraduate/taught/coursefinder/courses/environment-sustainability-and-development-msc/"
  ],
  "University of St Andrews": [
   "https://www.st-andrews.ac.uk/subjects/computer-science/artificial-intelligence-msc/",
-  "https://www.st-andrews.ac.uk/subjects/computer-science/human-computer-interaction-msc/"
+  "https://www.st-andrews.ac.uk/subjects/computer-science/human-computer-interaction-msc/",
+  "https://www.st-andrews.ac.uk/subjects/sustainable-development/global-sustainable-development-msc/"
  ],
  "Lancaster University": [
   "https://www.lancaster.ac.uk/sci-tech/pgt-my-offer/ai/index.php"
  ],
  "University of Surrey": [
-  "https://www.surrey.ac.uk/postgraduate/artificial-intelligence-msc"
+  "https://www.surrey.ac.uk/postgraduate/artificial-intelligence-msc",
+  "https://www.surrey.ac.uk/postgraduate/sustainable-development-msc"
  ],
  "Brunel University of London": [
   "https://www.brunel.ac.uk/study/courses/artificial-intelligence-msc",
   "https://www.brunel.ac.uk/study/courses/human-ai-interaction-msc",
   "https://www.brunel.ac.uk/study/courses/global-healthcare-management-msc",
   "https://www.brunel.ac.uk/study/courses/public-health-and-health-promotion-msc",
-  "https://www.brunel.ac.uk/study/courses/nursing-adult-msc"
+  "https://www.brunel.ac.uk/study/courses/nursing-adult-msc",
+  "https://www.brunel.ac.uk/study/courses/international-development-and-humanitarianism-msc"
  ],
  "Abertay University": [
   "https://www.abertay.ac.uk/course-search/postgraduate-taught/applied-artificial-intelligence-and-user-experience/"
@@ -252,7 +311,9 @@ export default {
  ],
  "University of Westminster": [
   "https://www.westminster.ac.uk/computer-science-and-engineering-data-science-and-informatics-courses/2027-28/september/full-time/applied-artificial-intelligence-msc",
-  "https://www.westminster.ac.uk/accounting-and-finance-courses/2027-28/september/full-time/finance-and-sustainable-finance-msc"
+  "https://www.westminster.ac.uk/accounting-and-finance-courses/2027-28/september/full-time/finance-and-sustainable-finance-msc",
+  "https://www.westminster.ac.uk/business-and-management-economics-courses/2027-28/september/full-time/international-development-management-msc",
+  "https://www.westminster.ac.uk/media-and-communication-courses/2027-28/september/full-time/media-communication-and-development-ma"
  ],
  "Goldsmiths, Univ. of London": [
   "https://www.gold.ac.uk/pg/msc-applied-artificial-intelligence/"
@@ -324,19 +385,52 @@ export default {
  ],
  "SOAS University of London": [
   "https://www.soas.ac.uk/study/find-course/msc-development-economics",
-  "https://www.soas.ac.uk/study/find-course/msc-international-finance-and-development"
+  "https://www.soas.ac.uk/study/find-course/msc-international-finance-and-development",
+  "https://www.soas.ac.uk/study/find-course/msc-global-development",
+  "https://www.soas.ac.uk/study/find-course/msc-global-development-gender",
+  "https://www.soas.ac.uk/study/find-course/msc-global-development-labour-and-activism",
+  "https://www.soas.ac.uk/study/find-course/msc-environment-politics-and-development",
+  "https://www.soas.ac.uk/study/find-course/msc-humanitarianism-aid-conflict-0",
+  "https://www.soas.ac.uk/study/find-course/msc-migration-mobility-and-development",
+  "https://www.soas.ac.uk/study/find-course/msc-research-international-development",
+  "https://www.soas.ac.uk/study/find-course/msc-violence-conflict-and-development"
  ],
  "University of Reading": [
   "https://www.reading.ac.uk/ready-to-study/study/subject-area/international-development-and-applied-economics-pg/msc-development-finance",
-  "https://www.icmacentre.ac.uk/study/masters/msc-climate-change-sustainable-business-green-finance"
+  "https://www.icmacentre.ac.uk/study/masters/msc-climate-change-sustainable-business-green-finance",
+  "https://www.reading.ac.uk/ready-to-study/study/subject-area/international-development-and-applied-economics-pg/msc-global-development-in-practice"
  ],
  "University of Oxford": [
-  "https://www.ox.ac.uk/admissions/graduate/courses/msc-economics-development"
+  "https://www.ox.ac.uk/admissions/graduate/courses/msc-economics-development",
+  "https://www.ox.ac.uk/admissions/graduate/courses/mphil-development-studies",
+  "https://www.ox.ac.uk/admissions/graduate/courses/msc-refugee-and-forced-migration-studies",
+  "https://www.ox.ac.uk/admissions/graduate/courses/msc-sustainability-enterprise-and-the-environment"
  ],
  "London School of Economics": [
-  "https://www.lse.ac.uk/study-at-lse/graduate/msc-development-management-applied-development-economics"
+  "https://www.lse.ac.uk/study-at-lse/graduate/msc-development-management-applied-development-economics",
+  "https://www.lse.ac.uk/study-at-lse/graduate/msc-development-studies",
+  "https://www.lse.ac.uk/study-at-lse/graduate/msc-international-development-and-humanitarian-emergencies",
+  "https://www.lse.ac.uk/study-at-lse/graduate/msc-international-social-and-public-policy-development",
+  "https://www.lse.ac.uk/study-at-lse/graduate/msc-social-innovation-and-entrepreneurship"
  ],
  "University of Edinburgh": [
-  "https://study.ed.ac.uk/programmes/postgraduate-taught/671-climate-change-finance-and-investment"
+  "https://study.ed.ac.uk/programmes/postgraduate-taught/671-climate-change-finance-and-investment",
+  "https://study.ed.ac.uk/programmes/postgraduate-taught/681-international-development"
+ ],
+ "Liverpool Hope University": [
+  "https://www.hope.ac.uk/postgraduate/postgraduatecourses/globalisationanddevelopmentstudiesma/"
+ ],
+ "Liverpool School of Tropical Medicine": [
+  "https://www.lstmed.ac.uk/study/courses/msc-humanitarian-studies"
+ ],
+ "UCL": [
+  "https://www.ucl.ac.uk/prospective-students/graduate/taught-degrees/social-development-practice-msc",
+  "https://www.ucl.ac.uk/prospective-students/graduate/taught-degrees/development-administration-and-planning-msc"
+ ],
+ "University of Aberdeen": [
+  "https://www.abdn.ac.uk/study/postgraduate-taught/degree-programmes/2080/sustainability-economics-and-finance/"
+ ],
+ "St Mary's University, Twickenham": [
+  "https://www.prospects.ac.uk/universities/st-marys-university-twickenham-london-3993/courses/charity-management-41509"
  ]
 };
