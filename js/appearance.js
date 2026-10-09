@@ -29,10 +29,7 @@ $("glassT").addEventListener("input", e => { A.glassT = +e.target.value; save();
 $("glassBlur").addEventListener("input", e => { A.glassBlur = +e.target.value; save(); apply(); });
 $("glassReset").addEventListener("click", () => { A = { ...DEF }; save(); apply(); });
 
-const setOpen = open => { $("settings").hidden = !open; $("settingsBtn").setAttribute("aria-expanded", String(open)); };
-$("settingsBtn").addEventListener("click", e => { e.stopPropagation(); setOpen($("settings").hidden); });
-document.addEventListener("pointerdown", e => { if (!$("settings").hidden && !e.target.closest("#settings, #settingsBtn")) setOpen(false); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("settings").hidden) { setOpen(false); $("settingsBtn").focus(); } });
+// The settings button opens the profile & settings modal (js/account.js), which holds these controls.
 // Changed on the map page in another tab → follow it here.
 addEventListener("storage", e => { if (e.key === KEY) { const s = load(); ["theme", "glassT", "glassBlur"].forEach(k => { if (s[k] != null) A[k] = s[k]; }); apply(); } });
 apply();

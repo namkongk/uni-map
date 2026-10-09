@@ -4,7 +4,7 @@
 const env = () => ({ url: (process.env.SUPABASE_URL || "").replace(/\/+$/, ""), key: process.env.SUPABASE_SECRET_KEY || "" });
 export const dbReady = () => { const { url, key } = env(); return !!(url && key); };
 
-async function rest(path, { method = "GET", body, prefer } = {}) {
+export async function rest(path, { method = "GET", body, prefer } = {}) {
   const { url, key } = env();
   const headers = { apikey: key, "content-type": "application/json" };
   if (key.startsWith("ey")) headers.authorization = "Bearer " + key;   // legacy service_role keys are JWTs

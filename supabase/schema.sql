@@ -59,5 +59,41 @@ create table if not exists public.course_candidates (
 );
 alter table public.course_candidates enable row level security;
 
--- Make the API see the new columns and table straight away.
+-- ---------------------------------------------------------------------------------------------------------------
+-- User profiles (added later). A profile is a name + password; the 12-digit id is the login. Only the server touches
+-- these tables (row level security on, no policies), through /api/account.
+create table if not exists public.app_users (
+  id               text primary key check (id ~ '^[0-9]{12}$'),
+  name             text not null check (char_length(name) between 1 and 60),
+  pass_hash        text not null,                    -- scrypt, with a random salt per user (never the password itself)
+  data             jsonb not null default '{}'::jsonb,   -- saved inputs: { map: {...}, plan: {...} }
+  data_updated_at  timestamptz,
+  created_at       timestamptz not null default now(),
+  last_login_at    timestamptz
+);
+
+-- Signed-in browsers. Only a SHA-256 fingerprint of each session token is stored, so a leaked table can't be used to sign in.
+create table if not exists public.app_sessions (
+  token_hash  text primary key,
+  user_id     text not null references public.app_users (id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  expires_at  timestamptz not null
+);
+create index if not exists app_sessions_user_idx on public.app_sessions (user_id);
+
+-- Sign-in and sign-up attempts, for lockouts and rate limits. Network addresses are stored only as keyed fingerprints.
+create table if not exists public.auth_attempts (
+  id    bigint generated always as identity primary key,
+  kind  text not null,            -- login | signup
+  key   text not null,            -- "id:<profile id>" or "ip:<fingerprint>"
+  ok    boolean not null default false,
+  at    timestamptz not null default now()
+);
+create index if not exists auth_attempts_lookup_idx on public.auth_attempts (kind, key, at desc);
+
+alter table public.app_users enable row level security;
+alter table public.app_sessions enable row level security;
+alter table public.auth_attempts enable row level security;
+
+-- Make the API see new columns and tables straight away.
 notify pgrst, 'reload schema';

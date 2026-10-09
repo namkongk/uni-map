@@ -515,9 +515,7 @@ $("countryMenu").addEventListener("keydown", e => {
 });
 document.addEventListener("pointerdown", e => { if (!$("countryMenu").hidden && !e.target.closest("#countryMenu, #countryBtn")) setCountryMenu(false); });
 
-const setSettings = open => { $("settings").hidden = !open; $("settingsBtn").setAttribute("aria-expanded", String(open)); };
-$("settingsBtn").addEventListener("click", e => { e.stopPropagation(); setSettings($("settings").hidden); });
-document.addEventListener("pointerdown", e => { if (!$("settings").hidden && !e.target.closest("#settings, #settingsBtn")) setSettings(false); });
+// The settings button opens the profile & settings modal (js/account.js), which holds the appearance controls.
 applyAppearance();
 
 const syncHdr = () => document.documentElement.style.setProperty("--hdr", $("hdr").getBoundingClientRect().height + "px");
@@ -692,7 +690,7 @@ document.addEventListener("keydown", e => {
   if (e.key !== "Escape" || $("liveReport").open) return;
   if (!$("countryMenu").hidden) { setCountryMenu(false); $("countryBtn").focus(); }
   else if (!$("subjMenu").hidden) { setSubjMenu(false); $("subjBtn").focus(); }
-  else if (!$("settings").hidden) { setSettings(false); $("settingsBtn").focus(); } else if (tableOpen) setView(false); else closeCard();
+  else if ($("acctDlg")?.open) return; else if (tableOpen) setView(false); else closeCard();
 });
 
 /* ---------------- table ---------------- */

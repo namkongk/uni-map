@@ -24,8 +24,18 @@ createServer(async (req, res) => {
       const mod = await import(join(ROOT, "api", api[1] + ".js"));
       const handler = mod[req.method];
       if (!handler) { res.writeHead(405).end(); return; }
-      const out = await handler(new Request(url, { method: req.method, headers: req.headers }));
-      res.writeHead(out.status, Object.fromEntries(out.headers)); res.end(Buffer.from(await out.arrayBuffer()));
+      // Pass the body through for POSTs (capped at 1 MB), like Vercel does.
+      let body;
+      if (!["GET", "HEAD"].includes(req.method)) {
+        const chunks = []; let size = 0;
+        for await (const c of req) { size += c.length; if (size > 1e6) { res.writeHead(413).end(); return; } chunks.push(c); }
+        body = Buffer.concat(chunks);
+      }
+      const out = await handler(new Request(url, { method: req.method, headers: req.headers, body }));
+      const outHeaders = Object.fromEntries(out.headers);
+      const cookies = out.headers.getSetCookie?.() || [];
+      if (cookies.length) outHeaders["set-cookie"] = cookies;
+      res.writeHead(out.status, outHeaders); res.end(Buffer.from(await out.arrayBuffer()));
       console.log(req.method, url.pathname + url.search, out.status);
       return;
     }
