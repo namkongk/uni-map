@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "data": "python3 scripts/build_data.py",
-    "discover": "node scripts/discover.mjs"
+    "discover": "node scripts/discover.mjs",
+    "refresh-all": "node scripts/refresh_all.mjs"
   },
   "type": "module",
   "engines": {

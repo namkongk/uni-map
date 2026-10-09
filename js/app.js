@@ -1059,11 +1059,23 @@ function syncLiveBar(msg) {
   $("refreshBtn").title = `Refresh fees — re-read the international fee from each university's course page.\n${st}`;
   $("liveReportBtn").hidden = !LIVE.checked;
 }
+// Shared fees: the latest readings saved in the database by anyone's refresh (api/fees). Applied on load,
+// with the same safeguard as a manual refresh (a fee far from the built-in one shows as "needs check").
+async function loadSharedFees(fresh) {
+  try {
+    const rsp = await fetch("api/fees" + (fresh ? "?t=" + Date.now() : ""));
+    if (!rsp.ok) return false;
+    const j = await rsp.json();
+    if (!j.res || !j.n) return false;
+    LIVE = { checked: j.checked, res: j.res, shared: true };
+    return true;
+  } catch (e) { return false; }
+}
 let refreshing = false;
 async function refreshFees() {
   if (refreshing) return;
   refreshing = true; $("refreshBtn").disabled = true; $("refreshBtn").classList.add("spin");
-  const res = {}, queue = SOURCE_UNIS.slice(); let done = 0, apiMissing = false;
+  const res = {}, queue = SOURCE_UNIS.slice(); let done = 0, apiMissing = false, dbSaved = false;
   syncLiveBar(`Checking 0 / ${queue.length} universities…`);
   async function worker() {
     while (queue.length && !apiMissing) {
@@ -1073,6 +1085,7 @@ async function refreshFees() {
         if (!rsp.ok && !/json/.test(rsp.headers.get("content-type") || "")) { apiMissing = true; break; }
         const j = await rsp.json();
         (j.results || []).forEach(x => { res[x.url] = x; });
+        if (/^saved/.test(j.db || "")) dbSaved = true;
       } catch (e) { ROWS.filter(r => r.u === u && r.url).forEach(r => { res[r.url] = { url: r.url, ok: false, err: "Network error" }; }); }
       syncLiveBar(`Checking ${++done} / ${SOURCE_UNIS.length} universities…`);
     }
@@ -1084,7 +1097,10 @@ async function refreshFees() {
     showReport("The refresh service isn't running here. Start the site with <code>npm run dev</code> (not a plain static server), or deploy it to Vercel — the <code>/api/refresh</code> function fetches the university pages.");
     return;
   }
-  LIVE = { checked: new Date().toISOString(), res }; saveLive();
+  LIVE = { checked: new Date().toISOString(), res };
+  // Saved to the shared database: reload from there, so pages that failed this time keep their last good fee.
+  if (dbSaved) await loadSharedFees(true);
+  saveLive();
   applyLive(); fitMaxCost(); update(); syncLiveBar(); showReport();
 }
 
@@ -1133,5 +1149,6 @@ function update(opts = {}) {
 
 update();
 startMap();
+loadSharedFees().then(ok => { if (!ok || refreshing) return; saveLive(); applyLive(); fitMaxCost(); update(); syncLiveBar(); });
 loadRates();
 })();

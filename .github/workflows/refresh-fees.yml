@@ -1,0 +1,28 @@
+# Weekly fee refresh: re-reads every course page's international fee and saves it to the Supabase database
+# (same as `npm run refresh-all`). The map picks up the new fees from /api/fees within a few minutes.
+# Needs repository secrets SUPABASE_URL and SUPABASE_SECRET_KEY (Settings → Secrets and variables → Actions).
+name: Refresh fees
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"   # every Monday 03:00 UTC (08:45 in Nepal)
+  workflow_dispatch:       # "Run workflow" button on the Actions tab, to run it any time
+
+concurrency:
+  group: refresh-fees
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Refresh fees and save to the database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: node scripts/refresh_all.mjs
