@@ -775,3 +775,28 @@ td.num .sub{white-space:normal;min-width:120px;max-width:200px;margin-left:auto}
   .tb3 .tb-r{justify-content:flex-end}
   .tb3 .uni-search{max-width:none;margin:0;width:100%}
 }
+
+/* list view: Budget & work fold above the table (summary when closed, full form when open) */
+.tv-bar{justify-content:space-between;align-items:flex-start}
+.tv-fin{flex:1 1 600px;min-width:0;border-radius:var(--r-lg);background:rgb(var(--tint) / calc(var(--glass-a) * .5));box-shadow:0 0 0 .5px var(--line);max-height:42vh;overflow:auto}
+.tv-fin summary{display:flex;align-items:center;flex-wrap:nowrap;gap:6px 12px;padding:8px 14px;cursor:pointer;list-style:none;font-size:13px}
+.tv-fin summary::-webkit-details-marker{display:none}
+/* same card icon and round chevron as the Budget & work panel on the map */
+.tv-fin .ph-ico{width:18px;height:18px;color:var(--accent);flex:none}
+.tv-fin .caret{margin-left:auto;width:22px;height:22px;border-radius:50%;background:var(--fill);position:relative;flex:none;transform:rotate(-90deg);transition:transform .4s var(--spring)}
+.tv-fin .caret::after{content:"";position:absolute;left:7px;top:6px;width:6px;height:6px;border-right:1.8px solid var(--ink-2);border-bottom:1.8px solid var(--ink-2);transform:rotate(45deg)}
+.tv-fin[open] .caret{transform:none}
+.tv-fin summary:hover{background:var(--fill)}
+.tv-fin-t{font-weight:700;color:var(--ink)}
+.tv-fin-sum{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;min-width:0;flex:1}
+.fs-i{display:inline-flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums}
+.fs-k{font-size:11.5px;color:var(--muted);font-weight:550}
+.fs-i b{font-weight:650;color:var(--ink)}
+.fs-i.take{background:var(--accent-soft);border-radius:999px;padding:2px 10px}
+.fs-i.take b{color:var(--accent);font-size:14px;font-weight:700}
+.fs-i.take small{font-size:11px;font-weight:600}
+.fs-i.warn b{color:var(--amber-ink)}
+.fs-badge{font-size:11px;font-weight:650;color:var(--amber-ink);background:var(--amber);border-radius:999px;padding:2px 9px}
+.tv-fin .fin-inline{padding:4px 14px 12px}
+.tv-meta{flex:none;margin-left:auto;padding-top:4px}
+.tv-fin[open]{flex-basis:100%}   /* open: full width so the jobs sit in one row; the course count moves below */

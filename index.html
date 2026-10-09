@@ -235,7 +235,11 @@
   <button type="button" class="icon-btn tv-close" id="tableClose" aria-label="Close list">
     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
   <div class="tv-bar">
-    <div class="fin-inline" id="finInline"></div>
+    <!-- budget & work (deposit + jobs): above the table, expand to add and edit jobs -->
+    <details class="tv-fin" id="tvFin">
+      <summary><svg class="ph-ico" viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4.5" width="14" height="11" rx="2.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M3 8.5h14" stroke="currentColor" stroke-width="1.7"/></svg><span class="tv-fin-t">Budget &amp; work</span><span class="tv-fin-sum" id="tvFinSum"></span><span class="caret" aria-hidden="true"></span></summary>
+      <div class="fin-inline" id="finInline"></div>
+    </details>
     <div class="tv-meta"><span id="count"></span><button type="button" class="btn-plain" id="clearrates">Clear row rates</button></div>
   </div>
   <div class="tablebox" id="tablebox">

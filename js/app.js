@@ -634,6 +634,11 @@ function syncFin(except) {
   document.querySelectorAll('[data-out="warn"]').forEach(b => { b.hidden = !warn; b.textContent = warn; });
   J().forEach((j, i) => document.querySelectorAll(`[data-out="gross${i}"]`).forEach(b => b.textContent = fmoney(jobGross(j)) + "/yr"));
   $("thMini").textContent = (MULTI ? FC().flag + " " : "") + th + "/yr";
+  const item = (k, v, cls = "") => `<span class="fs-i ${cls}"><span class="fs-k">${k}</span><b>${v}</b></span>`;
+  $("tvFinSum").innerHTML = (MULTI ? item("Jobs in", FC().flag + " " + esc(FC().name)) : "") +
+    item("Deposit", `${+S.dep || 0}%`) + item(J().length === 1 ? "Job" : "Jobs", J().length) +
+    item("Hours", `${wk} h/week`, wk > FC().visaHrs ? "warn" : "") + item("Take-home", `${th}<small>/yr</small>`, "take") +
+    (wk > FC().visaHrs ? `<span class="fs-badge">Over ${FC().visaHrs} h visa limit</span>` : "");
 }
 FIN.forEach(el => {
   el.addEventListener("input", e => {
@@ -659,6 +664,9 @@ FIN.forEach(el => {
     }
   });
 });
+// List view: the Budget & work fold under the table remembers whether you left it open.
+$("tvFin").open = !!S.tvFinOpen;
+$("tvFin").addEventListener("toggle", () => { S.tvFinOpen = $("tvFin").open; save(); });
 $("budgetToggle").addEventListener("click", () => { S.budgetOpen = !S.budgetOpen; if (MOBILE && S.budgetOpen) { S.filtersOpen = false; applyFilters(); } save(); applyBudget(); });
 const applyBudget = () => { $("budgetToggle").setAttribute("aria-expanded", String(S.budgetOpen)); $("budgetBody").hidden = !S.budgetOpen; };
 applyBudget(); renderFin();
