@@ -109,8 +109,46 @@ export function extractIntlFee(text, debug = false) {
   return { fee: pick.fee, score: pick.s, ctx: pick.ctx, year: pick.year || null };
 }
 
+/* ---------------- course details: title, start dates, whether it's still running, entry requirement ---------------- */
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MON_RE = "(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sept?(?:ember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)";
+const SHORT = { 0: "Jan", 1: "Feb", 2: "Mar", 3: "Apr", 4: "May", 5: "June", 6: "July", 7: "Aug", 8: "Sept", 9: "Oct", 10: "Nov", 11: "Dec" };
+const monIdx = m => MONTHS.findIndex(x => x.toLowerCase().startsWith(m.slice(0, 3).toLowerCase()));
+// Strong signs a course isn't recruiting any more; a closed deadline for one intake is not one of them.
+const CLOSED = /(no longer (?:accepting|taking|recruiting|open to|running|offered|available)|not (?:currently )?(?:accepting|recruiting) (?:applications|students)|(?:course|programme) (?:has been |is (?:being )?)?(?:withdrawn|discontinued|suspended|closed to (?:new )?applic)|will not (?:run|be (?:running|offered|recruiting))|recruitment (?:has been |is )?(?:paused|suspended)|not open (?:to|for) (?:new )?applications)/i;
+const DEADLINE_CLOSED = /applications? (?:for [^|.]{0,40})?(?:are |is |have |has )?(?:now )?closed/i;
+
 /**
- * Fetch a course page and pull out the international fee.
+ * Course details from a course page's text: { title, intakes: ["Sept", "Jan"], status: "open"|"closed"|"check", statusNote, entry }.
+ * Intakes only come from dates next to words like "start", "intake" or "entry", not open days or deadlines.
+ */
+export function extractCourseInfo(html, text = htmlToText(html)) {
+  const clean = s => decode(String(s || "").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+  const title = clean(html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || html.match(/<title>([\s\S]*?)<\/title>/i)?.[1]).slice(0, 160);
+  const seen = new Set();
+  const near = new RegExp(`(?:start(?:s|ing)?(?: dates?| month| in)?|intakes?|entry (?:points?|dates?|in)|course (?:begins|starts)|begins?|commenc\\w*)[^.]{0,45}?\\b${MON_RE}\\b`, "gi");
+  for (const m of text.matchAll(near)) {
+    // also pick up lists right after the first month: "Start dates: September, January"
+    const tail = text.slice(m.index, m.index + m[0].length + 60);
+    for (const x of tail.matchAll(new RegExp(`\\b${MON_RE}\\b`, "gi"))) { const k = monIdx(x[1]); if (k >= 0) seen.add(k); }
+  }
+  // Order from the September intake round: Sept, Oct, …, Aug.
+  const intakes = [...seen].sort((a, b) => ((a + 4) % 12) - ((b + 4) % 12)).map(k => SHORT[k]).slice(0, 6);
+  let status = "open", statusNote = "";
+  const c = text.match(new RegExp(`[^|.]{0,80}${CLOSED.source}[^|.]{0,80}`, "i"));
+  if (c) { status = "closed"; statusNote = clean(c[0]).slice(0, 200); }
+  else { const d = text.match(new RegExp(`[^|.]{0,60}${DEADLINE_CLOSED.source}[^|.]{0,60}`, "i")); if (d) { status = "check"; statusNote = clean(d[0]).slice(0, 200); } }
+  let entry = "";
+  for (const m of text.matchAll(/entry requirements?|academic requirements?|you will need|applicants (?:should|must|will)/gi)) {
+    const w = text.slice(m.index, m.index + 900);
+    const e = w.match(/[^|.]{0,200}(2:1|2:2|2\.1|2\.2|upper second|lower second|second[- ]class|first[- ]class|honours degree|bachelor'?s degree|undergraduate degree)[^|]{0,240}/i);
+    if (e) { entry = clean(e[0]).slice(0, 400); break; }
+  }
+  return { title, intakes, status, statusNote, entry };
+}
+
+/**
+ * Fetch a course page and pull out the international fee (and the course details above).
  * Falls back to (1) JSON embedded in <script> tags for JS-rendered pages, then (2) a fees sub-page
  * linked from the course page (e.g. Cambridge's ".../cscsmpacs/finance").
  */
@@ -126,7 +164,7 @@ export async function scrapeCourse(url) {
       try { const r = await fetchText(sub); fee = extractIntlFee(htmlToText(r.text)); if (fee) { via = "fees page"; src = r.url; break; } } catch {}
     }
   }
-  return { url: finalUrl, src, fee, via };
+  return { url: finalUrl, src, fee, via, info: extractCourseInfo(html) };
 }
 
 /* ---------------- sitemap discovery (used by scripts/discover.mjs) ---------------- */

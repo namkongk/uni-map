@@ -1,7 +1,8 @@
-# Weekly fee refresh: re-reads every course page's international fee and saves it to the Supabase database
-# (same as `npm run refresh-all`). The map picks up the new fees from /api/fees within a few minutes.
+# Weekly refresh: (1) re-reads every course page's international fee and course details (start dates, open/closed,
+# entry requirements) into the Supabase database — the map picks them up from /api/fees within a few minutes;
+# (2) scans UK universities not on the map for courses in its subjects and lists them in course_candidates for review.
 # Needs repository secrets SUPABASE_URL and SUPABASE_SECRET_KEY (Settings → Secrets and variables → Actions).
-name: Refresh fees
+name: Refresh fees & discover courses
 
 on:
   schedule:
@@ -15,7 +16,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,3 +27,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
         run: node scripts/refresh_all.mjs
+      - name: Look for courses at universities not on the map
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: node scripts/discover_new.mjs

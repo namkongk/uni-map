@@ -33,3 +33,28 @@ create index if not exists fee_history_url_idx on public.fee_history (url, check
 -- Only the server, using the secret key in Vercel's environment variables, can.
 alter table public.course_fees enable row level security;
 alter table public.fee_history enable row level security;
+
+-- ---------------------------------------------------------------------------------------------------------------
+-- Course details read on every refresh (added later — running this whole file again just adds what's missing).
+alter table public.course_fees add column if not exists title        text;        -- course name as shown on the page
+alter table public.course_fees add column if not exists intakes      text[];      -- start months found on the page, e.g. {Sept,Jan}
+alter table public.course_fees add column if not exists course_status text;       -- open | closed (not recruiting) | gone (page removed) | check (a deadline has closed)
+alter table public.course_fees add column if not exists status_note  text;        -- the sentence that triggered closed/check
+alter table public.course_fees add column if not exists entry        text;        -- entry requirement sentence from the page
+alter table public.course_fees add column if not exists info_at      timestamptz; -- when these details were last read
+
+-- Courses found by the weekly discovery scan at universities that aren't on the map yet. Review them here:
+-- set status to 'added' once added to the map (scripts/masters_rows.json), or 'rejected' to stop seeing them.
+create table if not exists public.course_candidates (
+  url         text primary key,
+  uni         text not null,
+  subject     text,                      -- best-guess subject group: CS, AI, HCI, HM, NUR, DEV, SF, DM
+  title       text,
+  fee         integer,                   -- international fee per year if the page showed one
+  intakes     text[],
+  entry       text,
+  status      text not null default 'new',   -- new | added | rejected
+  found_at    timestamptz not null default now(),
+  last_seen   timestamptz not null default now()
+);
+alter table public.course_candidates enable row level security;

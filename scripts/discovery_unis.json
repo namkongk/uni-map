@@ -1,0 +1,23 @@
+{
+ "_about": "UK universities not on the map and not in universities.json, scanned weekly by scripts/discover_new.mjs for master's in the map's subjects. Add a university here (name → website) to include it in the scan.",
+ "Arden University": "https://arden.ac.uk",
+ "Bishop Grosseteste University": "https://www.bishopg.ac.uk",
+ "BPP University": "https://www.bpp.com",
+ "Falmouth University": "https://www.falmouth.ac.uk",
+ "Harper Adams University": "https://www.harper-adams.ac.uk",
+ "Hartpury University": "https://www.hartpury.ac.uk",
+ "London School of Hygiene & Tropical Medicine": "https://www.lshtm.ac.uk",
+ "Newman University": "https://www.newman.ac.uk",
+ "Northeastern University London": "https://www.nulondon.ac.uk",
+ "Plymouth Marjon University": "https://www.marjon.ac.uk",
+ "Queen Margaret University": "https://www.qmu.ac.uk",
+ "Ravensbourne University London": "https://www.ravensbourne.ac.uk",
+ "Regent's University London": "https://www.regents.ac.uk",
+ "Richmond American University London": "https://www.richmond.ac.uk",
+ "Royal Agricultural University": "https://www.rau.ac.uk",
+ "Scotland's Rural College": "https://www.sruc.ac.uk",
+ "University of Chichester": "https://www.chi.ac.uk",
+ "University of Cumbria": "https://www.cumbria.ac.uk",
+ "University of Law": "https://www.law.ac.uk",
+ "University of the Highlands and Islands": "https://www.uhi.ac.uk"
+}

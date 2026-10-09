@@ -38,7 +38,7 @@ const r100 = n => Math.round(n / 100) * 100;
 const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health & public health", NUR: "Nursing", DEV: "Development economics & finance", SF: "Sustainable & green finance", DM: "International development & NGO management" };
 const PA = 12570, DED = 0.28; // personal allowance; 20% income tax + 8% NI above it
 
-ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 = r.sl; });
+ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 = r.sl; r.i0 = r.i; r.fl0 = r.fl; });
 
 /* ---------------- state ---------------- */
 const MOBILE = matchMedia("(max-width:760px)").matches;
@@ -152,7 +152,17 @@ function liveStatus(r) {
 function applyLive() {
   for (const r of ROWS) {
     if (r.lv !== "Masters") continue;
-    r.f = r.f0; r.fn = r.fn0; r.live = null;
+    r.f = r.f0; r.fn = r.fn0; r.live = null; r.i = r.i0; r.fl = r.fl0; r.iLive = false; r.closed = null;
+    // Course details read from the course page: start dates replace the stored intakes; a course that has
+    // stopped recruiting (or whose page is gone) gets a warning, which "Hide warnings" also filters out.
+    const info = r.url && LIVE.res[r.url]?.info;
+    if (info) {
+      if (info.intakes?.length) { r.i = info.intakes.join(", "); r.iLive = r.i !== r.i0; }
+      if (info.status === "closed" || info.status === "gone") {
+        r.closed = { status: info.status, note: info.statusNote || "" };
+        r.fl = [r.fl0, info.status === "gone" ? "Course page removed — check it still runs" : "Not taking applications (per course page)"].filter(Boolean).join("; ");
+      }
+    }
     const st = liveStatus(r);
     if (st === "updated" || st === "same") {
       const x = LIVE.res[r.url];
@@ -903,7 +913,8 @@ function courseHTML(r) {
     </div>
     <div class="kv">
       ${r.en ? row("Entry", esc(r.en)) : ""}
-      ${row("Intakes", esc(r.i))}
+      ${row("Intakes", esc(r.i) + (r.iLive ? `<span class="sub">from the course page · listed as ${esc(r.i0)}</span>` : ""))}
+      ${r.closed ? row(r.closed.status === "gone" ? "Course page" : "Applications", `<span class="sub warn">${esc(r.closed.note || (r.closed.status === "gone" ? "The page has been removed" : "Not taking applications"))}</span>`, "hl") : ""}
       ${row("Tuition / yr (intl)", `~${money(r.f)}${feeNote(r)}`)}
       ${row("Living / yr", "~" + money(r.l))}
       ${row("Total yr 1", "~" + money(r.t))}
@@ -1109,16 +1120,18 @@ function showReport(errorHTML) {
   if (errorHTML) { $("lrSummary").innerHTML = errorHTML; $("lrBody").innerHTML = ""; dlg.showModal(); return; }
   const rows = ROWS.filter(r => r.lv === "Masters").map(r => ({ r, st: liveStatus(r) }));
   const n = st => rows.filter(x => x.st === st).length;
+  const closed = ROWS.filter(r => r.closed).length, intakes = ROWS.filter(r => r.iLive).length;
   $("lrSummary").innerHTML = `Checked ${fmtWhen(LIVE.checked)}. <b>${n("updated")}</b> fees changed, <b>${n("same")}</b> unchanged, ` +
+    `<b>${intakes}</b> start dates updated from course pages, <b>${closed}</b> course${closed === 1 ? " looks" : "s look"} closed or removed (flagged as warnings), ` +
     `<b>${n("mismatch")}</b> need a manual check, <b>${n("unreadable")}</b> pages had no readable fee, and <b>${n("nosource")}</b> courses have no course page on record ` +
     `(mostly sites that block automated reading). Those keep the built-in figure.`;
   const ORDER = { updated: 0, mismatch: 1, unreadable: 2, same: 3, nosource: 4, unchecked: 5 };
   const LABEL = { updated: "Updated", same: "Unchanged", mismatch: "Needs check", unreadable: "Not readable", nosource: "No page on record", unchecked: "Not checked" };
-  $("lrBody").innerHTML = rows.sort((a, b) => ORDER[a.st] - ORDER[b.st] || a.r.u.localeCompare(b.r.u)).map(({ r, st }) => {
+  $("lrBody").innerHTML = rows.sort((a, b) => (!!b.r.closed - !!a.r.closed) || ORDER[a.st] - ORDER[b.st] || a.r.u.localeCompare(b.r.u)).map(({ r, st }) => {
     const x = r.url && LIVE.res[r.url];
     return `<tr class="st-${st}"><td><b>${esc(r.u)}</b><span class="sub">${esc(r.p)}</span></td>
       <td class="num">${money(r.f0)}</td><td class="num">${x && x.ok ? money(x.fee) : "—"}</td>
-      <td>${LABEL[st]}${x && !x.ok ? `<span class="sub">${esc(x.err)}</span>` : ""}</td>
+      <td>${LABEL[st]}${x && !x.ok ? `<span class="sub">${esc(x.err)}</span>` : ""}${r.closed ? `<span class="sub warn">${r.closed.status === "gone" ? "Page removed" : "Not recruiting"}: ${esc(r.closed.note)}</span>` : ""}${r.iLive ? `<span class="sub">Intakes now ${esc(r.i)} (was ${esc(r.i0)})</span>` : ""}</td>
       <td>${r.url ? `<a href="${esc((x && x.src) || r.url)}" target="_blank" rel="noopener">Page ↗</a>` : ""}</td></tr>`;
   }).join("");
   dlg.showModal();
