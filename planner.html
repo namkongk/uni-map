@@ -35,6 +35,11 @@
   </button>
 </header>
 
+<dialog class="report glass" id="planCmpDlg" aria-labelledby="pcTitle">
+  <div class="report-top"><h2 id="pcTitle">Compare your plans</h2><button type="button" class="icon-btn" id="pcClose" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+  <div class="report-scroll" id="pcBody"></div>
+</dialog>
+
 <!-- Appearance settings (shared with the map page) -->
 <section class="settings glass" id="settings" hidden aria-label="Appearance">
   <h3>Appearance</h3>
@@ -61,6 +66,20 @@
 
 <main class="pl">
   <!-- Always-visible answer: updates on every edit -->
+  <!-- your saved plans: one per offer -->
+  <section class="planbar glass" id="planbar" aria-label="Your plans">
+    <label class="pb-k" for="planSel">Plan</label>
+    <select id="planSel" aria-label="Switch plan"></select>
+    <input id="planName" maxlength="60" placeholder="Name this plan" aria-label="Plan name">
+    <span class="pb-acts">
+      <button type="button" class="btn-plain sm" id="planNew">New</button>
+      <button type="button" class="btn-plain sm" id="planDup">Copy</button>
+      <button type="button" class="btn-plain sm" id="planCmp">Compare plans</button>
+      <button type="button" class="btn-plain sm" id="planDel">Delete</button>
+      <button type="button" class="btn-plain sm" id="planPrint">Print / PDF</button>
+    </span>
+  </section>
+
   <section class="sumbar glass" id="sumbar" aria-label="Plan summary" aria-live="polite"></section>
 
   <!-- ================= YOUR PLAN (inputs) ================= -->

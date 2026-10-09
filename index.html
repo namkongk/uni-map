@@ -49,22 +49,14 @@
           <label class="chip-t"><input type="checkbox" id="f-london"><span>Outside London</span></label>
           <label class="chip-t"><input type="checkbox" id="f-noflag"><span>Hide warnings</span></label>
           <label class="chip-t"><input type="checkbox" id="f-noest"><span>Hide est. fees</span></label>
+          <label class="chip-t" title="Hide courses whose listed entry requirements you don't meet (add your degree and English test in My education)"><input type="checkbox" id="f-entry"><span>I meet entry</span></label>
         </div>
-        <fieldset class="grade-box" id="gradeBox">
-          <legend>Your bachelor's from Nepal <i class="opt">optional</i></legend>
-          <div class="row2">
-            <div class="field"><label for="gUni">University</label>
-              <select id="gUni"><option value="">Select…</option><option value="TU">Tribhuvan (TU)</option><option value="KU">Kathmandu (KU)</option><option value="PU">Pokhara (PU)</option><option value="PUR">Purbanchal</option><option value="OTHER">Other in Nepal</option></select></div>
-            <div class="field"><label for="gYears">Duration</label>
-              <select id="gYears"><option value="4">4 years</option><option value="3">3 years</option></select></div>
-          </div>
-          <div class="row2">
-            <div class="field"><label for="gType">Grading</label>
-              <select id="gType"><option value="">Select…</option><option value="pct">Percentage</option><option value="gpa">CGPA (out of 4)</option><option value="letter">Letter grade</option><option value="div">Division</option></select></div>
-            <div class="field" id="gValWrap"><label for="gVal">Your result</label><input id="gVal" type="number" disabled placeholder="—"></div>
-          </div>
-          <div class="grade-out" id="gradeOut" role="status" hidden></div>
-        </fieldset>
+        <!-- your education & English test: edited in My education (top bar) -->
+        <div class="edu-hint" id="eduHint">
+          <p><b>My education</b> <span id="eduSum"></span></p>
+          <p class="eh-t">Add your degree and English test in My education for more accurate scholarship and entry suggestions.</p>
+          <button type="button" class="btn-plain sm" data-edu>Open My education →</button>
+        </div>
         <div class="ss-box" aria-label="Saved searches">
           <div class="ss-row field">
             <select id="ssSel" aria-label="Saved searches"></select>
@@ -154,6 +146,10 @@
       <span class="sr">Refresh fees</span></button>
     <span class="sr" id="liveStatus" role="status"></span>
   </div>
+  <button type="button" class="btn-plain vt-btn edu-btn" id="eduBtn" data-edu title="My education: your degree and English test">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m2.5 7.5 7.5-3.5 7.5 3.5-7.5 3.5zM5.5 9v3.6c1.2 1.3 2.7 1.9 4.5 1.9s3.3-.6 4.5-1.9V9M17.5 7.5v4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="vt-label">My education</span>
+  </button>
   <button type="button" class="btn-plain vt-btn sh-btn" id="shortBtn" title="My shortlist">
     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2.8 2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L2.8 8.1l5-.7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/></svg>
     <span class="vt-label">Shortlist</span><span class="vt-count" id="shortCount" hidden>0</span><span class="sh-dot" id="shortDot" hidden aria-label="updates"></span>
@@ -166,7 +162,7 @@
   </div>
 </header>
 
-<div class="alert glass" id="alert"><span class="dot" aria-hidden="true"></span><span><b>Chevening 2027–28 closes 6 Oct 2026, 11:00 UTC (4:45 pm NPT).</b> Full tuition + stipend, any UK master's.</span>
+<div class="alert glass" id="alert" data-until="2026-10-06T11:00:00Z"><span class="dot" aria-hidden="true"></span><span><b>Chevening 2027–28 closes 6 Oct 2026, 11:00 UTC (4:45 pm NPT).</b> Full tuition + stipend, any UK master's.</span>
   <button type="button" id="alertX" aria-label="Dismiss"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
 
 <!-- Countries: tick one or more (the UK and Germany have data so far); changes apply when the menu closes -->
@@ -258,8 +254,102 @@
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
   </div>
   <div class="sh-sum" id="shortSum"></div>
+  <div class="sh-tools" id="shortTools">
+    <button type="button" class="btn-plain sm" id="cmpBtn" disabled>Compare <span id="cmpN">0</span></button>
+    <button type="button" class="btn-plain sm" id="icsBtn" title="Download your deadlines as a calendar file (Google, Apple or Outlook calendar)">Add dates to calendar</button>
+    <button type="button" class="btn-plain sm" id="shareBtn" title="A link that shows this shortlist to family or your consultancy">Share link</button>
+    <button type="button" class="btn-plain sm" id="printBtn" title="Print or save as PDF">Print / PDF</button>
+  </div>
   <div class="report-scroll sh-scroll" id="shortBody"></div>
 </dialog>
+
+<dialog class="report glass cmp-dlg" id="cmpDlg" aria-labelledby="cmpTitle">
+  <div class="report-top"><h2 id="cmpTitle">Compare courses</h2><button type="button" class="icon-btn" data-close aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+  <div class="report-scroll" id="cmpBody"></div>
+</dialog>
+
+<dialog class="report glass small-dlg" id="fundsDlg" aria-labelledby="fundsTitle">
+  <div class="report-top"><h2 id="fundsTitle">Proof of funds</h2><button type="button" class="icon-btn" data-close aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+  <div class="report-scroll dlg-pad" id="fundsBody"></div>
+</dialog>
+
+<dialog class="report glass small-dlg" id="reportDlg" aria-labelledby="repTitle">
+  <div class="report-top"><h2 id="repTitle">Report wrong info</h2><button type="button" class="icon-btn" data-close aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+  <div class="report-scroll dlg-pad" id="repBody"></div>
+</dialog>
+
+<dialog class="report glass sh-dlg" id="sharedDlg" aria-labelledby="sharedTitle">
+  <div class="report-top"><h2 id="sharedTitle">Shared shortlist</h2><button type="button" class="icon-btn" data-close aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+  <div class="report-scroll" id="sharedBody"></div>
+</dialog>
+
+<!-- My education: your bachelor's and English test (used for scholarship matches and entry checks) -->
+<dialog class="report glass edu-dlg" id="eduDlg" aria-labelledby="eduTitle">
+  <div class="report-top"><h2 id="eduTitle">My education</h2><button type="button" class="icon-btn" data-close aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
+  <p class="report-sum">Used to match automatic scholarships and to check courses' entry requirements. Optional — saved with your other inputs.</p>
+  <div class="report-scroll edu-scroll"><div id="gradeBox" class="edu-box">
+  <fieldset class="grade-box">
+    <legend>Bachelor's degree (Nepal)</legend>
+    <div class="row4">
+      <div class="field"><label for="gUni">University</label>
+        <select id="gUni"><option value="">Select…</option><option value="TU">Tribhuvan (TU)</option><option value="KU">Kathmandu (KU)</option><option value="PU">Pokhara (PU)</option><option value="PUR">Purbanchal</option><option value="OTHER">Other in Nepal</option></select></div>
+      <div class="field"><label for="gCol">College</label><input id="gCol" type="search" data-ed="college" maxlength="100" placeholder="e.g. Patan Multiple Campus" autocomplete="off"></div>
+      <div class="field"><label for="gSubj">Subject</label><input id="gSubj" type="search" maxlength="80" list="gSubjList" placeholder="e.g. BSc CSIT" autocomplete="off">
+        <datalist id="gSubjList"><option value="BSc CSIT"><option value="BIT"><option value="BCA"><option value="BE Computer"><option value="BBA"><option value="BBS"><option value="BIM"><option value="BA"><option value="BSc Nursing"><option value="BPH"><option value="Fashion Design"><option value="BE Civil"><option value="BHM"></datalist></div>
+      <div class="field"><label for="gMajor">Specialisation <i class="opt">optional</i></label><input id="gMajor" type="search" data-ed="major" maxlength="80" placeholder="e.g. Finance, AI" autocomplete="off"></div>
+    </div>
+    <div class="row4">
+      <div class="field"><label for="gYears">Duration</label>
+        <select id="gYears"><option value="4">4 years</option><option value="3">3 years</option></select></div>
+      <div class="field"><label for="gYear">Pass-out year</label><input id="gYear" type="number" inputmode="numeric" min="1990" max="2035" step="1" placeholder="e.g. 2024"></div>
+      <div class="field"><label for="gType">Grading</label>
+        <select id="gType"><option value="pct">Percentage</option><option value="gpa">CGPA (out of 4)</option><option value="letter">Letter grade</option><option value="div">Division</option></select></div>
+      <div class="field" id="gValWrap"><label for="gVal">Your result</label><input id="gVal" type="number" placeholder="—"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="gProj">Final-year project / thesis <i class="opt">optional</i></label><input id="gProj" type="search" data-ed="project" maxlength="160" placeholder="Title or topic" autocomplete="off"></div>
+      <div class="field"><span class="lbl-like">Gap since graduating</span><output id="gGapOut" class="gap-out">—</output></div>
+    </div>
+    <label class="ed-check"><input type="checkbox" id="gMoi" data-ed="moi"><span>My degree was taught in English <i class="opt">— some universities accept this instead of an English test</i></span></label>
+    <div class="grade-out" id="gradeOut" role="status" hidden></div>
+  </fieldset>
+  <fieldset class="grade-box">
+    <legend>Higher secondary (+2)</legend>
+    <div class="row4">
+      <div class="field"><label for="gHsBoard">Board</label>
+        <select id="gHsBoard" data-ed="hs.board"><option value="">Select…</option><option value="NEB">NEB (Nepal)</option><option value="A-Level">A Levels</option><option value="CBSE">CBSE / ISC (India)</option><option value="Other">Other</option></select></div>
+      <div class="field"><label for="gHsStream">Stream</label>
+        <select id="gHsStream" data-ed="hs.stream"><option value="">Select…</option><option>Science</option><option>Management</option><option>Humanities</option><option>Education</option><option>Law</option><option>Other</option></select></div>
+      <div class="field"><label for="gHsGpa">GPA / grade</label><input id="gHsGpa" type="search" data-ed="hs.gpa" maxlength="20" placeholder="e.g. 3.2 or 75%" autocomplete="off"></div>
+      <div class="field"><label for="gHsEng">English mark <i class="opt">optional</i></label><input id="gHsEng" type="search" data-ed="hs.eng" maxlength="20" placeholder="e.g. B+ or 70%" autocomplete="off"></div>
+    </div>
+  </fieldset>
+  <fieldset class="grade-box">
+    <legend>Work experience</legend>
+    <div class="ed-jobs" id="gJobs"></div>
+    <button type="button" class="btn-plain sm ed-add" id="gJobAdd"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add job</button>
+  </fieldset>
+  <fieldset class="grade-box">
+    <legend>English test</legend>
+    <div class="row4">
+      <div class="field"><label for="gTest">Test</label>
+        <select id="gTest"><option value="ielts">IELTS Academic</option><option value="toefl">TOEFL iBT</option><option value="pte">PTE Academic</option><option value="duo">Duolingo English Test</option></select></div>
+      <div class="field"><label for="gEng">Overall</label><input id="gEng" type="number" inputmode="decimal" min="0" step="0.5"></div>
+      <div class="field"><label for="gEngDate">Test date</label><input id="gEngDate" type="date" data-ed="engDate"></div>
+      <div class="field"><span class="lbl-like">Valid until</span><output id="gEngValid" class="gap-out">—</output></div>
+    </div>
+    <div class="row4" id="gSkills"></div>
+    <div class="grade-out" id="engOut" role="status" hidden></div>
+  </fieldset>
+  <fieldset class="grade-box">
+    <legend>Achievements &amp; other qualifications</legend>
+    <textarea id="gNotes" data-ed="notes" rows="3" maxlength="1500" placeholder="Certificates, awards, research, volunteering, other degrees…"></textarea>
+  </fieldset>
+  </div></div>
+</dialog>
+
+<!-- filled in just before printing the shortlist -->
+<div id="printArea" aria-hidden="true"></div>
 
 <dialog class="report glass" id="liveReport" aria-labelledby="lrTitle">
   <div class="report-top">

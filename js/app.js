@@ -324,6 +324,7 @@ function filtered() {
     if ($("f-london").checked && r.c === "London") return false;
     if ($("f-noflag").checked && r.fl) return false;
     if ($("f-noest").checked && /est/.test(r.fn)) return false;
+    if ($("f-entry").checked && entryCheck(r).state === "no") return false;
     if (q && ![r.u, r.c, r.p, r.i, r.sl, otherSch(r), r.pl, r.fl, r.lv, PNAME[r.g], r.en].join(" ").toLowerCase().includes(q)) return false;
     for (const c of COLS) {
       const f = S.colf[c.k]; if (!f || c.type === "none") continue;
@@ -403,7 +404,7 @@ fitMaxCost(); $("maxcost").value = $("maxcost").max;
 ["q", "maxcost", "city", "radius", "rank", "f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).addEventListener("input", () => update({ fit: ["city", "radius"].includes(id) })));
 $("reset").addEventListener("click", () => {
   $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = "";
-  ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).checked = false);
+  ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"].forEach(id => $(id).checked = false);
   document.querySelectorAll("#frow input").forEach(i => i.value = ""); S.colf = {};
   S.lvs = []; S.subjs = []; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
 });
@@ -419,7 +420,7 @@ const applyFilters = () => { $("filtersToggle").setAttribute("aria-expanded", St
 applyFilters();
 function activeFilterCount() {
   let n = ["q", "city", "rank"].filter(id => $(id).value.trim()).length;
-  n += ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"].filter(id => $(id).checked).length;
+  n += ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"].filter(id => $(id).checked).length;
   if ($("maxcost").value !== $("maxcost").max) n++;
   return n;
 }
@@ -452,7 +453,9 @@ function germanGrade(g) {
   return Math.min(4, Math.max(1, 1 + 3 * (best - v) / (best - pass)));
 }
 function syncGradeOut() {
-  const out = $("gradeOut"), parts = [SEL.includes("uk") ? gradeUK() : "", SEL.includes("de") ? gradeDE() : ""].filter(Boolean);
+  const gap = gapYears() || 0;
+  const out = $("gradeOut"), parts = [SEL.includes("uk") ? gradeUK() : "", SEL.includes("de") ? gradeDE() : "",
+    gap ? `<p class="go-note">${gap}-year gap${workYears() ? ` — your ${workYears()} year${workYears() === 1 ? "" : "s"} of work experience ${workYears() >= gap ? "covers it" : "helps explain it"}; mention it in your statement` : ": explain it in your statement; some universities ask for work or study evidence"}.</p>` : ""].filter(Boolean);
   out.hidden = !parts.length;
   out.innerHTML = parts.map(p => `<div class="go-part">${p}</div>`).join("");
 }
@@ -476,7 +479,7 @@ function gradeUK() {
     <p class="go-sub">${esc(CLS_LABEL[cls])} · ${esc(what || "")}${g.uni ? " from " + esc(NEPAL_UNI[g.uni]) : ""}, ${g.years === "3" ? "3" : "4"}-year degree · typical conversion</p>
     ${notes.map(n => `<p class="go-note">${esc(n)}</p>`).join("")}`;
 }
-function gradeChanged() { save(); syncGradeOut(); applyLive(); fitMaxCost(); update(); }
+function gradeChanged() { save(); syncGradeOut(); syncEduHint(); applyLive(); fitMaxCost(); update(); }
 $("gUni").addEventListener("input", e => { S.grade.uni = e.target.value; gradeChanged(); });
 $("gYears").addEventListener("input", e => { S.grade.years = e.target.value; gradeChanged(); });
 $("gType").addEventListener("input", e => { S.grade.type = e.target.value; S.grade.val = ""; renderGradeInput(); gradeChanged(); });
@@ -761,7 +764,7 @@ document.addEventListener("keydown", e => {
   if (!$("countryMenu").hidden) { setCountryMenu(false); $("countryBtn").focus(); }
   else if (!$("lvMenu").hidden) { setLvMenu(false); $("lvBtn").focus(); }
   else if (!$("subjMenu").hidden) { setSubjMenu(false); $("subjBtn").focus(); }
-  else if ($("acctDlg")?.open || $("authDlg")?.open || $("setDlg")?.open || $("shortDlg")?.open || $("acctMenu")?.hidden === false) return; else if (tableOpen) setView(false); else closeCard();
+  else if (document.querySelector("dialog[open]") || $("acctMenu")?.hidden === false) return; else if (tableOpen) setView(false); else closeCard();
 });
 
 /* ---------------- table ---------------- */
@@ -1013,12 +1016,12 @@ async function startMap() {
   if (CFG.GOOGLE_MAPS_API_KEY) {
     window.gm_authFailure = async () => { // invalid / restricted key → fall back so the site still works
       status("Google Maps key rejected — showing OpenStreetMap.");
-      MAP = LeafletMap; await MAP.init(el); refreshMarkers(); applyCityOnMap();
+      MAP = null; await LeafletMap.init(el); MAP = LeafletMap; refreshMarkers(); applyCityOnMap();   // only use it once it's ready
     };
     try { await GoogleMap.init(el); MAP = GoogleMap; onThemeChange = () => { if (MAP === GoogleMap) GoogleMap.setScheme(); }; }
-    catch (e) { console.error(e); status("Google Maps failed to load — showing OpenStreetMap."); MAP = LeafletMap; await MAP.init(el); }
+    catch (e) { console.error(e); status("Google Maps failed to load — showing OpenStreetMap."); MAP = null; await LeafletMap.init(el); MAP = LeafletMap; }
   } else {
-    MAP = LeafletMap; await MAP.init(el);
+    await LeafletMap.init(el); MAP = LeafletMap;
     status("No Google Maps key — showing OpenStreetMap.");
     setTimeout(() => status(""), 9000);
   }
@@ -1060,7 +1063,7 @@ function courseHTML(r) {
       ${isShort(r) ? `<div class="course-st"><span>Application</span>${statusSelect(courseKey(r), S.short[courseKey(r)].st)}</div>` : ""}
     </div>
     <div class="kv">
-      ${r.en ? row("Entry", esc(r.en)) : ""}
+      ${r.en ? row("Entry", esc(r.en) + (entryBadge(r) ? `<span class="sub">${entryBadge(r)}</span>` : "")) : ""}
       ${row("Intakes", esc(r.i) + (r.iLive ? `<span class="sub">updated · was ${esc(r.i0)}</span>` : ""))}
       ${r.closed ? row(r.closed.status === "gone" ? "Course page" : "Applications", `<span class="sub warn">${esc(r.closed.note || (r.closed.status === "gone" ? "The page has been removed" : "Not taking applications"))}</span>`, "hl") : ""}
       ${row("Tuition / yr (intl)", `~${rm(r, r.f)}${feeNote(r)}`)}
@@ -1080,6 +1083,9 @@ function courseHTML(r) {
       ${r.cw ? `<div class="full"><a href="${esc(r.cw)}" target="_blank" rel="noopener">University course page ↗</a> · <a href="${esc(r.url)}" target="_blank" rel="noopener">DAAD listing ↗</a>${courseCheck(r)}</div>`
         : r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>` : ""}
       ${(r.co || "uk") === "uk" ? planRow(r) : ""}
+      <div class="full card-acts"><button type="button" class="btn-plain sm" data-funds="${esc(courseKey(r))}">Proof of funds</button>
+        <button type="button" class="link-btn small" data-report="${esc(courseKey(r))}">Report wrong info</button></div>
+      <div class="full">${noteHTML(courseKey(r), "Your notes")}</div>
     </div>
   </article>`;
 }
@@ -1185,7 +1191,7 @@ function renderCard(u, withPlace) {
   $("cardTitle").textContent = u;
   $("cardSub").textContent = [MULTI ? uniCo(u).flag + " " + U.c : U.c, uniCo(u).rank ? (f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked") : "", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
-  $("cardAwards").innerHTML = awardsHTML(u);
+  $("cardAwards").innerHTML = `<div class="uni-note">${noteHTML(uniKey(u), "Your notes on " + esc(u))}</div>` + awardsHTML(u);
   $("cardPay").innerHTML = payHTML(u);
   $("cardCourses").innerHTML = (rs.length ? rs : []).sort((a, b) => a.n - b.n).map(courseHTML).join("") || `<p class="gp-empty">No courses here match the current filters.</p>`;
   if (withPlace) loadPlace(u);
@@ -1378,7 +1384,8 @@ function renderShortlist() {
   const counts = STATUS.map(([v, l]) => [l, items.filter(x => x.e.st === v).length]).filter(([, n]) => n);
   const changes = shortChanges();
   $("shortSum").innerHTML = items.length ? counts.map(([l, n]) => `<span class="st-chip">${n} ${l.toLowerCase()}</span>`).join("") : "";
-  $("shortBody").innerHTML = (changes.length ? `<section class="sh-changes" aria-label="What changed">
+  syncTools();
+  $("shortBody").innerHTML = `<p class="sh-msg" id="shortMsg" role="status" hidden></p>` + upcomingHTML() + (changes.length ? `<section class="sh-changes" aria-label="What changed">
         <div class="sh-ch-top"><b>What changed since you last looked</b><button type="button" class="btn-plain sm" id="shortSeen">Mark as seen</button></div>
         <ul>${changes.map(c => `<li class="ch-${c.kind}"><b>${esc(c.title)}</b> ${esc(c.text)}</li>`).join("")}</ul></section>` : "")
     + (items.length ? `<ul class="sh-list">${items.map(({ k, e, r }) => { const d = deficit(r); return `<li>
@@ -1387,7 +1394,7 @@ function renderShortlist() {
           <span class="sub">${esc(r.u)} · ${MULTI ? coOf(r).flag + " " : ""}${esc(r.c)} · starts ${esc(r.i)}${r.closed ? ` · <b class="warn-txt">${r.closed.status === "gone" ? "page removed" : "not recruiting"}</b>` : ""}</span></div>
         <div class="sh-num"><b>~${rm(r, r.n)}</b><span class="sub">yr 1 total · ${rm(r, r.f)} tuition</span></div>
         <span class="sh-aff ${d > 0 ? "short" : "ok"}">${d > 0 ? `Short ~${rm(r, r100(d))}/yr` : "Covered by your work"}</span>
-        ${statusSelect(k, e.st)}</li>`; }).join("")}</ul>`
+        ${statusSelect(k, e.st)}${planHTML(k)}</li>`; }).join("")}</ul>`
       : `<p class="sh-empty">${STAR(false)}<span>Star a course to save it here.</span></p>`)
     + (other ? `<p class="acct-hint">+${other} in ${esc(otherNames)} (not ticked).</p>` : "")
     + `<p class="signin-nudge">Saved in this browser only. <button type="button" class="link-btn" data-signin="signup">Sign in</button> to keep your shortlist on any device — no email, just a username &amp; password.</p>`;
@@ -1410,7 +1417,7 @@ document.addEventListener("change", e => { const s = e.target.closest("select[da
 
 /* saved searches: the current filters under a name, re-applied in one click (per set of ticked countries) */
 const SEL_KEY = SEL.join("+");
-const CHIPS = ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"];
+const CHIPS = ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"];
 const filterSnap = () => ({ q: $("q").value, max: $("maxcost").value === $("maxcost").max ? null : +$("maxcost").value, city: $("city").value, radius: $("radius").value,
   rank: $("rank").value, chips: CHIPS.filter(id => $(id).checked), lvs: S.lvs.slice(), subjs: S.subjs.slice() });
 function applySearch(f) {
@@ -1438,6 +1445,453 @@ $("ssForm").addEventListener("submit", e => {
 $("ssDel").addEventListener("click", () => { S.searches = S.searches.filter(s => s.id !== $("ssSel").value); save(); renderSearches(); });
 renderSearches();
 
+/* ---------------- application tools: deadlines & checklist, calendar, compare, notes, proof of funds, report, share, print ----------------
+   All saved in S (so they sync to your account): S.short[key].d = dates, .docs = ticked documents; S.notes; S.cmp; S.funds. */
+if (!S.notes || typeof S.notes !== "object" || Array.isArray(S.notes)) S.notes = {};
+if (!Array.isArray(S.cmp)) S.cmp = [];
+if (!S.funds || typeof S.funds !== "object") S.funds = {};
+const ALLKEYED = new Map(ALL.rows.map(r => [courseKey(r), r]));
+const keyCo = k => COUNTRIES[k.split("|")[0]] || COUNTRIES.uk;
+const today0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const fmtDate = iso => new Date(iso + "T00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+const daysTo = iso => Math.round((new Date(iso + "T00:00") - today0()) / 864e5);
+// Amounts in a given currency, without converting to the display currency (proof of funds is checked in local money).
+const inCur = (n, cur) => (n < 0 ? "−" : "") + CUR[cur].sym + Math.round(Math.abs(n)).toLocaleString(CUR[cur].grp || "en-GB");
+const toNPR = (n, cur) => n / FX.rates[cur] * FX.rates.NPR;
+const fromNPR = (n, cur) => n / FX.rates.NPR * FX.rates[cur];
+let toolMsgT;
+function toolMsg(t) { const el = $("shortMsg"); if (!el) return; el.textContent = t; el.hidden = !t; clearTimeout(toolMsgT); toolMsgT = setTimeout(() => { el.hidden = true; }, 5000); }
+
+/* deadlines and documents for each shortlisted course */
+const DATES = co => [["apply", "Apply by"], ["dep", co === "de" ? "Semester fee due" : "Deposit due"], ["cas", co === "de" ? "Admission letter" : "CAS"], ["visa", "Visa appointment"], ["fly", "Travel"]];
+const DOCS = {
+  uk: [["eng", "English test (IELTS etc.)"], ["tr", "Transcripts & degree"], ["sop", "Statement of purpose"], ["ref", "2 references"], ["cv", "CV"], ["pp", "Passport"],
+       ["offer", "Offer letter"], ["dep", "Deposit paid"], ["cas", "CAS received"], ["tb", "TB test"], ["funds", "Funds held 28 days"], ["visa", "Visa applied"]],
+  de: [["eng", "English test"], ["tr", "Transcripts & degree"], ["mot", "Motivation letter"], ["cv", "CV"], ["ref", "References"], ["ua", "uni-assist / VPD"],
+       ["adm", "Admission letter"], ["blk", "Blocked account"], ["ins", "Health insurance"], ["visa", "Visa appointment"]],
+};
+const docsOf = k => DOCS[keyCo(k).code] || DOCS.uk;
+function planSummary(k) {
+  const e = S.short[k] || {}, docs = docsOf(k), done = docs.filter(([id]) => e.docs?.[id]).length;
+  const next = DATES(keyCo(k).code).map(([f, l]) => ({ l, d: e.d?.[f] })).filter(x => x.d && daysTo(x.d) >= 0).sort((a, b) => a.d.localeCompare(b.d))[0];
+  return `<span class="pl-prog"><i style="--p:${Math.round(done / docs.length * 100)}%"></i>${done}/${docs.length} documents</span>` +
+    (next ? `<span class="pl-next">Next: <b>${esc(next.l)}</b> ${fmtDate(next.d)}${daysTo(next.d) <= 14 ? ` <em>in ${daysTo(next.d)} day${daysTo(next.d) === 1 ? "" : "s"}</em>` : ""}</span>` : `<span class="pl-next muted">Add your dates</span>`);
+}
+function planHTML(k) {
+  const e = S.short[k] || {}, co = keyCo(k).code;
+  return `<details class="sh-plan" data-plan="${esc(k)}"${openPlans.has(k) ? " open" : ""}><summary><span class="pl-t">Dates &amp; checklist</span><span class="pl-sum">${planSummary(k)}</span></summary>
+    <div class="pl-body">
+      <div class="pl-dates">${DATES(co).map(([f, l]) => `<label><span>${l}</span><input type="date" data-date="${esc(k)}|${f}" value="${esc(e.d?.[f] || "")}"></label>`).join("")}</div>
+      <div class="pl-docs">${docsOf(k).map(([id, l]) => `<label><input type="checkbox" data-doc="${esc(k)}|${id}"${e.docs?.[id] ? " checked" : ""}><span>${l}</span></label>`).join("")}</div>
+      ${noteHTML(k, "Notes for this course")}
+      <div class="pl-acts">
+        <label class="cmp-pick"><input type="checkbox" data-cmp="${esc(k)}"${S.cmp.includes(k) ? " checked" : ""}> Compare</label>
+        <button type="button" class="btn-plain sm" data-funds="${esc(k)}">Proof of funds</button>
+        <button type="button" class="link-btn small" data-report="${esc(k)}">Report wrong info</button>
+      </div>
+    </div></details>`;
+}
+const openPlans = new Set();
+function upcomingHTML() {
+  const t = [];
+  for (const [k, e] of Object.entries(S.short)) {
+    if (!keyShown(k) || !e.d) continue;
+    const r = KEYED.get(k); if (!r) continue;
+    for (const [f, l] of DATES(keyCo(k).code)) { const d = e.d[f]; if (d && daysTo(d) >= -7 && daysTo(d) <= 120) t.push({ d, l, r }); }
+  }
+  if (!t.length) return "";
+  t.sort((a, b) => a.d.localeCompare(b.d));
+  return `<section class="sh-up" aria-label="Upcoming"><b>Upcoming</b><ul>${t.slice(0, 6).map(x => { const n = daysTo(x.d);
+    return `<li class="${n < 0 ? "past" : n <= 7 ? "soon" : ""}"><span class="up-d">${fmtDate(x.d)}</span><span><b>${esc(x.l)}</b> · ${esc(x.r.p)}, ${esc(x.r.u)}</span><span class="up-n">${n < 0 ? "passed" : n === 0 ? "today" : `in ${n} day${n === 1 ? "" : "s"}`}</span></li>`; }).join("")}</ul></section>`;
+}
+function syncTools() {
+  S.cmp = S.cmp.filter(k => S.short[k] && keyShown(k) && KEYED.has(k));
+  $("cmpN").textContent = S.cmp.length; $("cmpBtn").disabled = S.cmp.length < 2;
+  $("cmpBtn").title = S.cmp.length < 2 ? "Tick Compare on 2–4 courses (under Dates & checklist)" : "Compare the ticked courses side by side";
+}
+// Typing in dates, documents, notes and compare boxes saves straight away without redrawing the list.
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset.date) {
+    const i = t.dataset.date.lastIndexOf("|"), k = t.dataset.date.slice(0, i), f = t.dataset.date.slice(i + 1), x = S.short[k]; if (!x) return;
+    x.d = { ...x.d, [f]: t.value }; if (!t.value) delete x.d[f];
+  } else if (t.dataset.doc) {
+    const i = t.dataset.doc.lastIndexOf("|"), k = t.dataset.doc.slice(0, i), id = t.dataset.doc.slice(i + 1), x = S.short[k]; if (!x) return;
+    x.docs = { ...x.docs, [id]: t.checked }; if (!t.checked) delete x.docs[id];
+  } else if (t.dataset.cmp) {
+    const k = t.dataset.cmp;
+    if (t.checked && S.cmp.length >= 4) { t.checked = false; toolMsg("You can compare up to 4 courses."); return; }
+    S.cmp = t.checked ? [...new Set([...S.cmp, k])] : S.cmp.filter(x => x !== k);
+  } else return;
+  save(); syncTools();
+  const box = t.closest(".sh-plan"); if (box) box.querySelector(".pl-sum").innerHTML = planSummary(box.dataset.plan);
+  if (t.dataset.date) {   // redraw "Upcoming" only if it actually changed (avoids the list jumping under the pointer)
+    const up = $("shortBody").querySelector(".sh-up"), html = upcomingHTML();
+    if (up) { if (up.outerHTML !== html) up.outerHTML = html || ""; } else if (html) $("shortMsg").insertAdjacentHTML("afterend", html);
+  }
+});
+document.addEventListener("toggle", e => { const d = e.target; if (d.classList?.contains("sh-plan")) { if (d.open) openPlans.add(d.dataset.plan); else openPlans.delete(d.dataset.plan); } }, true);
+
+/* private notes on a course or a university */
+const uniKey = u => `u|${UNIS[u]?.co || "uk"}|${u}`;
+const noteHTML = (key, label) => `<details class="note-box"${S.notes[key] ? " open" : ""}><summary>${label}${S.notes[key] ? "" : ` <i class="opt">private</i>`}</summary>
+  <textarea data-note="${esc(key)}" maxlength="2000" rows="3" placeholder="Contacts, interview dates, scholarship emails… only you can see these">${esc(S.notes[key] || "")}</textarea></details>`;
+let noteT;
+document.addEventListener("input", e => {
+  const t = e.target.closest?.("textarea[data-note]"); if (!t) return;
+  const k = t.dataset.note, v = t.value.slice(0, 2000);
+  if (v.trim()) S.notes[k] = v; else delete S.notes[k];
+  document.querySelectorAll("textarea[data-note]").forEach(o => { if (o !== t && o.dataset.note === k) o.value = v; });
+  clearTimeout(noteT); noteT = setTimeout(save, 500);
+});
+
+/* calendar file (.ics) with every date, each with a reminder 3 days before */
+function downloadICS() {
+  const ev = [], stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+  const icsEsc = s => String(s).replace(/[\;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
+  const ymd = iso => iso.replace(/-/g, ""), next = iso => { const d = new Date(iso + "T00:00"); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ""); };
+  for (const [k, e] of Object.entries(S.short)) {
+    const r = ALLKEYED.get(k); if (!r || !e.d) continue;
+    for (const [f, l] of DATES(keyCo(k).code)) {
+      const d = e.d[f]; if (!d) continue;
+      ev.push(["BEGIN:VEVENT", `UID:${ymd(d)}-${f}-${btoa(unescape(encodeURIComponent(k))).replace(/[^a-z0-9]/gi, "").slice(0, 40)}@unimap`, `DTSTAMP:${stamp}`,
+        `DTSTART;VALUE=DATE:${ymd(d)}`, `DTEND;VALUE=DATE:${next(d)}`, `SUMMARY:${icsEsc(`${l} — ${r.p}, ${r.u}`)}`,
+        `DESCRIPTION:${icsEsc(`${r.p} at ${r.u} (${r.c}). From your Uni Map shortlist.${r.url ? "\n" + r.url : ""}`)}`,
+        "BEGIN:VALARM", "TRIGGER:-P3D", "ACTION:DISPLAY", `DESCRIPTION:${icsEsc(l + " in 3 days")}`, "END:VALARM", "END:VEVENT"].join("\r\n"));
+    }
+  }
+  if (!ev.length) return toolMsg("Add some dates first (open Dates & checklist on a course).");
+  const blob = new Blob([["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Uni Map//Shortlist//EN", "CALSCALE:GREGORIAN", "X-WR-CALNAME:Uni Map deadlines", ...ev, "END:VCALENDAR"].join("\r\n")], { type: "text/calendar" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "uni-map-deadlines.ics"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toolMsg(`${ev.length} date${ev.length === 1 ? "" : "s"} saved as a calendar file — open it to add them to your calendar.`);
+}
+
+/* compare 2–4 courses side by side */
+function renderCompare() {
+  const rs = S.cmp.map(k => KEYED.get(k)).filter(Boolean);
+  const best = (vals, low = true) => { const ok = vals.filter(v => isFinite(v)); const b = low ? Math.min(...ok) : Math.max(...ok); return vals.map(v => ok.length > 1 && v === b); };
+  const row = (label, cells, mark) => `<tr><th scope="row">${label}</th>${cells.map((c, i) => `<td class="${mark?.[i] ? "best" : ""}">${c}</td>`).join("")}</tr>`;
+  const base = f => rs.map(r => toBase(f(r), r));
+  const ent = rs.map(r => { const c = entryCheck(r); return c.state === "ok" ? `<span class="ent ok">✓ You meet it</span>` : c.state === "no" ? `<span class="ent no">✗ ${esc(c.fail.join(", "))}</span>` : c.state === "add" ? `<span class="muted">Add your degree &amp; English test</span>` : `<span class="muted">Not listed</span>`; });
+  $("cmpBody").innerHTML = `<table class="cmp-tbl"><thead><tr><th></th>${rs.map(r => `<th scope="col"><b>${esc(r.p)}</b><span class="sub">${esc(r.u)} · ${MULTI ? coOf(r).flag + " " : ""}${esc(r.c)}</span></th>`).join("")}</tr></thead><tbody>
+    ${row("Level · subject", rs.map(r => `${r.lv} · ${esc(r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g])}`))}
+    ${row("Ranking", rs.map(r => [(r.co || "uk") === "uk" ? `UK ${esc(ukRankText(r))}` : "", `QS ${esc(rankText(r.qs, r))}`].filter(Boolean).join(" · ")))}
+    ${row("Intakes", rs.map(r => esc(r.i)))}
+    ${row("Tuition / yr", rs.map(r => "~" + rm(r, r.f)), best(base(r => r.f)))}
+    ${row("Living / yr", rs.map(r => "~" + rm(r, r.l)), best(base(r => r.l)))}
+    ${row("Sure scholarship", rs.map(r => r.s ? rm(r, r.s) : "—"), best(base(r => r.s || 0), false))}
+    ${row("<b>Total year 1</b>", rs.map(r => `<b>~${rm(r, r.n)}</b>`), best(base(r => r.n)))}
+    ${row(DEP_LABEL, rs.map(r => "~" + rm(r, Math.round(dep(r) / 50) * 50)))}
+    ${row("Your work covers it?", rs.map(r => { const d = deficit(r); return d > 0 ? `<span class="ent no">Short ~${rm(r, r100(d))}/yr</span>` : `<span class="ent ok">Covered</span>`; }), best(base(deficit)))}
+    ${row("Pay needed / hr", rs.map(r => { const h = needHr(r); return isFinite(h) ? rsym(r) + h.toFixed(2) : "—"; }), best(base(needHr)))}
+    ${row("Entry", rs.map(r => esc(r.en || "Not listed")))}
+    ${row("You meet entry?", ent)}
+    ${row("Placement", rs.map(r => esc(r.pl)))}
+    ${row("Paying", rs.map(r => { const P = UNIS[r.u].pay; return (r.co || "uk") === "de" ? "Per semester" : P ? esc([P.dep && "Deposit " + P.dep, P.plan].filter(Boolean).join(" · ")) : `<span class="muted">Not confirmed</span>`; }))}
+    ${row("Warnings", rs.map(r => r.fl ? `<span class="warn-txt">${esc(r.fl)}</span>` : "—"))}
+    ${row("Status", rs.map(r => STATUS_LBL[S.short[courseKey(r)]?.st] || "—"))}
+    ${row("Your notes", rs.map(r => S.notes[courseKey(r)] ? esc(S.notes[courseKey(r)]).replace(/\n/g, "<br>") : `<span class="muted">—</span>`))}
+  </tbody></table><p class="cmp-key"><span class="best-k"></span> best of these</p>`;
+}
+
+/* proof of funds for the visa: UK 28-day rule, Germany blocked account; your savings and loan in NPR */
+const FUNDS = {
+  uk: { london: 1483, other: 1136, months: 9 },          // UKVI maintenance, per month (from 2 Jan 2025)
+  de: { block: 11904 },                                   // blocked account per year (2026)
+};
+let fundsKey = null;
+function openFunds(k) { fundsKey = k; renderFunds(); $("fundsDlg").showModal(); }
+function renderFunds() {
+  const k = fundsKey, r = ALLKEYED.get(k); if (!r) return;
+  const co = r.co || "uk", cur = coOf(r).cur, F = S.funds, sh = S.short[k];
+  const paid = F.paid?.[k] ?? Math.round(dep(r));
+  const visa = sh?.d?.visa || F.visa?.[k] || "";
+  $("fundsTitle").textContent = "Proof of funds";
+  $("fundsBody").innerHTML = `<p class="f-course"><b>${esc(r.p)}</b> · ${esc(r.u)}, ${esc(r.c)}</p>
+    <div class="f-grid">
+      <label><span>Paid to the university so far (${CUR[cur].sym.trim()})</span><input type="number" min="0" step="100" data-f="paid" value="${paid}"></label>
+      <label><span>Visa application date</span><input type="date" data-f="visa" value="${esc(visa)}"></label>
+      <label><span>Savings, yours or family's (Rs)</span><input type="number" min="0" step="10000" data-f="sav" value="${esc(F.sav ?? "")}" placeholder="0"></label>
+      <label><span>Education loan (Rs)</span><input type="number" min="0" step="10000" data-f="loan" value="${esc(F.loan ?? "")}" placeholder="0"></label>
+      <label><span>Loan interest (% a year)</span><input type="number" min="0" max="40" step="0.1" data-f="rate" value="${esc(F.rate ?? 11)}"></label>
+      <label><span>Loan term (years)</span><input type="number" min="1" max="20" step="1" data-f="yrs" value="${esc(F.yrs ?? 7)}"></label>
+    </div><div id="fundsOut"></div>`;
+  fundsOut();
+}
+function fundsOut() {
+  const k = fundsKey, r = ALLKEYED.get(k), co = r.co || "uk", cur = coOf(r).cur, F = S.funds;
+  const paid = +(F.paid?.[k] ?? Math.round(dep(r))) || 0, visa = S.short[k]?.d?.visa || F.visa?.[k] || "";
+  let need, parts, rule;
+  if (co === "de") {
+    const sem = Math.max(0, r.f / 2 - paid);
+    need = FUNDS.de.block + sem;
+    parts = [["Blocked account (12 × €992)", FUNDS.de.block], ["First semester's fee still to pay", sem]];
+    rule = visa ? `Open the blocked account by <b>${fmtDate(new Date(new Date(visa + "T00:00") - 42 * 864e5).toISOString().slice(0, 10))}</b> — it takes a few weeks, and the confirmation is needed for your visa appointment.` : "Add your visa date to see when to open the blocked account.";
+  } else {
+    const london = r.c === "London", rate = london ? FUNDS.uk.london : FUNDS.uk.other, fee = Math.max(0, r.f - (r.s || 0) - paid);
+    need = fee + rate * FUNDS.uk.months;
+    parts = [["Rest of your first-year fee", fee], [`Living: 9 months × £${rate.toLocaleString("en-GB")}${london ? " (London)" : ""}`, rate * FUNDS.uk.months]];
+    if (visa) { const by = new Date(new Date(visa + "T00:00") - 28 * 864e5).toISOString().slice(0, 10);
+      rule = `Have the full amount in your account by <b>${fmtDate(by)}</b> and keep it there for 28 days in a row. The statement's last date must be within 31 days of applying (${fmtDate(visa)}).`; }
+    else rule = "Add your visa application date to see when the money must be in your account.";
+  }
+  const have = fromNPR((+F.sav || 0) + (+F.loan || 0), cur), gap = need - have;
+  const pick = (v, d) => v === "" || v == null ? d : +v;   // empty boxes use the defaults shown in them
+  const L = +F.loan || 0, i = pick(F.rate, 11) / 1200, n = Math.max(1, Math.round(pick(F.yrs, 7))) * 12;
+  const emi = L ? (i ? L * i * (1 + i) ** n / ((1 + i) ** n - 1) : L / n) : 0;
+  $("fundsOut").innerHTML = `<div class="f-out">
+      ${parts.map(([l, v]) => `<div class="f-row"><span>${l}</span><span>${inCur(v, cur)}</span></div>`).join("")}
+      <div class="f-row tot"><span>You must show</span><span>${inCur(need, cur)} <small>≈ Rs ${Math.round(toNPR(need, cur)).toLocaleString("en-IN")}</small></span></div>
+      <div class="f-row"><span>Savings + loan</span><span>${inCur(have, cur)} <small>≈ Rs ${Math.round((+F.sav || 0) + (+F.loan || 0)).toLocaleString("en-IN")}</small></span></div>
+      <div class="f-row res ${gap > 0.5 ? "short" : "ok"}"><span>${gap > 0.5 ? "Still to find" : "Covered, with spare"}</span><span>${inCur(Math.abs(gap), cur)} <small>≈ Rs ${Math.round(Math.abs(toNPR(gap, cur))).toLocaleString("en-IN")}</small></span></div>
+    </div>
+    <p class="f-rule">${rule}</p>
+    ${emi ? `<p class="f-emi">Loan repayment: about <b>Rs ${Math.round(emi).toLocaleString("en-IN")}</b> a month for ${Math.round(n / 12)} years (Rs ${Math.round(emi * n - L).toLocaleString("en-IN")} interest in total).</p>` : ""}
+    <p class="f-fine">${co === "de" ? "Blocked account amount for 2026" : "UKVI amounts from January 2025"} at today's exchange rate — check the current rules on ${co === "de" ? "the German embassy's site" : "gov.uk"} before applying.</p>`;
+}
+$("fundsDlg").addEventListener("input", e => {
+  const t = e.target, f = t.dataset.f; if (!f) return;
+  const k = fundsKey;
+  if (f === "paid") S.funds.paid = { ...S.funds.paid, [k]: t.value === "" ? 0 : +t.value };
+  else if (f === "visa") { if (S.short[k]) { S.short[k].d = { ...S.short[k].d, visa: t.value }; if (!t.value) delete S.short[k].d.visa; } else S.funds.visa = { ...S.funds.visa, [k]: t.value }; }
+  else S.funds[f] = t.value === "" ? "" : +t.value;
+  save(); fundsOut();
+});
+
+/* report wrong info about a course → /api/report (you review them in the database) */
+let reportKey = null;
+function openReport(k) {
+  reportKey = k; const r = ALLKEYED.get(k); if (!r) return;
+  $("repBody").innerHTML = `<p class="f-course"><b>${esc(r.p)}</b> · ${esc(r.u)}</p>
+    <form class="acct-form" id="repForm" novalidate>
+      <label class="acct-f"><span>What's wrong?</span><select id="repField"><option value="fee">Tuition fee</option><option value="dates">Start dates / deadline</option><option value="entry">Entry requirements</option><option value="closed">Course closed or doesn't exist</option><option value="scholarship">Scholarship</option><option value="other">Something else</option></select></label>
+      <label class="acct-f"><span>The correct information</span><textarea id="repText" rows="3" maxlength="600" required placeholder="e.g. The fee for 2027 is £17,500"></textarea></label>
+      <label class="acct-f"><span>Link to where it says so <i>(optional)</i></span><input id="repLink" type="url" maxlength="400" placeholder="https://"></label>
+      <button type="submit" class="btn-primary">Send report</button>
+      <p class="acct-msg" id="repMsg" role="status"></p>
+    </form>`;
+  $("reportDlg").showModal(); $("repText").focus();
+}
+$("reportDlg").addEventListener("submit", async e => {
+  e.preventDefault(); const r = ALLKEYED.get(reportKey), btn = e.target.querySelector("button[type=submit]"), msg = $("repMsg");
+  const details = $("repText").value.trim(); if (details.length < 3) { msg.className = "acct-msg err"; msg.textContent = "Please say what's wrong."; return; }
+  btn.disabled = true; msg.className = "acct-msg"; msg.textContent = "Sending…";
+  try {
+    const rsp = await fetch("api/report", { method: "POST", headers: { "content-type": "application/json", "x-requested-with": "unimap" },
+      body: JSON.stringify({ co: r.co || "uk", uni: r.u, course: r.p, field: $("repField").value, details, link: $("repLink").value.trim() }) });
+    const j = await rsp.json().catch(() => ({}));
+    if (!rsp.ok) throw new Error(j.error || "Couldn't send — please try again.");
+    $("repBody").innerHTML = `<p class="f-course">Thanks — we'll check it and update the course.</p><button type="button" class="btn-primary" data-close>Done</button>`;
+  } catch (err) { msg.className = "acct-msg err"; msg.textContent = err.message; btn.disabled = false; }
+});
+
+/* share: a link that carries the shortlist (courses + status, no notes), plus a printable page */
+const b64e = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const b64d = s => decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))));
+async function shareLink() {
+  const keys = Object.entries(S.short).filter(([k]) => ALLKEYED.has(k)).map(([k, e]) => [k, e.st]);
+  if (!keys.length) return toolMsg("Star some courses first.");
+  const url = location.origin + location.pathname + "#s=" + b64e(JSON.stringify({ v: 1, k: keys }));
+  try { await navigator.clipboard.writeText(url); toolMsg("Link copied — anyone with it can see your shortlist (not your notes or money)."); }
+  catch (e) { prompt("Copy this link:", url); }
+}
+function openShared() {
+  const m = location.hash.match(/^#s=([\w-]+)/); if (!m) return;
+  let data; try { data = JSON.parse(b64d(m[1])); } catch (e) { return; }
+  const items = (Array.isArray(data.k) ? data.k : []).slice(0, 100).map(([k, st]) => ({ k, st: STATUS_LBL[st] ? st : "considering", r: ALLKEYED.get(k) })).filter(x => x.r);
+  history.replaceState(null, "", location.pathname + location.search);
+  if (!items.length) return;
+  $("sharedBody").innerHTML = `<p class="dlg-pad muted">Someone shared ${items.length} course${items.length === 1 ? "" : "s"} with you. Costs are first-year estimates.</p>
+    <ul class="sh-list">${items.map(({ k, st, r }) => `<li><span class="flag-s">${coOf(r).flag}</span>
+      <div class="sh-main"><b>${esc(r.p)}</b><span class="sub">${esc(r.u)} · ${esc(r.c)} · starts ${esc(r.i)}</span></div>
+      <div class="sh-num"><b>~${rm(r, r.n)}</b><span class="sub">yr 1 total · ${rm(r, r.f)} tuition</span></div>
+      <span class="st-sel st-${st}">${STATUS_LBL[st]}</span></li>`).join("")}</ul>
+    <div class="dlg-pad"><button type="button" class="btn-primary" id="sharedAdd">Add these to my shortlist</button></div>`;
+  $("sharedAdd").addEventListener("click", () => {
+    let n = 0; for (const { k } of items) if (!S.short[k]) { S.short[k] = { at: new Date().toISOString(), st: "considering" }; n++; }
+    save(); refreshShortUI(); $("sharedDlg").close();
+    if (n) { renderShortlist(); $("shortDlg").showModal(); toolMsg(`${n} course${n === 1 ? "" : "s"} added.`); }
+  });
+  $("sharedDlg").showModal();
+}
+function printShortlist() {
+  const items = Object.entries(S.short).map(([k, e]) => ({ k, e, r: ALLKEYED.get(k) })).filter(x => x.r);
+  if (!items.length) return toolMsg("Star some courses first.");
+  $("printArea").innerHTML = `<h1>My shortlist</h1><p>Uni Map · ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · first-year estimates</p>
+    ${items.map(({ k, e, r }) => { const d = keyShown(k) ? deficit(r) : null, docs = docsOf(k);
+      return `<section><h2>${esc(r.p)} <small>${STATUS_LBL[e.st] || ""}</small></h2><p>${esc(r.u)} · ${esc(r.c)} · starts ${esc(r.i)}</p>
+      <p>Tuition ~${rm(r, r.f)} · living ~${rm(r, r.l)} · <b>total ~${rm(r, r.n)}</b>${r.s ? ` (after ${rm(r, r.s)} scholarship)` : ""}${d != null ? ` · ${d > 0 ? `short ~${rm(r, r100(d))}/yr` : "covered by work"}` : ""}</p>
+      ${DATES(keyCo(k).code).filter(([f]) => e.d?.[f]).length ? `<p>${DATES(keyCo(k).code).filter(([f]) => e.d?.[f]).map(([f, l]) => `${l}: <b>${fmtDate(e.d[f])}</b>`).join(" · ")}</p>` : ""}
+      <p>Documents: ${docs.map(([id, l]) => `${e.docs?.[id] ? "☑" : "☐"} ${l}`).join(" &nbsp; ")}</p>
+      ${S.notes[k] ? `<p class="pn">${esc(S.notes[k]).replace(/\n/g, "<br>")}</p>` : ""}</section>`; }).join("")}`;
+  window.print();
+}
+
+/* shortlist tool buttons and card actions */
+$("cmpBtn").addEventListener("click", () => { renderCompare(); $("cmpDlg").showModal(); });
+$("icsBtn").addEventListener("click", downloadICS);
+$("shareBtn").addEventListener("click", shareLink);
+$("printBtn").addEventListener("click", printShortlist);
+document.addEventListener("click", e => {
+  const f = e.target.closest("[data-funds]"), rp = e.target.closest("[data-report]"), x = e.target.closest("[data-close]");
+  if (f) openFunds(f.dataset.funds);
+  else if (rp) openReport(rp.dataset.report);
+  else if (x) x.closest("dialog")?.close();
+});
+["cmpDlg", "fundsDlg", "reportDlg", "sharedDlg"].forEach(id => $(id).addEventListener("click", e => { if (e.target === $(id)) $(id).close(); }));
+$("fundsDlg").addEventListener("close", () => { if ($("shortDlg").open) renderShortlist(); else if (openUni) renderCard(openUni, false); });
+
+/* entry requirements vs your grade and IELTS */
+function entryReq(r) {
+  const t = r.en || "";
+  // the lowest class mentioned (e.g. "2:1, or 2:2 with experience" → 2:2)
+  const cls = /\b2:2\b|lower second/i.test(t) ? "2:2" : /\b2:1\b|upper second/i.test(t) ? "2:1" : /first[- ]class/i.test(t) ? "1st" : null;
+  const m = t.match(/IELTS[^0-9;]{0,25}(\d(?:\.\d)?)/i);
+  const b = t.match(/no (?:band|component|element|skill|sub-?score)s?[^0-9;]{0,20}(?:below|less than|under|lower than)\s*(\d(?:\.\d)?)/i) || t.match(/(\d\.\d)\s*in (?:each|all|every)/i);
+  return { cls, ielts: m ? +m[1] : null, band: b ? +b[1] : null };
+}
+function entryCheck(r) {
+  const q = entryReq(r), g = S.grade || {}, cls = myClass(), fail = [], pass = [];
+  if (q.cls && cls) (CLS_RANK[cls] >= CLS_RANK[q.cls] ? pass : fail).push(`needs a ${q.cls}${CLS_RANK[cls] < CLS_RANK[q.cls] ? ` (you ≈ ${cls === "3rd" ? "below 2:2" : cls})` : ""}`);
+  const m = myEng(), you = v => m.test === "ielts" ? `you ${v}` : `you ≈ ${v.toFixed(1)}`;
+  if (q.ielts && m.overall) (m.overall >= q.ielts ? pass : fail).push(`IELTS ${q.ielts}${m.overall < q.ielts ? ` (${you(m.overall)})` : ""}`);
+  if (q.band && m.low) (m.low >= q.band ? pass : fail).push(`${q.band} in each band${m.low < q.band ? ` (${you(m.low)})` : ""}`);
+  const listed = q.cls || q.ielts;
+  return { q, fail, pass, state: fail.length ? "no" : pass.length ? "ok" : listed ? "add" : "none" };
+}
+function entryBadge(r) {
+  const c = entryCheck(r);
+  const moi = S.grade.more?.moi && c.fail.some(f => /IELTS|band/.test(f)) ? `<span class="ent add">Your English-medium degree may be accepted instead — ask the university</span>` : "";
+  return c.state === "ok" ? `<span class="ent ok">✓ You meet the listed entry</span>` : c.state === "no" ? `<span class="ent no">✗ ${esc(c.fail.join(" · "))}</span>${moi}`
+    : c.state === "add" ? `<button type="button" class="ent add link-btn" data-edu>Add your degree &amp; English test to check</button>` : "";
+}
+/* My education: bachelor's (university, subject, pass-out year, result) and English test (overall + each skill).
+   TOEFL iBT, PTE Academic and Duolingo are compared as an approximate IELTS score (published concordance tables:
+   ETS for TOEFL, Pearson for PTE, Duolingo's own), since courses list IELTS. */
+const SK4 = ["Listening", "Reading", "Writing", "Speaking"];
+const ENG = {
+  ielts: { name: "IELTS", max: 9, step: 0.5, skills: SK4, ph: ["6.5", "6.0"] },
+  toefl: { name: "TOEFL iBT", max: 120, skMax: 30, step: 1, skills: SK4, ph: ["90", "22"],
+           o: [[118, 9], [115, 8.5], [110, 8], [102, 7.5], [94, 7], [79, 6.5], [60, 6], [46, 5.5], [35, 5], [32, 4.5]],
+           l: [[29, 8.5], [27, 8], [24, 7.5], [21, 7], [18, 6.5], [16, 6], [13, 5.5], [10, 5]] },
+  pte:   { name: "PTE Academic", max: 90, step: 1, skills: SK4, ph: ["65", "60"],
+           o: [[84, 8.5], [79, 8], [73, 7.5], [65, 7], [58, 6.5], [50, 6], [42, 5.5], [36, 5], [30, 4.5]] },
+  duo:   { name: "Duolingo", max: 160, step: 5, skills: ["Literacy", "Comprehension", "Conversation", "Production"], ph: ["125", "120"],
+           o: [[160, 8.5], [155, 8], [145, 7.5], [135, 7], [125, 6.5], [115, 6], [105, 5.5], [95, 5]] },
+};
+// Older saves: IELTS only (ielts / band), a single "lowest" score, a typed-in gap, no grading picked.
+if (!S.grade.eng || typeof S.grade.eng !== "object") S.grade.eng = { test: "ielts", overall: S.grade.ielts || "", low: S.grade.band || "" };
+if (!S.grade.eng.s || typeof S.grade.eng.s !== "object") S.grade.eng.s = {};
+if (!S.grade.type) S.grade.type = "pct";
+delete S.grade.ielts; delete S.grade.band; delete S.grade.gap;
+const myEng = () => {
+  const e = S.grade.eng, test = e.test in ENG ? e.test : "ielts", T = ENG[test];
+  const conv = (v, sk) => { if (!(+v)) return null; if (test === "ielts") return +v; const hit = ((sk && T.l) || T.o).find(([sc]) => +v >= sc); return hit ? hit[1] : 4; };
+  const skills = Object.values(e.s || {}).filter(v => +v > 0).map(Number);
+  const lowRaw = skills.length ? Math.min(...skills) : +e.low || null;   // the weakest skill
+  return { T, test, overall: conv(e.overall), low: conv(lowRaw, true), lowRaw, raw: e };
+};
+function gapYears() { const y = +S.grade.year; return y >= 1990 && y <= new Date().getFullYear() ? new Date().getFullYear() - y : null; }
+function syncEduForm() {
+  const g = S.grade, e = g.eng, test = e.test in ENG ? e.test : "ielts", T = ENG[test];
+  if (document.activeElement !== $("gSubj")) $("gSubj").value = g.subj || "";
+  if (document.activeElement !== $("gYear")) $("gYear").value = g.year || "";
+  const gap = gapYears(); $("gGapOut").textContent = gap == null ? "—" : gap === 0 ? "Graduating / graduated this year" : `${gap} year${gap === 1 ? "" : "s"} (since ${g.year})`;
+  $("gTest").value = test;
+  $("gEng").max = T.max; $("gEng").step = T.step; $("gEng").placeholder = "e.g. " + T.ph[0];
+  if (document.activeElement !== $("gEng")) $("gEng").value = e.overall || "";
+  // one box per skill (rebuilt when the test changes)
+  if ($("gSkills").dataset.test !== test) {
+    $("gSkills").dataset.test = test;
+    $("gSkills").innerHTML = T.skills.map((l, k) => `<div class="field"><label for="gSk${k}">${l}</label><input id="gSk${k}" data-skill="${k}" type="number" inputmode="decimal" min="0" max="${T.skMax || T.max}" step="${T.step}" placeholder="${T.ph[1]}"></div>`).join("");
+  }
+  $("gSkills").querySelectorAll("input").forEach(i => { if (document.activeElement !== i) i.value = e.s?.[i.dataset.skill] ?? ""; });
+  const m = myEng(), out = $("engOut");
+  out.hidden = !m.overall && !m.low;
+  if (!out.hidden) out.innerHTML = test === "ielts"
+    ? `<div class="go-main"><span class="go-k">IELTS</span><b class="go-cls">${m.overall ? m.overall.toFixed(1) : "—"}${m.low ? ` <small>(lowest ${m.low.toFixed(1)})</small>` : ""}</b></div>`
+    : `<div class="go-main"><span class="go-k">≈ IELTS</span><b class="go-cls">${m.overall ? m.overall.toFixed(1) : "—"}${m.low ? ` <small>(lowest ≈ ${m.low.toFixed(1)})</small>` : ""}</b></div>
+       <p class="go-sub">Approximate, from published ${esc(T.name)} to IELTS tables — used to check courses that list IELTS. Universities set their own ${esc(T.name)} scores.</p>`;
+}
+$("gSubj").addEventListener("input", e => { S.grade.subj = e.target.value.slice(0, 80); save(); syncEduHint(); });
+$("gYear").addEventListener("input", e => { S.grade.year = e.target.value; syncEduForm(); gradeChanged(); });
+$("gTest").addEventListener("input", e => { S.grade.eng = { test: e.target.value, overall: "", s: {} }; syncEduForm(); gradeChanged(); });
+$("gEng").addEventListener("input", e => { S.grade.eng.overall = e.target.value; syncEduForm(); gradeChanged(); });
+$("gSkills").addEventListener("input", e => { const k = e.target.dataset.skill; if (k == null) return; S.grade.eng.s = { ...S.grade.eng.s, [k]: e.target.value }; if (e.target.value === "") delete S.grade.eng.s[k]; delete S.grade.eng.low; syncEduForm(); gradeChanged(); });
+// The other details (college, +2, work experience, test date, notes…) are stored as S.grade.more[path].
+if (!S.grade.more || typeof S.grade.more !== "object") S.grade.more = {};
+const edGet = p => p.split(".").reduce((o, k) => o?.[k], S.grade.more);
+function edSet(p, v) { const ks = p.split("."), last = ks.pop(); let o = S.grade.more; for (const k of ks) o = o[k] = (o[k] && typeof o[k] === "object") ? o[k] : {}; if (v === "" || v === false) delete o[last]; else o[last] = v; }
+function syncEdMore() {
+  $("gradeBox").querySelectorAll("[data-ed]").forEach(i => { if (document.activeElement === i) return; const v = edGet(i.dataset.ed); if (i.type === "checkbox") i.checked = !!v; else i.value = v ?? ""; });
+  // English test results are valid for 2 years.
+  const d = edGet("engDate"), out = $("gEngValid");
+  if (!d) { out.textContent = "—"; out.className = "gap-out"; return; }
+  const [y, m, dd] = d.split("-").map(Number), untilIso = `${y + 2}-${String(m).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;   // same day, 2 years on
+  const left = daysTo(untilIso);
+  out.textContent = left < 0 ? `Expired ${fmtDate(untilIso)}` : fmtDate(untilIso) + (left < 180 ? ` (${left} days)` : "");
+  out.className = "gap-out" + (left < 0 ? " bad" : left < 180 ? " warn" : "");
+}
+/* work experience: any number of jobs, S.grade.more.jobs = [{ role, field, org, yrs }] (older saves had one "work") */
+if (!Array.isArray(S.grade.more.jobs)) S.grade.more.jobs = S.grade.more.work && Object.keys(S.grade.more.work).length ? [S.grade.more.work] : [];
+delete S.grade.more.work;
+const MAX_EDJOBS = 10;
+function workYears() { return (S.grade.more?.jobs || []).reduce((a, j) => a + (+j.yrs || 0), 0); }   // also used by the grade note at load
+function renderEdJobs() {
+  const jobs = S.grade.more.jobs;
+  $("gJobs").innerHTML = jobs.length ? jobs.map((j, k) => `<div class="ed-job" data-k="${k}">
+      <div class="field"><label for="gJr${k}">Role</label><input id="gJr${k}" type="search" data-job="role" maxlength="80" value="${esc(j.role || "")}" placeholder="e.g. Software developer" autocomplete="off"></div>
+      <div class="field"><label for="gJf${k}">Field</label><input id="gJf${k}" type="search" data-job="field" maxlength="80" value="${esc(j.field || "")}" placeholder="e.g. IT, banking, NGO" autocomplete="off"></div>
+      <div class="field"><label for="gJo${k}">Organisation <i class="opt">optional</i></label><input id="gJo${k}" type="search" data-job="org" maxlength="100" value="${esc(j.org || "")}" autocomplete="off"></div>
+      <div class="field"><label for="gJy${k}">Years</label><input id="gJy${k}" type="number" data-job="yrs" inputmode="decimal" min="0" max="40" step="0.5" value="${esc(j.yrs || "")}" placeholder="0"></div>
+      <button type="button" class="rm-job" data-rmjob="${k}" aria-label="Remove ${esc(j.role || "job " + (k + 1))}"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+    </div>`).join("") + (jobs.length > 1 ? `<p class="ed-total">${workYears()} year${workYears() === 1 ? "" : "s"} of work experience in total</p>` : "")
+    : `<p class="ed-empty">No work experience added.</p>`;
+  $("gJobAdd").disabled = jobs.length >= MAX_EDJOBS;
+}
+$("gJobs").addEventListener("input", e => {
+  const i = e.target.closest("[data-job]"); if (!i) return;
+  const j = S.grade.more.jobs[+i.closest(".ed-job").dataset.k], f = i.dataset.job;
+  if (i.value === "") delete j[f]; else j[f] = i.value.slice(0, +i.maxLength > 0 ? +i.maxLength : 100);
+  if (f === "yrs") { const t = $("gJobs").querySelector(".ed-total"); if (t) t.textContent = `${workYears()} year${workYears() === 1 ? "" : "s"} of work experience in total`; gradeChanged(); } else save();
+});
+$("gJobs").addEventListener("click", e => {
+  const b = e.target.closest("[data-rmjob]"); if (!b) return;
+  S.grade.more.jobs.splice(+b.dataset.rmjob, 1); renderEdJobs(); gradeChanged(); $("gJobAdd").focus();
+});
+$("gJobAdd").addEventListener("click", () => {
+  if (S.grade.more.jobs.length >= MAX_EDJOBS) return;
+  S.grade.more.jobs.push({}); renderEdJobs(); save();
+  $("gJobs").querySelector(`.ed-job[data-k="${S.grade.more.jobs.length - 1}"] input`)?.focus();
+});
+renderEdJobs();
+$("gradeBox").addEventListener("input", e => {
+  const i = e.target.closest("[data-ed]"); if (!i) return;
+  edSet(i.dataset.ed, i.type === "checkbox" ? i.checked : i.value.slice(0, +i.maxLength > 0 ? +i.maxLength : 1500));
+  syncEdMore(); if (i.dataset.ed === "moi") gradeChanged(); else save();
+});
+syncEduForm(); syncGradeForm(); syncEdMore();
+// Filters panel: what's filled in, with a link to My education.
+function syncEduHint() {
+  const cls = myClass(), m = myEng(), parts = [];
+  if (S.grade.subj) parts.push(esc(S.grade.subj));
+  if (cls) parts.push(cls === "3rd" ? "below 2:2" : cls);
+  else if (SEL.includes("de") && germanGrade(S.grade) != null) parts.push("grade " + germanGrade(S.grade).toFixed(1));
+  if (m.overall) parts.push(`${m.T.name} ${esc(m.raw.overall)}`);
+  $("eduSum").innerHTML = parts.length ? "· " + parts.join(" · ") : "";
+  $("eduHint").classList.toggle("set", parts.length > 0);
+  $("eduHint").querySelector(".eh-t").textContent = parts.length ? "Used for scholarship and entry suggestions." : "Add your degree and English test in My education for more accurate scholarship and entry suggestions.";
+  $("eduHint").querySelector("button").textContent = parts.length ? "Edit My education →" : "Open My education →";
+}
+// "My education" (top bar, filters panel, course cards) opens the window.
+document.addEventListener("click", e => { if (!e.target.closest("[data-edu]")) return; e.preventDefault(); document.querySelectorAll("dialog[open]").forEach(d => d.close()); $("eduDlg").showModal(); });
+$("eduDlg").addEventListener("click", e => { if (e.target === $("eduDlg")) $("eduDlg").close(); });
+$("f-entry").addEventListener("input", () => update());
+syncEduHint();
+
+// A banner with a closing date stops showing after it.
+if ($("alert").dataset.until && Date.now() > Date.parse($("alert").dataset.until)) $("alert").hidden = true;
+
 function update(opts = {}) {
   syncLv();
   syncSubj();
@@ -1457,4 +1911,5 @@ update();
 startMap();
 loadSharedFees().then(ok => { if (!ok || refreshing) return; saveLive(); applyLive(); fitMaxCost(); update(); syncLiveBar(); });
 loadRates();
+openShared(); addEventListener("hashchange", openShared);
 })();

@@ -43,6 +43,10 @@ function freshPlan() {
 }
 let P = freshPlan();
 try { const saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved && saved.costs) P = { ...P, ...saved }; } catch (e) {}
+// Several plans (one per offer): the open one is P; the others are kept in P.lib as { id, name, data }.
+const newId = () => Math.random().toString(36).slice(2, 10);
+if (!P.id) P.id = newId();
+if (!Array.isArray(P.lib)) P.lib = [];
 let saveT;
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {}
@@ -150,6 +154,12 @@ function fromLink() {
   if (!u || !DATA.unis[u]) return;
   history.replaceState(null, "", location.pathname);
   undoPlan = JSON.parse(JSON.stringify(P));
+  // A different course: keep the current plan and open (or start) one for this course instead of overwriting it.
+  if (P.uni && (P.uni !== u || (P.course || "") !== p)) {
+    const { lib, ...cur } = P, same = lib.find(x => x.data.uni === u && (x.data.course || "") === p);
+    const rest = [...lib.filter(x => x !== same), { id: cur.id, name: planName(cur), data: cur }];
+    P = same ? { ...freshPlan(), ...same.data, id: same.id, lib: rest } : { ...JSON.parse(JSON.stringify(cur)), id: newId(), name: "", pre: null, lib: rest };
+  }
   const r = DATA.rows.find(x => x.u === u && x.p === p), S = readMap();
   P.uni = u; P.course = p;
   P.fee = (q.has("f") ? num(q.get("f")) : r ? r.f : num(P.fee)) || ""; P.feeAuto = true;
@@ -427,7 +437,7 @@ $("resetPlan").addEventListener("click", e => {
   const b = e.currentTarget;
   if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Tap again to clear"; setTimeout(() => { b.dataset.armed = ""; b.textContent = "Start over"; }, 3000); return; }
   b.dataset.armed = ""; b.textContent = "Start over";
-  P = freshPlan(); save(); init();
+  P = { ...freshPlan(), id: P.id, name: P.name, lib: P.lib }; save(); init();
 });
 
 /* ---------------- the projection ---------------- */
@@ -482,6 +492,7 @@ function project() {
 
 /* ---------------- results ---------------- */
 function compute() {
+  renderPlanbar();
   const R = project(), M = R.months, ow = owed();
   const all = [...R.inst, ...R.before], sumOf = kind => all.filter(x => x.kind === kind).reduce((a, x) => a + x.amount, 0);
   // Tuition part of installments (checked against what you owe) vs extra costs (separate fees + extras paid with installments).
@@ -722,7 +733,73 @@ const syncHdr = () => document.documentElement.style.setProperty("--hdr", $("hdr
 new ResizeObserver(syncHdr).observe($("hdr")); syncHdr();
 // After anything that can change several sections at once (schedule, course, fee): sync fields, then recalc.
 function refresh() { fillFields(); renderList("inst"); renderSched(); renderPrefill(); compute(); }
-function init() { fillFields(); Object.keys(LISTS).forEach(renderList); syncFolds(); renderSched(); renderPrefill(); compute(); }
+/* ---------------- your plans ---------------- */
+function planName(p) { return (p.name || "").trim() || (p.uni ? p.uni + (p.course ? " · " + p.course : "") : "Untitled plan"); }
+function allPlans() { const { lib, ...cur } = P; return [{ id: P.id, name: planName(cur), data: cur, current: true }, ...lib.map(x => ({ ...x, name: planName(x.data) }))]; }
+function renderPlanbar() {
+  const all = allPlans();
+  $("planSel").innerHTML = all.map(x => `<option value="${esc(x.id)}"${x.current ? " selected" : ""}>${esc(x.name)}</option>`).join("");
+  if (document.activeElement !== $("planName")) $("planName").value = P.name || "";
+  $("planName").placeholder = planName({ ...P, name: "" });
+  $("planCmp").disabled = all.length < 2;
+}
+function openPlan(id) {
+  const { lib, ...cur } = P, t = lib.find(x => x.id === id); if (!t) return;
+  P = { ...freshPlan(), ...t.data, id: t.id, lib: [...lib.filter(x => x !== t), { id: cur.id, name: planName(cur), data: cur }] };
+  undoPlan = null; save(); init();
+}
+$("planSel").addEventListener("change", e => openPlan(e.target.value));
+$("planName").addEventListener("input", e => { P.name = e.target.value.slice(0, 60); save(); renderPlanbar(); });
+$("planNew").addEventListener("click", () => {
+  const { lib, ...cur } = P;
+  P = { ...freshPlan(), id: newId(), lib: [...lib, { id: cur.id, name: planName(cur), data: cur }] };
+  undoPlan = null; save(); init(); $("uni").focus();
+});
+$("planDup").addEventListener("click", () => {
+  const { lib, ...cur } = P;
+  P = { ...JSON.parse(JSON.stringify(cur)), id: newId(), name: planName(cur) + " (copy)", pre: null, lib: [...lib, { id: cur.id, name: planName(cur), data: cur }] };
+  undoPlan = null; save(); init(); $("planName").focus(); $("planName").select();
+});
+$("planDel").addEventListener("click", e => {
+  const b = e.currentTarget;
+  if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Tap again to delete"; setTimeout(() => { b.dataset.armed = ""; b.textContent = "Delete"; }, 3000); return; }
+  b.dataset.armed = ""; b.textContent = "Delete";
+  const [next, ...rest] = P.lib;
+  P = next ? { ...freshPlan(), ...next.data, id: next.id, lib: rest } : { ...freshPlan(), id: newId(), lib: [] };
+  undoPlan = null; save(); init();
+});
+$("planPrint").addEventListener("click", () => { document.querySelectorAll(".pl-card .fold[aria-expanded=false]").forEach(f => f.click()); window.print(); });
+// Each plan's outcome, worked out the same way as the open one.
+function planOutcome(data) {
+  const keep = P; P = { ...freshPlan(), ...data, lib: [] };
+  try {
+    const R = project(), M = R.months, endBal = M.length ? M[M.length - 1].end : num(P.savings);
+    const low = M.reduce((a, m) => m.end < a.end ? m : a, { end: num(P.savings), mi: R.S0 });
+    const ok = R.inst.filter(x => x.ok).length, firstShort = R.inst.find(x => !x.ok);
+    return { fee: netFee(), owed: owed(), n: R.inst.length, ok, firstShort, endBal, low, net: M.reduce((a, m) => a + m.net, 0) / Math.max(1, M.length), cost: R.cost,
+      onTrack: !firstShort && endBal >= -0.5, end: M.length ? M[M.length - 1].mi : R.S0 };
+  } finally { P = keep; }
+}
+$("planCmp").addEventListener("click", () => {
+  const all = allPlans().map(x => ({ ...x, o: planOutcome(x.data) }));
+  const row = (k, f, cls) => `<tr><th scope="row">${k}</th>${all.map(x => `<td class="${cls ? cls(x) : ""}">${f(x)}</td>`).join("")}</tr>`;
+  $("pcBody").innerHTML = `<table class="cmp-tbl"><thead><tr><th></th>${all.map(x => `<th scope="col"><b>${esc(x.name)}</b>${x.current ? `<span class="sub">open now</span>` : `<span class="sub"><button type="button" class="link-btn small" data-open-plan="${esc(x.id)}">Open</button></span>`}</th>`).join("")}</tr></thead><tbody>
+    ${row("Verdict", x => x.o.onTrack ? "On track" : x.o.firstShort ? "Misses a payment" : "Runs short", x => x.o.onTrack ? "best" : "warn-cell")}
+    ${row("Fee after scholarship", x => x.o.fee ? gbp(x.o.fee) : "—")}
+    ${row("Still to pay", x => x.o.owed ? gbp(x.o.owed) : "—")}
+    ${row("Payments on time", x => x.o.n ? `${x.o.ok} of ${x.o.n}` : "none scheduled")}
+    ${row("Take-home / month", x => gbp(x.o.net))}
+    ${row("Living costs / month", x => gbp(x.o.cost))}
+    ${row("Lowest point", x => `${gbp(x.o.low.end)} <span class="sub">${mLabel(x.o.low.mi, true)}</span>`)}
+    ${row("At the end", x => `<b>${gbp(x.o.endBal)}</b> <span class="sub">${mLabel(x.o.end, true)}</span>`)}
+  </tbody></table>`;
+  $("planCmpDlg").showModal();
+});
+$("pcBody").addEventListener("click", e => { const b = e.target.closest("[data-open-plan]"); if (b) { $("planCmpDlg").close(); openPlan(b.dataset.openPlan); } });
+$("pcClose").addEventListener("click", () => $("planCmpDlg").close());
+$("planCmpDlg").addEventListener("click", e => { if (e.target === $("planCmpDlg")) $("planCmpDlg").close(); });
+
+function init() { renderPlanbar(); fillFields(); Object.keys(LISTS).forEach(renderList); syncFolds(); renderSched(); renderPrefill(); compute(); }
 fromLink();
 init();
 })();

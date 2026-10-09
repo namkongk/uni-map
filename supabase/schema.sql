@@ -125,5 +125,21 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values ('avatars', 'avatars', true, 204800, array['image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do update set public = true, file_size_limit = 204800, allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
 
+-- "Report wrong info" from course cards, for you to review (Table editor → course_reports). Written only by /api/report.
+create table if not exists public.course_reports (
+  id          bigint generated always as identity primary key,
+  created_at  timestamptz not null default now(),
+  co          text not null,                 -- uk | de
+  uni         text not null,
+  course      text not null,
+  field       text not null,                 -- fee | dates | entry | closed | scholarship | other
+  details     text not null,
+  link        text,
+  user_id     uuid references public.app_accounts (id) on delete set null,
+  status      text not null default 'new'    -- set to 'done' once you've checked it
+);
+create index if not exists course_reports_new_idx on public.course_reports (status, created_at desc);
+alter table public.course_reports enable row level security;
+
 -- Make the API see the new tables straight away.
 notify pgrst, 'reload schema';
