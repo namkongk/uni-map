@@ -690,7 +690,7 @@ document.addEventListener("keydown", e => {
   if (e.key !== "Escape" || $("liveReport").open) return;
   if (!$("countryMenu").hidden) { setCountryMenu(false); $("countryBtn").focus(); }
   else if (!$("subjMenu").hidden) { setSubjMenu(false); $("subjBtn").focus(); }
-  else if ($("acctDlg")?.open) return; else if (tableOpen) setView(false); else closeCard();
+  else if ($("acctDlg")?.open || $("authDlg")?.open || $("setDlg")?.open || $("acctMenu")?.hidden === false) return; else if (tableOpen) setView(false); else closeCard();
 });
 
 /* ---------------- table ---------------- */

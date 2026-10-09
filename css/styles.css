@@ -608,7 +608,6 @@ a.sub.live:hover{text-decoration:underline}
 /* ---------- profile & settings modal (js/account.js) ---------- */
 .icon-btn.signed-in{background:var(--accent);color:#fff}
 .icon-btn.signed-in:hover{background:var(--accent);filter:brightness(1.08)}
-.acct-initial{font-size:14px;font-weight:700;line-height:1}
 .acct-dlg{width:min(440px,calc(100% - 24px));max-height:min(88vh,760px);padding:0;border:0;color:var(--ink);overflow:hidden;border-radius:var(--r-xl)}
 .acct-dlg[open]{display:flex;flex-direction:column;animation:pop .45s var(--spring) both}
 .acct-dlg::backdrop{background:rgb(0 0 0 / .25);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -635,15 +634,7 @@ a.sub.live:hover{text-decoration:underline}
 .acct-msg.err{color:var(--red-ink)} .acct-msg.ok{color:var(--green-ink)}
 .acct-msg:empty{display:none}
 .acct-warn{margin:0;font-size:12.5px;line-height:1.5;background:var(--amber);color:var(--amber-ink);border-radius:var(--r-sm);padding:9px 11px}
-.acct-newid{display:flex;flex-direction:column;gap:10px}
-.acct-k{margin:0;font-size:12px;font-weight:650;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.acct-id{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);border-radius:var(--r-md);padding:12px 14px}
-.acct-id b{font-size:26px;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--accent)}
-.acct-who{display:flex;align-items:center;gap:12px}
-.acct-who b{display:block;font-size:16px}
 .acct-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:18px;flex:none}
-.acct-sub{font-size:12.5px;color:var(--muted)}
-.mono{font-variant-numeric:tabular-nums;letter-spacing:.04em;color:var(--ink-2);font-weight:600}
 .link-btn{border:0;background:none;padding:0 2px;color:var(--accent);font:inherit;font-weight:650;cursor:pointer}
 .acct-sync{display:flex;align-items:center;gap:7px;margin:0;font-size:12.5px;color:var(--ink-2)}
 .acct-sync .dot{width:8px;height:8px;border-radius:50%;background:var(--green-ink)}
@@ -651,6 +642,30 @@ a.sub.live:hover{text-decoration:underline}
 .acct-actions{display:flex;flex-wrap:wrap;gap:8px}
 .btn-plain.danger,.link-btn.danger{color:var(--red-ink)}
 .btn-primary.danger{background:var(--red-ink);color:#fff}
-.acct-sep{height:1px;background:var(--line)}
 .settings.settings-in{position:static;width:auto;padding:0;animation:none;box-shadow:none;background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
 .settings.settings-in::before{display:none}
+/* profile menu (under the profile button) */
+.acct-menu{position:fixed;z-index:45;width:236px;padding:6px;display:flex;flex-direction:column;gap:2px;border-radius:var(--r-lg);transform-origin:top right;animation:pop .35s var(--spring) both}
+.acct-menu button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;border-radius:var(--r-sm);padding:9px 10px;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left}
+.acct-menu button svg{width:18px;height:18px;flex:none;color:var(--ink-2)}
+.acct-menu button:hover,.acct-menu button:focus-visible{background:var(--fill);outline:none}
+.am-who{display:flex;align-items:center;gap:10px;padding:8px 10px 10px}
+.am-who b{display:block;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.am-who span{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.acct-avatar.sm{width:32px;height:32px;font-size:14px}
+.am-sep{height:1px;background:var(--line);margin:3px 6px}
+/* profile photo and @username field */
+.icon-btn.signed-in{padding:0;overflow:hidden}
+.acct-avatar.btn{width:100%;height:100%;font-size:14px;border-radius:50%}
+img.acct-avatar{object-fit:cover;display:block;padding:0}
+.acct-avatar.lg{width:72px;height:72px;font-size:28px}
+.acct-photo{display:flex;align-items:center;gap:16px}
+.acct-photo-btns{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.acct-photo-btns label.btn-plain{cursor:pointer;gap:6px}
+.acct-photo-btns svg{width:16px;height:16px}
+.at{display:flex;align-items:center;background:var(--fill);border-radius:var(--r-sm);border:1px solid transparent}
+.at:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);background:rgb(var(--tint) / .9)}
+.at b{padding-left:12px;color:var(--muted);font-weight:600}
+.at input{background:none!important;border:0!important;box-shadow:none!important;padding-left:2px!important}
+.link-btn.small{font-size:12.5px;align-self:flex-start;padding:0}
+.acct-hint.ok{color:var(--green-ink)} .acct-hint.err{color:var(--red-ink)}

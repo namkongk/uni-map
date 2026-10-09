@@ -1,4 +1,4 @@
--- Uni Map: live course fees.
+-- Uni Map: database for live course fees, course discovery and user accounts.
 -- Run once in Supabase → SQL Editor → New query → paste → Run. Safe to run again (it only creates what's missing).
 
 -- Latest reading for each course page. /api/refresh writes here; /api/fees reads it for every visitor.
@@ -60,22 +60,47 @@ create table if not exists public.course_candidates (
 alter table public.course_candidates enable row level security;
 
 -- ---------------------------------------------------------------------------------------------------------------
--- User profiles (added later). A profile is a name + password; the 12-digit id is the login. Only the server touches
--- these tables (row level security on, no policies), through /api/account.
-create table if not exists public.app_users (
-  id               text primary key check (id ~ '^[0-9]{12}$'),
+-- User accounts (username + password, no email). Only the server touches these tables, through /api/account.
+
+-- One row per account. The password is stored only as a scrypt hash with a random salt.
+create table if not exists public.app_accounts (
+  id               uuid primary key default gen_random_uuid(),
+  username         text not null check (username ~ '^[a-z][a-z0-9_.]{2,19}$'),
   name             text not null check (char_length(name) between 1 and 60),
-  pass_hash        text not null,                    -- scrypt, with a random salt per user (never the password itself)
+  pass_hash        text not null,
+  avatar_url       text,
   data             jsonb not null default '{}'::jsonb,   -- saved inputs: { map: {...}, plan: {...} }
   data_updated_at  timestamptz,
   created_at       timestamptz not null default now(),
   last_login_at    timestamptz
 );
+create unique index if not exists app_accounts_username_key on public.app_accounts (lower(username));
+
+-- Earlier versions: an ID-based app_users table (and its app_sessions pointing at it). Move any accounts there to
+-- app_accounts (same password hash format, so passwords keep working; the username comes from the name), then remove
+-- the old tables. Does nothing once they're gone.
+do $$
+begin
+  if to_regclass('public.app_users') is not null then
+    insert into public.app_accounts (username, name, pass_hash, data, data_updated_at, created_at, last_login_at)
+    select case when lower(regexp_replace(name, '[^A-Za-z0-9_.]', '', 'g')) ~ '^[a-z][a-z0-9_.]{2,19}$'
+                 and not exists (select 1 from public.app_accounts a where lower(a.username) = lower(regexp_replace(u.name, '[^A-Za-z0-9_.]', '', 'g')))
+                then lower(regexp_replace(name, '[^A-Za-z0-9_.]', '', 'g'))
+                else 'user' || u.id end,
+           u.name, u.pass_hash, u.data, u.data_updated_at, u.created_at, u.last_login_at
+    from public.app_users u;
+  end if;
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'app_sessions'
+             and column_name = 'user_id' and data_type = 'text') then
+    drop table public.app_sessions;
+  end if;
+  drop table if exists public.app_users;
+end $$;
 
 -- Signed-in browsers. Only a SHA-256 fingerprint of each session token is stored, so a leaked table can't be used to sign in.
 create table if not exists public.app_sessions (
   token_hash  text primary key,
-  user_id     text not null references public.app_users (id) on delete cascade,
+  user_id     uuid not null references public.app_accounts (id) on delete cascade,
   created_at  timestamptz not null default now(),
   expires_at  timestamptz not null
 );
@@ -85,15 +110,20 @@ create index if not exists app_sessions_user_idx on public.app_sessions (user_id
 create table if not exists public.auth_attempts (
   id    bigint generated always as identity primary key,
   kind  text not null,            -- login | signup
-  key   text not null,            -- "id:<profile id>" or "ip:<fingerprint>"
+  key   text not null,            -- "user:<username>" or "ip:<fingerprint>"
   ok    boolean not null default false,
   at    timestamptz not null default now()
 );
 create index if not exists auth_attempts_lookup_idx on public.auth_attempts (kind, key, at desc);
 
-alter table public.app_users enable row level security;
+alter table public.app_accounts enable row level security;
 alter table public.app_sessions enable row level security;
 alter table public.auth_attempts enable row level security;
 
--- Make the API see new columns and tables straight away.
+-- Profile photos: a public bucket (photos are shown on the page), max 200 KB, images only. Uploads go through the server.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 204800, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update set public = true, file_size_limit = 204800, allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
+
+-- Make the API see the new tables straight away.
 notify pgrst, 'reload schema';
