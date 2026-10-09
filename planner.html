@@ -25,14 +25,14 @@
 <div class="backdrop" aria-hidden="true"><i></i><i></i><i></i></div>
 
 <header class="topbar glass" id="hdr">
-  <a class="brand" href="./"><span class="brand-pin" aria-hidden="true"></span><span class="brand-t">Uni Map</span></a>
+  <a class="icon-btn back" href="./" aria-label="Back to map" title="Back to map"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
   <span class="pl-title">Budget planner</span>
   <span class="pl-saved" id="saved" role="status">Saved in this browser</span>
+  <button type="button" class="btn-plain sm signin-nudge pl-nudge" data-signin="signup" title="No email needed — just a username and password">Sign in to save anywhere</button>
   <button type="button" class="btn-plain" id="resetPlan">Start over</button>
   <button type="button" class="icon-btn" id="settingsBtn" aria-label="Appearance" aria-expanded="false" aria-controls="settings">
     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h7m4 0h1M4 14h1m4 0h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="13" cy="6" r="2" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="7" cy="14" r="2" stroke="currentColor" stroke-width="1.7" fill="none"/></svg>
   </button>
-  <a class="btn-primary back" href="./"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4.5 6.5 10l5.5 5.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Back to map</span></a>
 </header>
 
 <!-- Appearance settings (shared with the map page) -->
@@ -99,7 +99,7 @@
               <div class="seg tiny" role="group" aria-label="Enter already paid as" id="paidMode"><button type="button" data-v="gbp">£</button><button type="button" data-v="pct">%</button></div></div>
             <input id="paid" type="number" min="0" step="10" inputmode="decimal" placeholder="0"></div>
         </div>
-        <span class="hint" id="paidHint">Your deposit and anything else paid so far</span>
+        <span class="hint" id="paidHint">Deposit and anything paid so far</span>
         <div class="owed" id="owed"></div>
 
         <div class="sub-h"><h3>Installments still to pay</h3>
@@ -109,7 +109,7 @@
         <div class="rows" id="instRows"></div>
         <div class="row-actions">
           <button type="button" class="btn-plain sm" id="addInst"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add installment</button>
-          <button type="button" class="btn-plain sm ghost" id="splitInst" title="Replace the list with equal monthly installments covering what you still owe">Split what I owe…</button>
+          <button type="button" class="btn-plain sm ghost" id="splitInst" title="Equal monthly installments for what you owe">Split what I owe…</button>
           <span class="total" id="instTotal"></span>
         </div>
         <div class="split" id="splitBox" hidden>
@@ -120,7 +120,7 @@
 
         <details class="more" id="extraBox">
           <summary><span>Other one-off costs</span> <small id="extraSum">visa, health surcharge, graduation…</small></summary>
-          <p class="sub">Payments on their own dates. For a cost paid together with an installment, use that installment's “Extra cost” instead.</p>
+          <p class="sub">Payments on their own dates (or use an installment's “Extra cost”).</p>
           <div class="rows" id="extraRows"></div>
           <div class="row-actions">
             <button type="button" class="btn-plain sm" id="addExtra"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add cost</button>
@@ -147,7 +147,7 @@
         <button type="button" class="fold" aria-expanded="true" aria-label="Collapse Money coming in"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 8 4.5 4.5L14.5 8" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></header>
       <div class="card-b">
         <div class="field savings"><label for="savings">Money you have now (£)</label><input id="savings" type="number" step="10" inputmode="decimal" placeholder="0">
-          <span class="hint">Savings or family money available for fees and living</span></div>
+          <span class="hint">Savings or family money</span></div>
         <div class="sub-h"><h3>Work</h3></div>
         <div class="rows" id="jobRows"></div>
         <div class="row-actions">
@@ -155,7 +155,7 @@
           <span class="total" id="jobTotal"></span>
         </div>
         <p class="check warn" id="visaWarn" hidden></p>
-        <p class="fine">Take-home uses UK rules: 20% income tax + 8% National Insurance on earnings above £12,570 a year (≈£1,048 a month). Months use 52 ÷ 12 ≈ 4.33 weeks. Leave a job's dates empty if it runs the whole plan.</p>
+        <p class="fine">After 20% tax + 8% NI above £12,570/yr. No dates = whole plan.</p>
       </div>
     </section>
   </div>

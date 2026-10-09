@@ -128,15 +128,15 @@ function renderMenu() {
   const item = (act, icon, label) => `<button type="button" role="menuitem" data-act="${act}">${icon}<span>${label}</span></button>`;
   menu.innerHTML = (signedIn()
     ? `<div class="am-who">${avatarHTML("sm")}<div><b>${esc(meta.name)}</b><span>@${esc(meta.username)}</span></div></div>` + item("profile", I.user, "My profile") + item("signout", I.out, "Sign out")
-    : item("signin", I.in, "Sign in") + item("signup", I.up, "Create account"))
+    : `<p class="am-note">Save your data and use it anywhere. No email — just a username &amp; password.</p>` + item("signin", I.in, "Sign in") + item("signup", I.up, "Create account"))
     + `<div class="am-sep" aria-hidden="true"></div>` + item("settings", I.set, "Settings");
 }
 function setMenu(open) {
   menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
   if (!open) return;
   renderMenu();
-  const r = btn.getBoundingClientRect();
-  menu.style.top = r.bottom + 10 + "px"; menu.style.right = Math.max(8, innerWidth - r.right) + "px";
+  const r = btn.getBoundingClientRect(), z = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--uiz")) || 1;   // the menu is zoomed with the rest of the interface
+  menu.style.top = (r.bottom + 10) / z + "px"; menu.style.right = Math.max(8, innerWidth - r.right) / z + "px";
   menu.querySelector("button")?.focus();
 }
 btn.addEventListener("click", e => { e.stopPropagation(); setMenu(menu.hidden); });
@@ -158,10 +158,14 @@ menu.addEventListener("click", e => {
   else openAuth(act);
 });
 function syncButton() {
+  document.documentElement.classList.toggle("signed-in", signedIn());   // hides the "sign in to save" prompts
   btn.innerHTML = signedIn() ? avatarHTML("btn") : I.user;
   btn.classList.toggle("signed-in", signedIn());
   btn.title = signedIn() ? `Signed in as ${meta.name} (@${meta.username})` : "Profile & settings";
 }
+
+// "Sign in" prompts on the pages: <button data-signin="signup|signin">
+document.addEventListener("click", e => { const b = e.target.closest("[data-signin]"); if (b && !signedIn()) { e.preventDefault(); openAuth(b.dataset.signin === "signin" ? "signin" : "signup"); } });
 
 /* ---------------- shared form bits ---------------- */
 const pwField = (id, label, auto) => `<label class="acct-f"><span>${label}</span><span class="pw"><input id="${id}" type="password" autocomplete="${auto}" minlength="8" maxlength="128" required>
@@ -184,7 +188,7 @@ function renderAuth(info = "") {
   $("authDlgT").textContent = AUTH_TITLE[authView];
   const body = $("authBody"), v = authView;
   if (v === "done") body.innerHTML = `<p class="acct-lead">${info}</p><button type="button" class="btn-primary" id="authOk">Continue</button>`;
-  else body.innerHTML = `<p class="acct-lead">Save your inputs and budget plan, and pick them up on any device.</p>
+  else body.innerHTML = `<p class="acct-lead">Save your shortlist, filters and budget plan, and open them on any device. <b>No email needed</b> — just a username and password.</p>
       <div class="acct-tabs" role="tablist"><button type="button" role="tab" aria-selected="${v === "signin"}" data-v="signin">Sign in</button><button type="button" role="tab" aria-selected="${v === "signup"}" data-v="signup">Create account</button></div>
       ${v === "signin" ? `<form class="acct-form" id="authForm" novalidate>
           ${userField("aUser", "Username", "username")}
@@ -195,8 +199,8 @@ function renderAuth(info = "") {
           ${pwField("aPw", "Password <i>(at least 8 characters)</i>", "new-password")}
           ${pwField("aPw2", "Confirm password", "new-password")}
           <button type="submit" class="btn-primary">Create account</button>
-          <p class="acct-warn">There's no email on the account, so <b>a forgotten password can't be recovered</b> — keep it somewhere safe.</p>
-          <p class="acct-hint">Your current inputs are saved to the new account. You can add your name and a photo afterwards.</p></form>`}
+          <p class="acct-warn"><b>Forgotten passwords can't be recovered</b> — keep it safe.</p>
+          <p class="acct-hint">Your current inputs move to the new account.</p></form>`}
       <p class="acct-msg" id="authMsg" role="status"></p>`;
   wire(body);
   body.querySelectorAll(".acct-tabs button").forEach(b => b.addEventListener("click", () => openAuth(b.dataset.v)));
@@ -228,13 +232,13 @@ async function doSignIn(e) {
 async function doSignUp(e) {
   e.preventDefault(); const f = e.currentTarget;
   const username = $("aUser").value, pw = $("aPw").value, pw2 = $("aPw2").value;
-  if (!USER_RE.test(username)) return msg("authMsg", "Choose a username: 3–20 letters, digits, _ or ., starting with a letter.");
+  if (!USER_RE.test(username)) return msg("authMsg", "Username: 3–20 letters, digits, _ or ., starting with a letter.");
   const p = pwProblem(pw); if (p) return msg("authMsg", p);
   if (pw !== pw2) return msg("authMsg", "The two passwords don't match.");
   busy(f, true); msg("authMsg", "Creating your account…", true);
   try {
     await finishSignIn(await api({ action: "signup", username, password: pw, data: localData() }));
-    syncButton(); authView = "done"; renderAuth(`Welcome, <b>@${esc(username)}</b>! Your account is ready and your inputs are saved to it. Open <b>My profile</b> from the menu to add your name and a photo.`);
+    syncButton(); authView = "done"; renderAuth(`Welcome, <b>@${esc(username)}</b>! Add a name and photo in <b>My profile</b>.`);
     $("authOk").focus();
   } catch (err) { msg("authMsg", err.message); busy(f, false); }
 }
@@ -249,19 +253,19 @@ function renderProfile() {
       <div class="acct-photo-btns"><label class="btn-plain sm" for="pFile">${I.cam}<span>${meta.avatar ? "Change photo" : "Add photo"}</span></label>
         <input type="file" id="pFile" accept="image/jpeg,image/png,image/webp" hidden>
         ${meta.avatar ? `<button type="button" class="link-btn small danger" id="pPhotoRm">Remove photo</button>` : ""}
-        <span class="acct-hint">JPEG, PNG or WebP — it's resized to 256 px.</span></div></div>
+        <span class="acct-hint">JPEG, PNG or WebP.</span></div></div>
     <form class="acct-form" id="pForm" novalidate>
       ${field("pName", "Name", `autocomplete="name" maxlength="60" required value="${esc(meta.name)}"`)}
       ${userField("pUser", "Username", "username", meta.username)}
       <button type="submit" class="btn-primary">Save changes</button></form>
     <p class="acct-msg" id="pMsg" role="status"></p>
     <p class="acct-sync"><span class="dot" aria-hidden="true"></span><span id="acctStatus">${esc(lastStatus || (meta.dirty ? "Saving…" : "Your inputs are saved to this profile"))}</span></p>
-    <p class="acct-note">Map filters, jobs, grade, currency and your budget planner are saved as you go, and load wherever you sign in.</p>
+    <p class="acct-note">Your inputs and budget plan save as you go.</p>
     <div class="acct-actions"><button type="button" class="btn-plain ghost" id="pPwBtn" aria-expanded="false">Change password</button>
       <button type="button" class="btn-plain ghost danger" id="pDelBtn" aria-expanded="false">Delete profile</button></div>
     <form class="acct-form" id="pPwForm" hidden>${pwField("pPwCur", "Current password", "current-password")}${pwField("pPwNew", "New password <i>(at least 8 characters)</i>", "new-password")}
       <button type="submit" class="btn-primary">Change password</button></form>
-    <form class="acct-form" id="pDelForm" hidden><p class="acct-warn">This permanently deletes your account, photo and everything saved with it.</p>${pwField("pDelPw", "Password", "current-password")}
+    <form class="acct-form" id="pDelForm" hidden><p class="acct-warn">Permanently deletes your account and saved data.</p>${pwField("pDelPw", "Password", "current-password")}
       <button type="submit" class="btn-primary danger">Delete my account</button></form>
     <p class="acct-msg" id="pMsg2" role="status"></p>`;
   wire(body);

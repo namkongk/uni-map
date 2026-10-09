@@ -47,8 +47,11 @@ let saveT;
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {}
   const el = $("saved"); el.textContent = "Saved"; el.classList.add("on");
-  clearTimeout(saveT); saveT = setTimeout(() => { el.textContent = "Saved in this browser"; el.classList.remove("on"); }, 1200);
+  clearTimeout(saveT); saveT = setTimeout(() => { el.textContent = savedWhere(); el.classList.remove("on"); }, 1200);
 }
+// Signed in (js/account.js sets the class), plans also go to the account.
+function savedWhere() { return document.documentElement.classList.contains("signed-in") ? "Saved to your account" : "Saved in this browser"; }
+addEventListener("load", () => { if (!$("saved").classList.contains("on")) $("saved").textContent = savedWhere(); });
 
 /* ---------------- university / course lookup (from the map's data) ---------------- */
 const DATA = window.UNIDATA || { rows: [], unis: {} };
@@ -60,8 +63,8 @@ const courseRow = () => coursesOf(P.uni).find(x => x.p === P.course);
 function fillCourses() {
   const rs = coursesOf(P.uni), r = courseRow();
   $("courseList").innerHTML = rs.map(r => `<option value="${esc(r.p)}">${esc(r.lv)} · ~${gbp(r.f)}/yr</option>`).join("");
-  $("courseHint").textContent = r ? `Listed fee ~${gbp(r.f)}/yr${r.fn ? ` (${r.fn})` : ""} · typical living here ~${gbp(r.l / 12)}/month · intakes: ${r.i}`
-    : rs.length ? `${rs.length} course${rs.length === 1 ? "" : "s"} on the map for this university — pick one to fill in its fee.` : "";
+  $("courseHint").textContent = r ? `~${gbp(r.f)}/yr fee · ~${gbp(r.l / 12)}/month living · ${r.i}`
+    : rs.length ? `${rs.length} course${rs.length === 1 ? "" : "s"} here — pick one to fill in its fee.` : "";
   fillIntakes();
 }
 
@@ -178,8 +181,8 @@ function renderPrefill() {
   const items = [
     `<li>Fee and scholarship${pre.sl ? ` <span class="muted">(${esc(pre.sl)})</span>` : ""} as shown on the map</li>`,
     sp ? `<li>${esc(pre.u)}'s payment plan for the <b>${esc(it?.name || "")}</b> intake${sp.dep ? ` — the ${gbp(sp.dep)} ${esc(sp.depLabel)} is in <b>Already paid</b>` : ""}</li>` : "",
-    pre.liv ? `<li>Living costs scaled to this city's typical <b>${gbp(pre.liv / 12)}</b>/month</li>` : "",
-    `<li>Your ${pre.jobs === 1 ? "job" : pre.jobs + " jobs"} from the map${pre.rate != null ? ` at the £${pre.rate.toFixed(2)}/hr you set for this course` : ""}${pre.wks ? " (weeks per year turned into average hours a week)" : ""}</li>`,
+    pre.liv ? `<li>Living costs for this city (<b>${gbp(pre.liv / 12)}</b>/month)</li>` : "",
+    `<li>Your ${pre.jobs === 1 ? "job" : pre.jobs + " jobs"} from the map${pre.rate != null ? ` at £${pre.rate.toFixed(2)}/hr` : ""}</li>`,
   ];
   box.innerHTML = `<div class="pf-top"><b>Filled in from the map</b>
       <span class="pf-act">${undoPlan ? `<button type="button" class="btn-plain sm ghost" id="prefillUndo">Undo</button>` : ""}
@@ -198,21 +201,21 @@ function renderSched() {
   const u = esc(P.uni), it = esc(si.it?.name || "this");
   if (P.sched && si.any && !netFee()) {
     box.className = "sched on";
-    box.innerHTML = `<span class="sched-ic" aria-hidden="true">✓</span><div><b>${u}'s payment plan for ${it} starts is ready.</b> Enter your tuition fee (or pick a course) and the deposit and installment dates fill in.</div>`;
+    box.innerHTML = `<span class="sched-ic" aria-hidden="true">✓</span><div><b>${u}'s payment plan for ${it} is ready.</b> Enter your fee and the dates fill in.</div>`;
   } else if (P.sched && si.any) {
     const sp = P.schedPaid || {}, approx = P.inst.some(x => /date ≈$/.test(x.label));
     box.className = "sched on";
     box.innerHTML = `<span class="sched-ic" aria-hidden="true">✓</span><div><b>Following ${u}'s payment plan for ${it} starts.</b>
       ${sp.dep ? `Your ${gbp(sp.dep)} ${esc(sp.depLabel)} is counted in Already paid${sp.past ? `, with ${gbp(sp.past)} due before today` : ""}. ` : sp.past ? `${gbp(sp.past)} due before today is counted in Already paid. ` : ""}
-      ${si.dates ? "" : `${u} hasn't published installment dates${si.otherDates ? " for this intake" : ""} — add them from your invoice. `}
-      ${approx ? "Dates marked ≈ are estimates from the month or term given. " : ""}It updates with your fee, scholarship and intake until you edit an amount.</div>`;
+      ${si.dates ? "" : `No published installment dates — add them from your invoice. `}
+      ${approx ? "≈ dates are estimates. " : ""}Updates until you edit an amount.</div>`;
   } else if (si.any) {
     box.className = "sched";
     box.innerHTML = `<div>${u} publishes ${si.dates ? "a deposit and payment dates" : "its deposit"} for ${it} starts.</div>
       <button type="button" class="btn-plain sm" id="useSched">Use ${si.dates ? "these dates" : "this deposit"}</button>`;
   } else {
     box.className = "sched none";
-    box.innerHTML = `<div>${u} hasn't published payment dates${si.otherDates ? ` for ${it} starts` : ""} — add your installments from your offer or invoice.</div>`;
+    box.innerHTML = `<div>No published payment dates${si.otherDates ? ` for ${it}` : ""} — add them from your offer or invoice.</div>`;
   }
 }
 $("schedBox").addEventListener("click", e => {
@@ -233,7 +236,7 @@ const LISTS = {
       <input data-f="label" value="${esc(r.label)}" placeholder="Installment ${i + 1}" maxlength="40" aria-label="Installment ${i + 1} label">
       <output class="tot" data-out="it${i}" aria-label="Installment ${i + 1} total"></output>
       <button type="button" class="rm" data-rm="${i}" aria-label="Remove installment ${i + 1}">${X}</button></div>`,
-    empty: `<p class="empty-row">No installments yet. Add each payment you still have to make, or use “Split what I owe”.</p>`,
+    empty: `<p class="empty-row">No installments yet — add them or use “Split what I owe”.</p>`,
     make: () => { const last = P.inst[P.inst.length - 1]; let date = ""; if (last && last.date) { const d = new Date(last.date + "T00:00"); d.setMonth(d.getMonth() + 1); date = d.toISOString().slice(0, 10); } return { date, amount: "", extra: "", label: "" }; },
   },
   extras: {
@@ -385,7 +388,7 @@ function syncModes() {
   $("paidUnit").textContent = P.paidMode === "pct" ? "(% of fee)" : "(£)";
   $("paid").step = P.paidMode === "pct" ? "0.5" : "10";
   $("instModeHint").hidden = P.instMode !== "pct";
-  $("instModeHint").textContent = `Enter each installment as a percentage of what you still have to pay${owed() ? ` (${gbp(owed())})` : " — fill in the fee above first"}.`;
+  $("instModeHint").textContent = `% of what you still owe${owed() ? ` (${gbp(owed())})` : " — enter the fee first"}.`;
 }
 function setMode(which, v) {
   if (P[which] === v) return;
@@ -516,15 +519,15 @@ function compute() {
   // One payment: will you have the money on the day, and if not, what would close the gap by then.
   function payAdvice(d) {
     const when = d.daysUntil < 1 ? "today" : `in ${d.daysUntil < 14 ? Math.round(d.daysUntil) + " days" : Math.round(d.daysUntil / 7) + " weeks"}`;
-    if (d.ok) return `<p class="il-note ok">Due ${when}. With your work from now until ${dLabel(d.date)} you'll have ${gbp(d.avail)} — enough, with <b>${gbp(d.avail - d.amount)}</b> to spare.</p>`;
-    if (d.daysUntil < 1) return `<p class="il-note bad">Due ${when} and you have ${gbp(d.avail)} — <b>${gbp(d.short)} short</b>. There's no time left to earn it; you'd need savings, family help or to ask the university for more time.</p>`;
+    if (d.ok) return `<p class="il-note ok">Due ${when} · covered, <b>${gbp(d.avail - d.amount)}</b> to spare.</p>`;
+    if (d.daysUntil < 1) return `<p class="il-note bad">Due ${when} and you have ${gbp(d.avail)} — <b>${gbp(d.short)} short</b>. Use savings or ask for more time.</p>`;
     const totalHrs = hrs + d.addHrs, overVisa = totalHrs > VISA_HRS;
     return `<div class="il-note bad">
-      <p>Due ${when}. From now until ${dLabel(d.date)} you'd have ${gbp(d.avail)}, so you'd be <b>${gbp(d.short)} short</b>${d.avail < 0 ? " (earlier payments already use up your money)" : ""}. To cover it by then you need <b>${gbp(d.perMonth)} more a month</b> (${gbp(d.perWeek)} a week) after tax. Any of these would do it:</p>
+      <p>Due ${when} · <b>${gbp(d.short)} short</b>. Needs <b>${gbp(d.perMonth)} more a month</b> after tax:</p>
       <ul>
         <li><b>${d.addHrs < 0.1 ? "<0.1" : d.addHrs.toFixed(1)} extra hours a week</b> at ${rateTxt}/hr${hrs ? ` → ${totalHrs.toFixed(1)} h/week in total` : ""}${overVisa ? ` <span class="warn-tag">over the ${VISA_HRS} h term-time visa limit</span>` : ""}</li>
-        ${d.addRate != null ? `<li>or <b>£${d.addRate.toFixed(2)} more per hour</b> on the hours you already work — <b>£${(d.curRate + d.addRate).toFixed(2)}/hr</b> instead of £${d.curRate.toFixed(2)}/hr</li>` : `<li>You have no work hours before this date, so a better hourly rate alone can't help — add work or savings.</li>`}
-        <li>or spend ${gbp(d.perMonth)} less a month (or a mix of these)</li>
+        ${d.addRate != null ? `<li>or <b>£${(d.curRate + d.addRate).toFixed(2)}/hr</b> instead of £${d.curRate.toFixed(2)}/hr</li>` : `<li>No work before this date — add work or savings.</li>`}
+        <li>or spend less</li>
       </ul></div>`;
   }
 
@@ -540,9 +543,9 @@ function compute() {
   const si = schedInfo();
   const fixes = Math.abs(gap) < 1 ? "" : `<span class="chk-act">${P.inst.length ? `<button type="button" class="btn-plain sm" id="fitInst">Fit installments to ${money(ow)}</button>` : ""}${si.any && !P.sched ? `<button type="button" class="btn-plain sm ghost" id="useSched2">Use ${esc(P.uni)}'s dates</button>` : ""}</span>`;
   chk.innerHTML = (Math.abs(gap) < 1 ? `✓ Installments add up to what you owe (${money(ow)}).`
-    : gap > 0 ? `⚠ Installments add up to ${money(instSum)} — <b>${money(gap)} of what you owe isn't scheduled yet.</b>`
-    : `⚠ Installments add up to ${money(instSum)}, which is ${money(-gap)} more than you owe (${money(ow)}).`) + fixes;
-  if (R.before.length) chk.innerHTML += `<br>${R.before.length} payment${R.before.length === 1 ? " is" : "s are"} dated before ${mLabel(R.S0, true)} and ${R.before.length === 1 ? "isn't" : "aren't"} included in the projection.`;
+    : gap > 0 ? `⚠ Installments add up to ${money(instSum)} — <b>${money(gap)} not scheduled yet.</b>`
+    : `⚠ Installments add up to ${money(instSum)}, ${money(-gap)} more than you owe.`) + fixes;
+  if (R.before.length) chk.innerHTML += `<br>${R.before.length} payment${R.before.length === 1 ? "" : "s"} before ${mLabel(R.S0, true)} not included.`;
 
   /* £ shown beside % inputs, and the already-paid hint */
   P.inst.forEach((x, i) => {
@@ -555,8 +558,8 @@ function compute() {
   $("paidHint").textContent = P.paidMode === "pct"
     ? (netFee() ? `= ${gbp(paidGBP())} of ${gbp(netFee())} (fee after scholarship)` : "Enter your fee first to turn this into pounds")
     : P.sched && P.schedPaid?.dep && num(P.paid) ? `Includes the ${gbp(P.schedPaid.dep)} ${P.schedPaid.depLabel}${P.schedPaid.past ? ` and ${gbp(P.schedPaid.past)} due before today` : ""} · ${pctTxt(pctOf(num(P.paid)))} of your fee after scholarship`
-    : (netFee() && num(P.paid) ? `${pctTxt(pctOf(num(P.paid)))} of your fee after scholarship · your deposit and anything else paid so far` : "Your deposit and anything else paid so far");
-  $("instModeHint").textContent = `Enter each installment as a percentage of what you still have to pay${owed() ? ` (${gbp(owed())})` : " — fill in the fee above first"}.`;
+    : (netFee() && num(P.paid) ? `${pctTxt(pctOf(num(P.paid)))} of your fee after scholarship` : "Deposit and anything paid so far");
+  $("instModeHint").textContent = `% of what you still owe${owed() ? ` (${gbp(owed())})` : " — enter the fee first"}.`;
   $("extraTotal").innerHTML = sumOf("extra") ? `Total <b>${gbp(sumOf("extra"))}</b>` : "";
   $("extraSum").textContent = P.extras.length ? `${P.extras.length} · ${gbp(P.extras.reduce((a, x) => a + num(x.amount), 0))}` : "visa, health surcharge, graduation…";
 
@@ -566,7 +569,7 @@ function compute() {
   $("jobTotal").innerHTML = M.length ? `Avg take-home <b>${gbp(net)}</b>/month` : "";
   const busy = M.filter(m => m.hrsWk > VISA_HRS);
   $("visaWarn").hidden = !busy.length;
-  if (busy.length) $("visaWarn").innerHTML = `⚠ In ${busy.length === M.length ? "every month" : busy.length + " month" + (busy.length === 1 ? "" : "s")} your jobs add up to more than ${VISA_HRS} h/week (up to ${Math.max(...busy.map(m => m.hrsWk))} h). Student visas allow ${VISA_HRS} h/week in term time — more only in official vacations. Use each job's From/Until months to model vacation work.`;
+  if (busy.length) $("visaWarn").innerHTML = `⚠ In ${busy.length === M.length ? "every month" : busy.length + " month" + (busy.length === 1 ? "" : "s")} your jobs exceed the ${VISA_HRS} h/week term-time visa limit (up to ${Math.max(...busy.map(m => m.hrsWk))} h). Use From/Until for vacation work.`;
 
   /* always-visible summary bar */
   const status = !M.length || (!num(P.fee) && !R.inst.length) ? ["", "•", "Fill in your plan"] : onTrack ? ["good", "✓", "On track"] : ["bad", "⚠", allPaid ? "Runs out of money" : "Shortfall"];
@@ -588,7 +591,7 @@ function compute() {
   $("sum-income").textContent = `${gbp(net)}/month${num(P.savings) ? ` + ${gbp(num(P.savings))} saved` : ""}`;
 
   /* verdict */
-  const headline = status[0] === "" ? "Fill in your fee, installments, costs and work to see whether your plan works."
+  const headline = status[0] === "" ? "Fill in your fee, installments, costs and work."
     : onTrack ? `You can make every payment on time and finish with <b class="pos">${gbp(endBal)}</b>.`
     : allPaid ? `Your payments are covered, but <b class="neg">you run out of money in ${mLabel(firstNeg.mi, true)}</b>.`
     : `You'll be <b class="neg">${gbp(firstShort.short)} short</b> for ${esc(firstShort.label)} on ${dLabel(firstShort.date)}${R.inst.length - okCount > 1 ? `, and ${R.inst.length - okCount - 1} more payment${R.inst.length - okCount - 1 === 1 ? "" : "s"} after it` : ""}.`;
@@ -601,11 +604,11 @@ function compute() {
       <div class="tile"><span>Fees still due</span><b>${gbp(R.inst.reduce((a, d) => a + d.amount, 0))}</b><small>${R.inst.length} payment${R.inst.length === 1 ? "" : "s"}</small></div>
     </div>
     ${needPerMonth > 0.5 ? (workCanFix
-      ? `<p class="need">To make every payment on time you need about <b>${gbp(needPerMonth)} more per month</b> from now — roughly <b>${extraHrs < 0.1 ? "<0.1" : extraHrs.toFixed(1)} extra hours a week</b> at ${rateTxt}/hr${hrs ? " (your average rate)" : ""}${needRate ? `, or <b>£${needRate.toFixed(2)} more per hour</b> on your current hours (£${(rate + needRate).toFixed(2)}/hr)` : ""}, or ${gbp(needPerMonth)} less spending a month.</p>`
-      : `<p class="need">You'd be <b>${gbp(worst.amount - worst.avail)} short by ${dLabel(worst.date)}</b>. Extra hours can't cover that within the ${VISA_HRS} h/week visa limit${needRate ? ` — on your current hours you'd need to earn <b>£${(rate + needRate).toFixed(2)}/hr</b> instead of ${rateTxt}/hr` : ""}. Otherwise you'd need it from savings, family or a change to your payment plan (or ${gbp(needPerMonth)} a month more income or less spending).</p>`) : ""}`;
+      ? `<p class="need">You need <b>${gbp(needPerMonth)} more a month</b>: <b>${extraHrs < 0.1 ? "<0.1" : extraHrs.toFixed(1)} extra h/week</b> at ${rateTxt}/hr${needRate ? `, <b>£${(rate + needRate).toFixed(2)}/hr</b> on your hours` : ""}, or spend less.</p>`
+      : `<p class="need">You'd be <b>${gbp(worst.amount - worst.avail)} short by ${dLabel(worst.date)}</b> — more than the ${VISA_HRS} h/week visa limit can earn. Use savings, family or a longer payment plan.</p>`) : ""}`;
 
   /* chart + table */
-  $("chartSub").textContent = M.length ? `Projected money in hand from ${R.fromToday ? "today (" + R.t0.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) + ")" : mLabel(R.S0)} to ${mLabel(M[M.length - 1].mi)}, starting from ${gbp(num(P.savings))}. Dots mark payment due dates (installments and additional fees).` : "";
+  $("chartSub").textContent = M.length ? `Money in hand, ${R.fromToday ? "today" : mLabel(R.S0)} – ${mLabel(M[M.length - 1].mi)} · dots = payments due` : "";
   drawChart(R);
   $("monthTbl").innerHTML = `<thead><tr><th scope="col">Month</th><th scope="col">Take-home</th><th scope="col">Living costs</th><th scope="col">Payments due</th><th scope="col">Can you pay?</th><th scope="col">Balance at month end</th></tr></thead><tbody>` +
     M.map(m => `<tr><th scope="row">${mLabel(m.mi)}${m.partial ? `<span class="sub">from ${m.partial} ${mLabel(m.mi).split(" ")[0]}</span>` : ""}</th><td>${gbp(m.netP)}</td><td>−${gbp(m.costP)}</td>
@@ -620,7 +623,7 @@ function compute() {
         <div class="il-st"><span class="pill ${d.ok ? "good" : "bad"}"><span aria-hidden="true">${d.ok ? "✓" : "⚠"}</span> ${d.ok ? "Covered" : "Short " + gbp(d.short)}</span>
           <small>${gbp(d.avail)} in hand on the day</small></div>
         ${payAdvice(d)}</li>`).join("")}</ul>`
-    : `<p class="empty-row">Add your installments and any additional fees to see whether each one is covered in time.</p>`;
+    : `<p class="empty-row">Add installments to see if each is covered in time.</p>`;
 
   /* the story */
   const p = [];
@@ -629,23 +632,23 @@ function compute() {
     (Math.abs(gap) >= 1 ? ` Your scheduled installments cover ${money(instSum)} of that${gap > 0 ? `, so <b>${gbp(gap)} still needs a payment date</b>` : ""}.` : ""));
   if (nExtra) p.push(`On top of tuition you have <b>${gbp(extraSum)}</b> of extra costs${sumOf("extra") ? ` (${all.filter(x => x.kind === "extra").map(x => esc(x.label)).join(", ")}${instExtra ? ", plus extras paid with installments" : ""})` : " paid together with your installments"}.`);
   if (M.length) {
-    p.push(`Your work brings in about <b>${gbp(gross)}</b> a month before tax and <b>${gbp(net)}</b> after tax. Living costs come to <b>${gbp(R.cost)}</b> a month, so you are ` +
-      (flow >= 0.5 ? `<b class="pos">making ${gbp(flow)} more than you spend</b> each month — that's what builds up towards your fees.`
-        : flow <= -0.5 ? `<b class="neg">spending ${gbp(-flow)} more than you earn</b> each month, before paying any fees. That gap comes out of your savings.`
+    p.push(`Work: <b>${gbp(net)}</b>/month after tax. Living: <b>${gbp(R.cost)}</b>/month, so you're ` +
+      (flow >= 0.5 ? `<b class="pos">saving ${gbp(flow)}</b> a month towards fees.`
+        : flow <= -0.5 ? `<b class="neg">${gbp(-flow)} short</b> a month before fees, from savings.`
         : `breaking even each month, with nothing left over for fees.`));
     p.push(`Starting with ${gbp(num(P.savings))}, you're projected to have <b>${gbp(endBal)}</b> at the end of ${mLabel(M[M.length - 1].mi, true)}` +
       (low.end < num(P.savings) - 0.5 && low !== M[M.length - 1] ? `. Your lowest point is ${gbp(low.end)} in ${mLabel(low.mi, true)}` : "") +
       (firstNeg ? `, and <b class="neg">you run out of money in ${mLabel(firstNeg.mi, true)}</b>.` : "."));
   }
   if (R.inst.length) {
-    if (allPaid) p.push(`<b class="pos">You can make all ${R.inst.length} payment${R.inst.length === 1 ? "" : "s"} on time.</b> The tightest one is ${esc(R.inst.reduce((a, d) => d.avail - d.amount < a.avail - a.amount ? d : a).label)}, with ${gbp(Math.min(...R.inst.map(d => d.avail - d.amount)))} to spare on the day.`);
-    else p.push(`You can make ${okCount} of ${R.inst.length} payments on time. <b class="neg">${esc(firstShort.label)} (${gbp(firstShort.amount)}, due ${dLabel(firstShort.date)}) is the first you can't cover</b> — you'd have ${gbp(firstShort.avail)} on the day, ${gbp(firstShort.amount - firstShort.avail)} short.` +
+    if (allPaid) p.push(`<b class="pos">You can make all ${R.inst.length} payment${R.inst.length === 1 ? "" : "s"} on time.</b> Tightest: ${esc(R.inst.reduce((a, d) => d.avail - d.amount < a.avail - a.amount ? d : a).label)}, ${gbp(Math.min(...R.inst.map(d => d.avail - d.amount)))} to spare.`);
+    else p.push(`You can make ${okCount} of ${R.inst.length} payments on time. <b class="neg">${esc(firstShort.label)} (${gbp(firstShort.amount)}, due ${dLabel(firstShort.date)}) is short by ${gbp(firstShort.amount - firstShort.avail)}</b>.` +
       (workCanFix
-        ? ` To cover every payment in time you'd need about <b>${gbp(needPerMonth)} more each month</b>: around ${extraHrs.toFixed(1)} extra hours a week at ${rateTxt}/hr, cutting spending by the same amount, or a mix of both.`
-        : ` In total you'd be <b class="neg">${gbp(worst.amount - worst.avail)} short by ${dLabel(worst.date)}</b>. Closing that with work alone would take about ${Math.round(hrs + extraHrs)} hours a week, well over the ${VISA_HRS} h term-time visa limit — so plan for that amount from savings or family, ask the university about a longer payment plan, or cut ${gbp(needPerMonth)} a month of spending.`));
+        ? ` Fix: <b>${gbp(needPerMonth)} more a month</b> (~${extraHrs.toFixed(1)} extra h/week) or spend less.`
+        : ` You'd be <b class="neg">${gbp(worst.amount - worst.avail)} short by ${dLabel(worst.date)}</b> — too much for the ${VISA_HRS} h visa limit. Use savings, family or a longer payment plan.`));
   }
-  if (!p.length) p.push("Fill in your fee, installments, living costs and work on the left — the projection updates as you type.");
-  p.push(`<span class="fine">This is an estimate. Tax is approximated monthly; real pay, bills and exchange rates vary, so leave yourself a buffer.</span>`);
+  if (!p.length) p.push("Fill in the sections on the left.");
+  p.push(`<span class="fine">An estimate — leave yourself a buffer.</span>`);
   $("story").innerHTML = p.map(x => `<p>${x}</p>`).join("");
 }
 
@@ -699,14 +702,14 @@ function drawChart(R) {
     showTip(p.m ? `<b>End of ${mLabel(p.m.mi, true)}</b>
       <div><span>Take-home${p.m.partial ? " (rest of month)" : ""}</span><span>+${gbp(p.m.netP)}</span></div><div><span>Living costs</span><span>−${gbp(p.m.costP)}</span></div>
       ${p.m.paid ? `<div><span>Installments</span><span>−${gbp(p.m.paid)}</span></div>` : ""}<div class="t-end"><span>Balance</span><span>${gbp(p.m.end)}</span></div>`
-      : `<b>${R.fromToday ? "Today · " + R.t0.toLocaleDateString("en-GB", { day: "numeric", month: "long" }) : "Start · " + mLabel(R.S0, true)}</b><div class="t-end"><span>Money you have</span><span>${gbp(p.y)}</span></div>`, X(p.x) * r.width / W, Y(p.y) * r.height / H);
+      : `<b>${R.fromToday ? "Today · " + R.t0.toLocaleDateString("en-GB", { day: "numeric", month: "long" }) : "Start · " + mLabel(R.S0, true)}</b><div class="t-end"><span>Money you have</span><span>${gbp(p.y)}</span></div>`, X(p.x) * svg.clientWidth / W, Y(p.y) * svg.clientHeight / H);
   });
   svg.querySelector(".hit").addEventListener("pointerleave", hide);
   svg.querySelectorAll(".due").forEach(c => {
     const d = R.inst[+c.dataset.k];
-    c.addEventListener("pointerenter", () => { const r = svg.getBoundingClientRect();
+    c.addEventListener("pointerenter", () => {
       showTip(`<b>${esc(d.label)} · ${dLabel(d.date)}</b><div><span>Due</span><span>${gbp(d.amount)}</span></div><div><span>In hand that day</span><span>${gbp(d.avail)}</span></div>
-        <div class="t-end"><span>${d.ok ? "✓ Covered" : "⚠ Short"}</span><span>${d.ok ? "+" + gbp(d.avail - d.amount) : gbp(d.amount - d.avail)}</span></div>`, +c.getAttribute("cx") * r.width / W, +c.getAttribute("cy") * r.height / H); });
+        <div class="t-end"><span>${d.ok ? "✓ Covered" : "⚠ Short"}</span><span>${d.ok ? "+" + gbp(d.avail - d.amount) : gbp(d.amount - d.avail)}</span></div>`, +c.getAttribute("cx") * svg.clientWidth / W, +c.getAttribute("cy") * svg.clientHeight / H); });
     c.addEventListener("pointerleave", () => { tip.hidden = true; });
   });
 }
@@ -714,7 +717,8 @@ let lastW = 0;
 new ResizeObserver(() => { const w = $("chart").clientWidth; if (Math.abs(w - lastW) > 4) { lastW = w; drawChart(project()); } }).observe($("chart"));
 
 /* ---------------- boot ---------------- */
-const syncHdr = () => document.documentElement.style.setProperty("--hdr", $("hdr").getBoundingClientRect().height + "px");
+// The interface is drawn slightly smaller (CSS zoom --uiz), so on-screen sizes are divided by it.
+const syncHdr = () => document.documentElement.style.setProperty("--hdr", $("hdr").getBoundingClientRect().height / (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--uiz")) || 1) + "px");
 new ResizeObserver(syncHdr).observe($("hdr")); syncHdr();
 // After anything that can change several sections at once (schedule, course, fee): sync fields, then recalc.
 function refresh() { fillFields(); renderList("inst"); renderSched(); renderPrefill(); compute(); }

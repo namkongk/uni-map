@@ -4,29 +4,38 @@
 
 const CFG = window.APP_CONFIG || {};
 /* ---------------- country ---------------- */
-// Each country has its own currency, map view, work rules and take-home pay model. The page shows one country at a
-// time (switching reloads), so everything below only ever sees that country's universities.
+// Each country has its own currency, map view, work rules and take-home pay model. You can show one country or several
+// together (changing the selection reloads); each course keeps its own country's currency, tax and your work there.
 const COUNTRIES = {
   uk: { code: "uk", name: "UK", full: "United Kingdom", flag: "🇬🇧", cur: "GBP", center: { lat: 54.6, lng: -3.2 }, zoom: 6, region: "GB",
         minWage: 12.71, visaHrs: 20, rank: "UK rank<br>(CUG 2027)",
         // 20% income tax + 8% National Insurance above the £12,570 personal allowance
         tax: g => 0.28 * Math.max(0, g - 12570),
-        taxText: "take-home is after 20% tax + 8% NI above £12,570",
-        visaText: "Visa cap: 20 h/week in term time (full-time allowed in official vacations)",
+        taxText: "after 20% tax + 8% NI above £12,570",
+        visaText: "Visa: 20 h/week in term, full-time in vacations",
         depLabel: "Pre-CAS deposit" },
   de: { code: "de", name: "DE", full: "Germany", flag: "🇩🇪", cur: "EUR", center: { lat: 51.2, lng: 10.4 }, zoom: 6, region: "DE",
         minWage: 13.90, visaHrs: 20, rank: null,
         // Working students (Werkstudent): ≈9.3% pension contribution above the €603/month mini-job limit, plus income tax
         // (from 14%, ≈15% here) above the €12,348 tax-free allowance (2026).
         tax: g => 0.093 * Math.max(0, g - 7236) + 0.15 * Math.max(0, g - 12348),
-        taxText: "take-home is after ≈9.3% pension contribution above €603/month and ≈15% income tax above €12,348 (2026)",
-        visaText: "Visa limit: 140 full or 280 half days a year, at most 20 h/week during lectures",
+        taxText: "after ≈9.3% pension above €603/month + ≈15% tax above €12,348",
+        visaText: "Visa: 140 full days a year, 20 h/week in term",
         depLabel: "Paid before arrival" },
 };
 const SAVED_STATE = (() => { try { return JSON.parse(localStorage.getItem("ukmap-state") || "{}"); } catch (e) { return {}; } })();
 const ALL = window.UNIDATA;
-const COUNTRY = COUNTRIES[SAVED_STATE.country] || COUNTRIES.uk;
-const inCountry = co => (co || "uk") === COUNTRY.code;
+// Ticked countries, in menu order (older saves had a single "country").
+const SEL = (() => {
+  const want = Array.isArray(SAVED_STATE.countries) ? SAVED_STATE.countries : [SAVED_STATE.country || "uk"];
+  const s = Object.keys(COUNTRIES).filter(k => want.includes(k));
+  return s.length ? s : ["uk"];
+})();
+const MULTI = SEL.length > 1;
+// The first ticked country: its currency is the default, and costs from other countries are compared in it.
+const COUNTRY = COUNTRIES[SEL[0]];
+const inCountry = co => SEL.includes(co || "uk");
+const coOf = r => COUNTRIES[r.co || "uk"];
 const ROWS = ALL.rows.filter(r => inCountry(r.co));
 const UNIS = Object.fromEntries(Object.entries(ALL.unis).filter(([, u]) => inCountry(u.co)));
 const CITY = Object.fromEntries(Object.entries(ALL.cities).filter(([c]) => inCountry(ALL.cityCo?.[c])));
@@ -48,67 +57,81 @@ const CUR_LIST = ["NPR", "USD", "GBP", "EUR", "AUD"]; // offered for every count
 const LSYM = CUR[COUNTRY.cur].sym;
 // Units per 1 GBP. Built-in snapshot, replaced by live rates (open.er-api.com) when they load.
 let FX = { date: "2026-10-01T00:02:31Z", src: "built-in", rates: { GBP: 1, NPR: 203.51, USD: 1.3266, EUR: 1.17, AUD: 1.9077, CAD: 1.8856 } };
-const fxRate = () => (FX.rates[S.cur] ?? NaN) / FX.rates[COUNTRY.cur];
-const curCode = () => isFinite(fxRate()) ? S.cur : COUNTRY.cur;
-const toCur = n => { const k = fxRate(); return isFinite(k) ? n * k : n; };
+// Amounts are stored in their own country's currency (`from`) and shown in the display currency.
+const fxRate = (from = COUNTRY.cur) => (FX.rates[S.cur] ?? NaN) / FX.rates[from];
+const curCode = (from = COUNTRY.cur) => isFinite(fxRate(from)) ? S.cur : from;
+const toCur = (n, from = COUNTRY.cur) => { const k = fxRate(from); return isFinite(k) ? n * k : n; };
+// A course's amount in the first country's currency, so costs from different countries can be compared and sorted.
+const toBase = (n, r) => { const from = coOf(r).cur; return from === COUNTRY.cur ? n : n * FX.rates[COUNTRY.cur] / FX.rates[from]; };
 // Converted figures are estimates anyway, so round them to tidy steps.
-function money(n) {
-  const code = curCode(), c = CUR[code];
-  let v = toCur(n);
-  if (code !== COUNTRY.cur) { const a = Math.abs(v); v = Math.round(v / (a >= 1e6 ? 1000 : a >= 1e4 ? 100 : 10)) * (a >= 1e6 ? 1000 : a >= 1e4 ? 100 : 10); }
+function money(n, from = COUNTRY.cur) {
+  const code = curCode(from), c = CUR[code];
+  let v = toCur(n, from);
+  if (code !== from) { const a = Math.abs(v); v = Math.round(v / (a >= 1e6 ? 1000 : a >= 1e4 ? 100 : 10)) * (a >= 1e6 ? 1000 : a >= 1e4 ? 100 : 10); }
   v = Math.round(v);
   return (v < 0 ? "−" : "") + c.sym + Math.abs(v).toLocaleString(c.grp || "en-GB");
 }
 const r100 = n => Math.round(n / 100) * 100;
+const rm = (r, n) => money(n, coOf(r).cur);   // an amount belonging to course r
+const rsym = r => CUR[coOf(r).cur].sym;       // r's local currency symbol (hourly pay is always local)
 const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health & public health", NUR: "Nursing", DEV: "Development economics & finance", SF: "Sustainable & green finance", DM: "International development & NGO management" };
 // Gross pay needed for a given take-home under the country's tax model (bisection — the model is piecewise linear).
-const grossFor = net => { if (net <= 0) return 0; let lo = net, hi = net * 3; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (m - COUNTRY.tax(m) < net) lo = m; else hi = m; } return hi; };
+const grossFor = (net, co = COUNTRY) => { if (net <= 0) return 0; let lo = net, hi = net * 3; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (m - co.tax(m) < net) lo = m; else hi = m; } return hi; };
 
 ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 = r.sl; r.i0 = r.i; r.fl0 = r.fl; });
 
 /* ---------------- state ---------------- */
 const MOBILE = matchMedia("(max-width:760px)").matches;
 const GLASS_DEF = { theme: "auto", glassT: 45, glassBlur: 22 };
-const newJob = (o = {}) => ({ name: "", rate: COUNTRY.minWage, hrs: 20, wks: 52, ...o });
-const DEF = { lv: "ALL", dep: 50, jobs: [newJob()], sortK: "n", dir: 1, cur: COUNTRY.cur, grade: { uni: "", years: "4", type: "", val: "" }, subjs: [], budgetOpen: !MOBILE, filtersOpen: !MOBILE, alert: true, ...GLASS_DEF };
+const newJob = (o = {}, co = COUNTRY) => ({ name: "", rate: co.minWage, hrs: 20, wks: 52, ...o });
+const DEF = { lvs: [], dep: 50, jobs: [newJob()], sortK: "n", dir: 1, cur: COUNTRY.cur, grade: { uni: "", years: "4", type: "", val: "" }, subjs: [], budgetOpen: !MOBILE, filtersOpen: !MOBILE, alert: true, ...GLASS_DEF };
 let S = { ...DEF, colf: {} };
 try { Object.assign(S, JSON.parse(localStorage.getItem("ukmap-state") || "{}"), { colf: {} }); } catch (e) {}
+S.countries = SEL.slice(); delete S.country;
 // Jobs are kept per country (UK pay in £, German pay in €): "jobs" for the UK, "jobs_<code>" for others.
-const JOBS_KEY = COUNTRY.code === "uk" ? "jobs" : "jobs_" + COUNTRY.code;
-const UK_JOBS = S.jobs;
-if (COUNTRY.code !== "uk") S.jobs = S[JOBS_KEY];
-// Older saves had a single rate / hours / weeks — turn that into the first job.
-if (!Array.isArray(S.jobs) || !S.jobs.length || S.jobs === DEF.jobs) S.jobs = [newJob("rate" in S ? { rate: +S.rate || 0, hrs: +S.hrs || 0, wks: +S.wks || 0 } : {})];
+const JOBS = {};
+for (const co of Object.keys(COUNTRIES)) { const v = co === "uk" ? S.jobs : S["jobs_" + co]; JOBS[co] = Array.isArray(v) && v.length && v !== DEF.jobs ? v : null; }
+// Older saves had a single rate / hours / weeks — turn that into the first UK job.
+if (!JOBS.uk) JOBS.uk = [newJob("rate" in S ? { rate: +S.rate || 0, hrs: +S.hrs || 0, wks: +S.wks || 0 } : {}, COUNTRIES.uk)];
+for (const co in JOBS) JOBS[co] ||= [newJob({}, COUNTRIES[co])];
+S.jobs = JOBS.uk;
 delete S.rate; delete S.hrs; delete S.wks;
+// The country whose jobs the Budget & work panel shows (a choice only when several countries are ticked).
+let FIN_CO = SEL.includes(S.finCo) ? S.finCo : SEL[0];
+// Study levels became a multi-select (empty = all); older saves had a single level.
+if (!Array.isArray(SAVED_STATE.lvs)) S.lvs = S.lv && S.lv !== "ALL" ? [S.lv] : [];
+delete S.lv;
 // Subjects became a multi-select (empty = all); older saves had a single subject.
 if (!Array.isArray(S.subjs)) S.subjs = [];
 if (typeof S.subj === "string" && S.subj !== "ALL" && !S.subjs.length) S.subjs = [S.subj];
 delete S.subj;
 const save = () => { try {
   const { colf, ...rest } = S;
-  if (COUNTRY.code !== "uk") { rest[JOBS_KEY] = S.jobs; rest.jobs = UK_JOBS; }
+  for (const co in JOBS) rest[co === "uk" ? "jobs" : "jobs_" + co] = JOBS[co];
   localStorage.setItem("ukmap-state", JSON.stringify(rest));
 } catch (e) {} };
 const rowRate = {};
 
 /* ---------------- finance ---------------- */
-// Work is a list of jobs, each with its own £/hr, hours/week and weeks/year; earnings add up across jobs.
+// Work is a list of jobs per country, each with its own pay/hr, hours/week and weeks/year; earnings add up across
+// jobs. A course is judged on your work in its own country, under that country's tax rules.
 const clamp = (v, max) => Math.min(max, Math.max(0, +v || 0));
 const jobHours = j => clamp(j.hrs, 168) * clamp(j.wks, 52);
 const jobGross = j => clamp(j.rate, 1000) * jobHours(j);
-const hours = () => S.jobs.reduce((a, j) => a + jobHours(j), 0);          // total hours / year
-const grossAll = () => S.jobs.reduce((a, j) => a + jobGross(j), 0);
-const avgRate = () => hours() ? grossAll() / hours() : 0;                 // blended £/hr across all jobs
-const weekHrs = () => S.jobs.reduce((a, j) => a + clamp(j.hrs, 168), 0);
-const takeHome = rate => { const g = rate * hours(); return g - COUNTRY.tax(g); };
+const J = (co = FIN_CO) => JOBS[co || "uk"];
+const hours = (co = FIN_CO) => J(co).reduce((a, j) => a + jobHours(j), 0);          // total hours / year
+const grossAll = (co = FIN_CO) => J(co).reduce((a, j) => a + jobGross(j), 0);
+const avgRate = (co = FIN_CO) => hours(co) ? grossAll(co) / hours(co) : 0;           // blended pay/hr across all jobs
+const weekHrs = (co = FIN_CO) => J(co).reduce((a, j) => a + clamp(j.hrs, 168), 0);
+const takeHome = (rate, co = FIN_CO) => { const g = rate * hours(co); return g - COUNTRIES[co].tax(g); };
 const netFee = r => Math.max(0, r.f - r.s);
 const dep = r => Math.min(100, Math.max(0, +S.dep || 0)) / 100 * netFee(r);
 const remFee = r => netFee(r) - dep(r);
 const need = r => remFee(r) + r.l;
-const needHr = r => { const q = need(r), H = hours(); if (!H) return Infinity; return grossFor(q) / H; };
-const rateOf = r => rowRate[r.id] ?? avgRate();
-const deficit = r => need(r) - takeHome(rateOf(r));
-const defText = d => d > 0 ? "~" + money(r100(d)) : "Covered" + (d < 0 ? " (+" + money(r100(-d)) + ")" : "");
+const needHr = r => { const H = hours(r.co || "uk"); if (!H) return Infinity; return grossFor(need(r), coOf(r)) / H; };
+const rateOf = r => rowRate[r.id] ?? avgRate(r.co || "uk");
+const deficit = r => need(r) - takeHome(rateOf(r), r.co || "uk");
+const defText = (d, r) => d > 0 ? "~" + rm(r, r100(d)) : "Covered" + (d < 0 ? " (+" + rm(r, r100(-d)) + ")" : "");
 
 /* ---------------- your bachelor's grade (Nepal) → typical UK class ---------------- */
 // Typical conversions from UK universities' published Nepal tables (QMUL, LJMU, RGU, Surrey, Portsmouth, Suffolk…).
@@ -222,12 +245,14 @@ const kmBetween = (a, b) => { const t = Math.PI / 180, dLa = (b[0] - a[0]) * t, 
   const h = Math.sin(dLa / 2) ** 2 + Math.cos(a[0] * t) * Math.cos(b[0] * t) * Math.sin(dLo / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
 const uniKm = (u, city) => kmBetween([UNIS[u].lat, UNIS[u].lng], CITY[city]);
 
+const DEP_LABEL = MULTI ? "Deposit" : COUNTRY.depLabel;
 /* ---------------- columns (all from the previous table + level + remaining fee + map) ---------------- */
 const COLS = [
+  { k: "sl", h: "★", type: "star", get: r => isShort(r) ? 0 : 1 },
   { k: "lv", h: "Level", type: "text", get: r => r.lv },
   { k: "g", h: "Subject", type: "text", get: r => r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g] },
   { k: "u", h: "University", type: "text", get: r => r.u + " " + r.c },
-  ...(COUNTRY.rank ? [{ k: "uk", h: COUNTRY.rank, type: "num", get: r => r.uk ?? 99999, disp: r => rankText(r.uk, r) }] : []),
+  ...(SEL.includes("uk") ? [{ k: "uk", h: COUNTRIES.uk.rank, type: "num", get: r => r.uk ?? 99999, disp: r => ukRankText(r) }] : []),
   { k: "qs", h: "World rank<br>(QS 2027)", type: "num", get: r => r.qss ?? 99999, disp: r => rankText(r.qs, r) },
   { k: "p", h: "Programme", type: "text", get: r => r.p },
   { k: "i", h: "Intakes", type: "text", get: r => r.i },
@@ -236,10 +261,10 @@ const COLS = [
   { k: "t", h: "Total yr 1", type: "num", get: r => r.t, money: true },
   { k: "s", h: "Sure scholarship<br>(automatic)", type: "num", get: r => r.s, money: true },
   { k: "n", h: "Total with sure<br>scholarship", type: "num", get: r => r.n, money: true },
-  { k: "dep", h: COUNTRY.depLabel, type: "num", get: dep, dyn: () => `${COUNTRY.depLabel}<br>(${+S.dep || 0}% tuition)`, money: true },
+  { k: "dep", h: DEP_LABEL, type: "num", get: dep, dyn: () => `${DEP_LABEL}<br>(${+S.dep || 0}% tuition)`, money: true },
   { k: "rem", h: "Remaining fee<br>(after deposit)", type: "num", get: remFee, money: true },
-  { k: "hr", h: "Pay needed / hr<br>(fee + living)", type: "num", get: needHr },
-  { k: "rt", h: `Your avg rate<br>${LSYM}/hr`, type: "num", get: rateOf },
+  { k: "hr", h: "Pay needed / hr<br>(fee + living)", type: "num", get: needHr, local: true },
+  { k: "rt", h: MULTI ? "Your avg rate<br>per hour" : `Your avg rate<br>${LSYM}/hr`, type: "num", get: rateOf, local: true },
   { k: "df", h: "Deficit / yr<br>(− = surplus)", type: "num", get: deficit, money: true },
   { k: "aw", h: "Scholarships<br>for you", type: "text", get: r => awardsText(r) },
   { k: "o", h: "Other scholarships<br>(competitive)", type: "text", get: r => otherSch(r) },
@@ -249,23 +274,24 @@ const COLS = [
 ];
 // Universities added later (nr) haven't had their league-table positions checked yet.
 const rankText = (v, r) => v ?? (r.nr ? "Not checked" : "Unranked");
+const ukRankText = r => (r.co || "uk") === "uk" ? rankText(r.uk, r) : "—";   // the UK league table only ranks UK universities
 // Small note under a tuition figure: live source link, or why the stored figure is still shown.
 function feeNote(r) {
   const st = liveStatus(r), x = r.url && LIVE.res[r.url];
-  if (r.live) return `<a class="sub live" href="${esc(x.src || r.url)}" target="_blank" rel="noopener" title="${esc(x.ctx || "")}">${esc(r.fn)}${r.f !== r.f0 ? ` · was ${money(r.f0)}` : ""} ↗</a>`;
-  if (st === "mismatch") return `<span class="sub warn" title="${esc(x.ctx || "")}">${esc(r.fn)}${r.fn ? " · " : ""}page shows ${money(x.fee)} — check</span>`;
+  if (r.live) return `<a class="sub live" href="${esc(x.src || r.url)}" target="_blank" rel="noopener" title="${esc(x.ctx || "")}">${esc(r.fn)}${r.f !== r.f0 ? ` · was ${rm(r, r.f0)}` : ""} ↗</a>`;
+  if (st === "mismatch") return `<span class="sub warn" title="${esc(x.ctx || "")}">${esc(r.fn)}${r.fn ? " · " : ""}page shows ${rm(r, x.fee)} — check</span>`;
   return r.fn ? `<span class="sub">${esc(r.fn)}</span>` : "";
 }
 // Plain text (for filtering/sorting) and HTML (for the table) of the scholarships matched to a course.
 function awardsText(r) {
   const A = awardsFor(r); if (r.lv !== "Masters") return "";
-  return [...(r.s0 && !A.sure.some(a => a.amt >= r.s0) ? [money(r.s0) + " " + (r.sl0 || "")] : []), ...A.sure.map(a => a.amtText + " " + a.name), ...A.grade.map(a => a.amtText + " if " + a.min), ...A.apply.map(a => a.name), ...A.early.map(a => a.name)].join(" · ");
+  return [...(r.s0 && !A.sure.some(a => a.amt >= r.s0) ? [rm(r, r.s0) + " " + (r.sl0 || "")] : []), ...A.sure.map(a => a.amtText + " " + a.name), ...A.grade.map(a => a.amtText + " if " + a.min), ...A.apply.map(a => a.name), ...A.early.map(a => a.name)].join(" · ");
 }
 function awardsCell(r) {
   if (r.lv !== "Masters") return `<span class="muted">—</span>`;
   const A = awardsFor(r), cls = myClass(), out = [];
   // A scholarship already in the built-in data (and not beaten by a newer award) still counts.
-  if (r.s0 && !A.sure.some(a => a.amt >= r.s0)) out.push(`<span class="awc ok">✓ ${money(r.s0)} <small>${esc(r.sl0 || "Built-in scholarship")}</small></span>`);
+  if (r.s0 && !A.sure.some(a => a.amt >= r.s0)) out.push(`<span class="awc ok">✓ ${rm(r, r.s0)} <small>${esc(r.sl0 || "Listed scholarship")}</small></span>`);
   A.sure.forEach(a => out.push(`<span class="awc ok" title="${esc(a.note)}">✓ ${esc(a.amtText)} <small>${esc(a.name)}${a.kind === "nepal" ? " · Nepal" : ""}</small></span>`));
   A.grade.forEach(a => out.push(`<span class="awc need" title="${esc(a.note)}">${esc(a.amtText)} <small>needs ${esc(a.min)}${cls ? ` (you ≈ ${esc(cls)})` : " — add your grade"}</small></span>`));
   if (A.apply.length) out.push(`<span class="awc apply" title="${esc(A.apply.map(a => a.name + ": " + a.amtText).join("\n"))}">+${A.apply.length} to apply for <small>${esc(A.apply.map(a => a.amtText).join(", "))}</small></span>`);
@@ -286,9 +312,9 @@ function filtered() {
   const q = $("q").value.trim().toLowerCase();
   const max = +$("maxcost").value, city = $("city").value, rank = $("rank").value, rad = +$("radius").value || 0;
   return ROWS.filter(r => {
-    if (S.lv !== "ALL" && r.lv !== S.lv) return false;
+    if (S.lvs.length && !S.lvs.includes(r.lv)) return false;
     if (S.subjs.length && !r.subj.some(g => S.subjs.includes(g))) return false;
-    if (r.n > max) return false;
+    if (toBase(r.n, r) > max) return false;
     if (city) { if (rad > 0 ? uniKm(r.u, city) > rad : r.c !== city) return false; }
     if (rank === "ranked" && r.qs == null) return false;
     if (rank && rank !== "ranked" && !(r.qss <= +rank)) return false;
@@ -302,7 +328,7 @@ function filtered() {
     for (const c of COLS) {
       const f = S.colf[c.k]; if (!f || c.type === "none") continue;
       if (c.type === "num") {
-        const ok = numMatch(c.money ? toCur(c.get(r)) : c.get(r), f); // money filters are typed in the display currency
+        const ok = numMatch(c.money ? toCur(c.get(r), coOf(r).cur) : c.get(r), f); // money filters are typed in the display currency
         if (ok === null) { if (!String(c.disp ? c.disp(r) : c.get(r)).toLowerCase().includes(f.toLowerCase())) return false; }
         else if (!ok) return false;
       } else if (!String(c.get(r)).toLowerCase().includes(f.toLowerCase())) return false;
@@ -312,25 +338,48 @@ function filtered() {
 }
 
 /* ---------------- header controls ---------------- */
-$("lv").addEventListener("input", () => { S.lv = $("lv").value; save(); update(); });
-/* subjects: a dropdown of checkboxes, any combination; ticking "All subjects" clears the rest */
-function setSubjMenu(open) {
-  const btn = $("subjBtn"), menu = $("subjMenu");
+/* countries, study levels and subjects: dropdowns of checkboxes */
+// The interface is drawn slightly smaller (CSS zoom --uiz); positions measured on screen are divided by it.
+const UIZ = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--uiz")) || 1;
+function placeMenu(btn, menu, open) {
   menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
   if (open) {
-    const r = btn.getBoundingClientRect();
-    menu.style.top = r.bottom + 10 + "px";
-    menu.style.left = Math.max(8, Math.min(r.left, innerWidth - menu.offsetWidth - 8)) + "px";
+    const r = btn.getBoundingClientRect(), z = UIZ(), w = menu.getBoundingClientRect().width;
+    menu.style.top = (r.bottom + 10) / z + "px";
+    menu.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) / z + "px";
     menu.querySelector("input:checked, input").focus();
   }
 }
+/* study levels: any combination; ticking "All levels" clears the rest */
+const LEVELS = ["Masters", "PhD"];
+const setLvMenu = open => placeMenu($("lvBtn"), $("lvMenu"), open);
+function syncLv() {
+  const all = !S.lvs.length;
+  $("lvMenu").querySelectorAll("input").forEach(i => { i.checked = i.value === "ALL" ? all : S.lvs.includes(i.value); });
+  $("lvLbl").textContent = all ? "All levels" : S.lvs.join(" + ");
+  $("lvBtn").classList.toggle("on", !all);
+  $("lvN-ALL").textContent = ROWS.length;
+  LEVELS.forEach(l => { $("lvN-" + l).textContent = ROWS.filter(r => r.lv === l).length; });
+}
+$("lvBtn").addEventListener("click", e => { e.stopPropagation(); setLvMenu($("lvMenu").hidden); });
+$("lvMenu").addEventListener("change", e => {
+  const i = e.target; if (i.type !== "checkbox") return;
+  if (i.value === "ALL") S.lvs = [];
+  else S.lvs = LEVELS.filter(l => l === i.value ? i.checked : S.lvs.includes(l));
+  if (S.lvs.length === LEVELS.length) S.lvs = [];   // everything ticked = all levels
+  save(); update();
+});
+document.addEventListener("pointerdown", e => { if (!$("lvMenu").hidden && !e.target.closest("#lvMenu, #lvBtn")) setLvMenu(false); });
+addEventListener("resize", () => { if (!$("lvMenu").hidden) setLvMenu(false); });
+/* subjects: any combination; ticking "All subjects" clears the rest */
+const setSubjMenu = open => placeMenu($("subjBtn"), $("subjMenu"), open);
 function syncSubj() {
   const all = !S.subjs.length;
   $("subjMenu").querySelectorAll("input").forEach(i => { i.checked = i.value === "ALL" ? all : S.subjs.includes(i.value); });
   $("subjLbl").textContent = all ? "All subjects" : S.subjs.length === 1 ? PNAME[S.subjs[0]] : `${S.subjs.length} subjects`;
   $("subjBtn").classList.toggle("on", !all);
   // how many courses each subject has at the chosen level
-  const lv = ROWS.filter(r => S.lv === "ALL" || r.lv === S.lv);
+  const lv = ROWS.filter(r => !S.lvs.length || S.lvs.includes(r.lv));
   $("subjN-ALL").textContent = lv.length;
   Object.keys(PNAME).forEach(g => { $("subjN-" + g).textContent = lv.filter(r => r.subj.includes(g)).length; });
 }
@@ -347,7 +396,7 @@ addEventListener("resize", () => { if (!$("subjMenu").hidden) setSubjMenu(false)
 Object.keys(CITY).sort().forEach(c => { const o = document.createElement("option"); o.value = o.textContent = c; $("city").appendChild(o); });
 function fitMaxCost() {
   const el = $("maxcost"), atMax = el.value === el.max;
-  el.max = Math.ceil(Math.max(...ROWS.map(r => r.n)) / 1000) * 1000;
+  el.max = Math.ceil(Math.max(...ROWS.map(r => toBase(r.n, r))) / 1000) * 1000;
   if (atMax) el.value = el.max;
 }
 fitMaxCost(); $("maxcost").value = $("maxcost").max;
@@ -356,11 +405,11 @@ $("reset").addEventListener("click", () => {
   $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = "";
   ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).checked = false);
   document.querySelectorAll("#frow input").forEach(i => i.value = ""); S.colf = {};
-  S.lv = "ALL"; S.subjs = []; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
+  S.lvs = []; S.subjs = []; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
 });
-if (!S.alert || COUNTRY.code !== "uk") $("alert").hidden = true; // the alert is about a UK scholarship
+if (!S.alert || !SEL.includes("uk")) $("alert").hidden = true; // the alert is about a UK scholarship
 // UK-only filter: "Outside London".
-if (COUNTRY.code !== "uk") { $("f-london").checked = false; $("f-london").closest("label").hidden = true; }
+if (!SEL.includes("uk")) { $("f-london").checked = false; $("f-london").closest("label").hidden = true; }
 $("alertX").addEventListener("click", () => { $("alert").hidden = true; S.alert = false; save(); });
 
 /* ---------------- floating filter card ---------------- */
@@ -403,25 +452,28 @@ function germanGrade(g) {
   return Math.min(4, Math.max(1, 1 + 3 * (best - v) / (best - pass)));
 }
 function syncGradeOut() {
-  if (COUNTRY.code === "de") {
-    const g = S.grade, n = germanGrade(g), out = $("gradeOut");
-    out.hidden = n == null; if (n == null) return;
-    out.innerHTML = `<div class="go-main"><span class="go-k">German grade</span><b class="go-cls">${n.toFixed(1)}</b></div>
-      <p class="go-sub">Modified Bavarian formula (1.0 best, 4.0 pass), assuming a ${g.type === "gpa" || g.type === "letter" ? "2.0 CGPA" : "40%"} pass mark — universities convert it themselves (often via uni-assist).</p>
-      <p class="go-note">${n <= 2.5 ? "Within the 2.5 or better many German master's ask for." : "Many German master's ask for 2.5 or better — check each course's requirements."}</p>`;
-    return;
-  }
-  const g = S.grade, cls = ukClassOf(g), out = $("gradeOut");
-  out.hidden = !cls;
-  if (!cls) return;
+  const out = $("gradeOut"), parts = [SEL.includes("uk") ? gradeUK() : "", SEL.includes("de") ? gradeDE() : ""].filter(Boolean);
+  out.hidden = !parts.length;
+  out.innerHTML = parts.map(p => `<div class="go-part">${p}</div>`).join("");
+}
+function gradeDE() {
+    const g = S.grade, n = germanGrade(g);
+    if (n == null) return "";
+    return `<div class="go-main"><span class="go-k">German grade</span><b class="go-cls">${n.toFixed(1)}</b></div>
+      <p class="go-sub">Bavarian formula, ${g.type === "gpa" || g.type === "letter" ? "2.0 CGPA" : "40%"} pass mark · universities convert it themselves</p>
+      <p class="go-note">${n <= 2.5 ? "Meets the usual 2.5 cut-off." : "Many courses ask for 2.5 or better."}</p>`;
+}
+function gradeUK() {
+  const g = S.grade, cls = ukClassOf(g);
+  if (!cls) return "";
   const what = g.type === "pct" ? `${g.val}%` : g.type === "gpa" ? `CGPA ${g.val}` : g.type === "letter" ? `grade ${g.val}` : $("gVal").selectedOptions?.[0]?.textContent;
   const notes = [];
-  if (g.type === "div" && g.val === "first") notes.push("First Division can be a 2:1 at 65%+ — enter your percentage for a more exact result.");
-  if (g.years === "3") notes.push("From a 3-year degree. Some universities (e.g. Edinburgh, QUB, Westminster, UCLan) need a 4-year bachelor's or a master's.");
-  if (cls === "3rd") notes.push("Most UK master's ask for at least a 2:2 equivalent.");
-  if (!g.uni && g.type === "pct") notes.push("Pick your university — Tribhuvan percentages convert more generously.");
-  out.innerHTML = `<div class="go-main"><span class="go-k">UK equivalent</span><b class="go-cls cls-${cls.replace(":", "")}">${cls === "3rd" ? "Below 2:2" : cls}</b></div>
-    <p class="go-sub">${esc(CLS_LABEL[cls])} · ${esc(what || "")}${g.uni ? " from " + esc(NEPAL_UNI[g.uni]) : ""}, ${g.years === "3" ? "3" : "4"}-year degree. Typical conversion — each university sets its own.</p>
+  if (g.type === "div" && g.val === "first") notes.push("Enter your % for a precise result (65%+ can be a 2:1).");
+  if (g.years === "3") notes.push("Some universities (e.g. Edinburgh, QUB) need a 4-year degree.");
+  if (cls === "3rd") notes.push("Most UK master's need a 2:2.");
+  if (!g.uni && g.type === "pct") notes.push("Pick your university — TU % convert more generously.");
+  return `<div class="go-main"><span class="go-k">UK equivalent</span><b class="go-cls cls-${cls.replace(":", "")}">${cls === "3rd" ? "Below 2:2" : cls}</b></div>
+    <p class="go-sub">${esc(CLS_LABEL[cls])} · ${esc(what || "")}${g.uni ? " from " + esc(NEPAL_UNI[g.uni]) : ""}, ${g.years === "3" ? "3" : "4"}-year degree · typical conversion</p>
     ${notes.map(n => `<p class="go-note">${esc(n)}</p>`).join("")}`;
 }
 function gradeChanged() { save(); syncGradeOut(); applyLive(); fitMaxCost(); update(); }
@@ -434,13 +486,15 @@ const FX_KEY = "ukmap-fx";
 try { const c = JSON.parse(localStorage.getItem(FX_KEY) || "null"); if (c && c.rates && c.rates.GBP) FX = c; } catch (e) {}
 if (!CUR[S.cur]) S.cur = COUNTRY.cur;
 // Compact labels for the toolbar pill ("£ GBP (UK)", "Rs NPR"); full names go in each option's tooltip.
-$("cur").innerHTML = [COUNTRY.cur, ...CUR_LIST.filter(k => k !== COUNTRY.cur)]
-  .map(k => `<option value="${k}" title="${CUR[k].name}${k === COUNTRY.cur ? ` (${COUNTRY.name} currency)` : ""}">${CUR[k].sym.trim()} ${k}${k === COUNTRY.cur ? ` (${COUNTRY.name})` : ""}</option>`).join("");
+const OWN = Object.fromEntries(SEL.map(co => [COUNTRIES[co].cur, COUNTRIES[co].name]));   // currency → country
+$("cur").innerHTML = [...new Set([...Object.keys(OWN), ...CUR_LIST])]
+  .map(k => `<option value="${k}" title="${CUR[k].name}${OWN[k] ? ` (${OWN[k]} currency)` : ""}">${CUR[k].sym.trim()} ${k}${OWN[k] ? ` (${OWN[k]})` : ""}</option>`).join("");
 function syncCurrency() {
   $("cur").value = S.cur;
   const when = new Date(FX.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  $("curPick").title = "Show prices in " + CUR[S.cur].name + ". " + (S.cur === COUNTRY.cur ? `Prices as published, in ${CUR[COUNTRY.cur].name}s.`
-    : `${LSYM}1 = ${CUR[S.cur].sym}${fxRate().toFixed(fxRate() < 10 ? 4 : 2)} · rates of ${when}${FX.src === "live" ? "" : " (offline estimate)"}. Hourly pay stays in ${COUNTRY.cur}.`);
+  const conv = SEL.map(co => COUNTRIES[co].cur).filter(c => c !== S.cur);
+  $("curPick").title = "Show prices in " + CUR[S.cur].name + ". " + (!conv.length ? `Prices as published, in ${CUR[S.cur].name}s.`
+    : conv.map(c => `${CUR[c].sym}1 = ${CUR[S.cur].sym}${fxRate(c).toFixed(fxRate(c) < 10 ? 4 : 2)}`).join(" · ") + ` · rates of ${when}${FX.src === "live" ? "" : " (offline estimate)"}. Hourly pay stays in each country's currency.`);
 }
 $("cur").addEventListener("input", () => { S.cur = $("cur").value; save(); syncCurrency(); syncFin(); update(); });
 async function loadRates() {
@@ -450,7 +504,7 @@ async function loadRates() {
     if (j.result !== "success" || !j.rates.NPR) throw new Error("bad rates");
     FX = { date: new Date(j.time_last_update_unix * 1000).toISOString(), fetched: new Date().toISOString(), src: "live", rates: j.rates };
     try { localStorage.setItem(FX_KEY, JSON.stringify(FX)); } catch (e) {}
-    syncCurrency(); if (S.cur !== COUNTRY.cur) { syncFin(); update(); }
+    syncCurrency(); if (S.cur !== COUNTRY.cur || MULTI) { fitMaxCost(); syncFin(); update(); }
   } catch (e) { /* keep the built-in rates */ }
 }
 syncCurrency();
@@ -478,38 +532,40 @@ $("themeSeg").querySelectorAll("button").forEach(x => x.addEventListener("click"
 $("glassT").addEventListener("input", e => { S.glassT = +e.target.value; save(); applyAppearance(); });
 $("glassBlur").addEventListener("input", e => { S.glassBlur = +e.target.value; save(); applyAppearance(); });
 $("glassReset").addEventListener("click", () => { Object.assign(S, GLASS_DEF); save(); applyAppearance(); });
-/* ---------------- country picker ---------------- */
+/* ---------------- country picker: tick one or more; applied (with a reload) when the menu closes ---------------- */
+const CO_ROWS = Object.fromEntries(Object.keys(COUNTRIES).map(co => [co, ALL.rows.filter(r => (r.co || "uk") === co).length]));
 (function syncCountryUI() {
-  $("countryBtn").querySelector(".flag").textContent = COUNTRY.flag;
-  $("countryBtn").querySelector(".c-name").textContent = COUNTRY.name;
-  $("countryBtn").setAttribute("aria-label", "Country: " + COUNTRY.full);
-  $("countryMenu").querySelectorAll("button[data-c]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.c === COUNTRY.code)));
+  $("countryBtn").querySelector(".flag").textContent = SEL.map(co => COUNTRIES[co].flag).join("");
+  $("countryBtn").querySelector(".c-name").textContent = SEL.map(co => COUNTRIES[co].name).join(" + ");
+  $("countryBtn").setAttribute("aria-label", "Countries: " + SEL.map(co => COUNTRIES[co].full).join(" and "));
+  $("countryMenu").querySelectorAll("input").forEach(i => { i.checked = SEL.includes(i.value); $("coN-" + i.value).textContent = CO_ROWS[i.value]; });
 })();
-const countryItems = () => [...$("countryMenu").querySelectorAll("button")];
+const pickedCountries = () => [...$("countryMenu").querySelectorAll("input:checked")].map(i => i.value);
 function setCountryMenu(open) {
-  const btn = $("countryBtn"), menu = $("countryMenu");
-  menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
-  if (open) {
-    const r = btn.getBoundingClientRect();
-    menu.style.top = r.bottom + 10 + "px";
-    menu.style.left = Math.max(8, Math.min(r.left, innerWidth - menu.offsetWidth - 8)) + "px";
-    menu.querySelector('[aria-checked="true"]').focus();
-  }
+  placeMenu($("countryBtn"), $("countryMenu"), open);
+  if (!open) applyCountries();
+}
+function applyCountries() {
+  const want = Object.keys(COUNTRIES).filter(co => pickedCountries().includes(co));
+  if (!want.length || want.join() === SEL.join()) { $("countryMenu").querySelectorAll("input").forEach(i => { i.checked = SEL.includes(i.value); }); $("coApply").hidden = true; return; }
+  // Keep the chosen display currency unless it was the old first country's own; column filters are per selection.
+  if (S.cur === COUNTRY.cur) S.cur = COUNTRIES[want[0]].cur;
+  if (!want.includes(FIN_CO)) S.finCo = want[0];
+  S.countries = want; S.colf = {}; save(); location.reload();
 }
 $("countryBtn").addEventListener("click", e => { e.stopPropagation(); setCountryMenu($("countryMenu").hidden); });
+$("countryMenu").addEventListener("change", e => {
+  const picked = pickedCountries();
+  if (!picked.length) e.target.checked = true;   // at least one country
+  $("coApply").hidden = Object.keys(COUNTRIES).filter(co => pickedCountries().includes(co)).join() === SEL.join();
+});
+$("coApply").addEventListener("click", () => setCountryMenu(false));
 $("countryMenu").addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b) return;
-  if (b.getAttribute("aria-disabled") === "true") { b.classList.remove("nudge"); void b.offsetWidth; b.classList.add("nudge"); return; }
-  setCountryMenu(false); $("countryBtn").focus();
-  const to = b.dataset.c;
-  if (to && to !== COUNTRY.code && COUNTRIES[to]) {
-    // Keep the chosen display currency unless it was the old country's own; the city filter is per country.
-    if (S.cur === COUNTRY.cur) S.cur = COUNTRIES[to].cur;
-    S.country = to; S.colf = {}; save(); location.reload();
-  }
+  const b = e.target.closest("button[aria-disabled]"); if (!b) return;
+  b.classList.remove("nudge"); void b.offsetWidth; b.classList.add("nudge");
 });
 $("countryMenu").addEventListener("keydown", e => {
-  const items = countryItems(), i = items.indexOf(document.activeElement);
+  const items = [...$("countryMenu").querySelectorAll("input, button:not([hidden])")], i = items.indexOf(document.activeElement);
   if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); items[(i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus(); }
   else if (e.key === "Tab") setCountryMenu(false);
 });
@@ -518,7 +574,7 @@ document.addEventListener("pointerdown", e => { if (!$("countryMenu").hidden && 
 // The settings button opens the profile & settings modal (js/account.js), which holds the appearance controls.
 applyAppearance();
 
-const syncHdr = () => document.documentElement.style.setProperty("--hdr", $("hdr").getBoundingClientRect().height + "px");
+const syncHdr = () => document.documentElement.style.setProperty("--hdr", $("hdr").getBoundingClientRect().height / UIZ() + "px");
 new ResizeObserver(syncHdr).observe($("hdr")); syncHdr();
 
 /* ---------------- finance: deposit + jobs (budget panel + table view, kept in sync) ---------------- */
@@ -527,22 +583,23 @@ const FIN = [$("budgetBody"), $("finInline")];
 FIN.forEach(el => { el.insertAdjacentHTML("afterbegin", `<div class="fin"></div>`); });
 $("budgetBody").insertAdjacentHTML("beforeend", `
   <div class="legend">
-    <span class="lg"><i class="ring-k" style="--pct:100%"></i>Green ring: your jobs cover remaining fee + living</span>
-    <span class="lg"><i class="ring-k" style="--pct:0%"></i>Red ring: you'd be in deficit</span>
-    <span class="lg"><i class="ring-k" style="--pct:40%"></i>Split ring: share of that university's courses covered</span>
-    <span class="lg"><span class="cl-tally demo"><span class="t ok"><i></i>3</span><span class="t bad"><i></i>5</span></span>Groups: universities covered / in deficit</span>
+    <span class="lg"><i class="ring-k" style="--pct:100%"></i>Green: your work covers it</span>
+    <span class="lg"><i class="ring-k" style="--pct:0%"></i>Red: you'd fall short</span>
+    <span class="lg"><i class="ring-k" style="--pct:40%"></i>Split: share of courses covered</span>
+    <span class="lg"><span class="cl-tally demo"><span class="t ok"><i></i>3</span><span class="t bad"><i></i>5</span></span>Groups: covered / short</span>
   </div>
-  <p class="howto">Deposit = % × (tuition − sure scholarship), paid before CAS from savings. Remaining fee + 12 months' living must come from work. Earnings from all jobs are added up; ${COUNTRY.taxText}. ${COUNTRY.visaText}. Number on pin = matching courses.</p>`);
+  <p class="howto" id="finHowto"></p>`);
+const FC = () => COUNTRIES[FIN_CO], FSYM = () => CUR[FC().cur].sym, fmoney = n => money(n, FC().cur);
 
 const jobHTML = (j, i) => `
   <div class="job" data-i="${i}">
     <div class="job-top">
       <input class="job-name" data-f="name" value="${esc(j.name)}" placeholder="Job ${i + 1}" maxlength="40" aria-label="Job ${i + 1} name">
       <span class="job-out" data-out="gross${i}"></span>
-      ${S.jobs.length > 1 ? `<button type="button" class="rm-job" data-rm="${i}" aria-label="Remove ${esc(j.name || "job " + (i + 1))}"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>` : ""}
+      ${J().length > 1 ? `<button type="button" class="rm-job" data-rm="${i}" aria-label="Remove ${esc(j.name || "job " + (i + 1))}"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>` : ""}
     </div>
     <div class="job-grid">
-      <label><span>${LSYM} / hour</span><input type="number" data-f="rate" min="0" max="1000" step="0.01" value="${j.rate}"></label>
+      <label><span>${FSYM()} / hour</span><input type="number" data-f="rate" min="0" max="1000" step="0.01" value="${j.rate}"></label>
       <label><span>Hours / week</span><input type="number" data-f="hrs" min="0" max="168" step="0.5" value="${j.hrs}"></label>
       <label><span>Weeks / year</span><input type="number" data-f="wks" min="0" max="52" step="1" value="${j.wks}"></label>
     </div>
@@ -550,48 +607,53 @@ const jobHTML = (j, i) => `
 function renderFin() {
   FIN.forEach(el => {
     el.querySelector(".fin").innerHTML = `
-      <div class="field dep"><label for="dep-${el.id}">${COUNTRY.depLabel} (% of tuition)</label><input type="number" id="dep-${el.id}" data-k="dep" min="0" max="100" step="5" value="${S.dep}"></div>
-      <div class="jobs-h"><span>Jobs</span><button type="button" class="btn-plain sm add-job"${S.jobs.length >= MAX_JOBS ? " disabled" : ""}>
+      <div class="field dep"><label for="dep-${el.id}">${DEP_LABEL} (% of tuition)</label><input type="number" id="dep-${el.id}" data-k="dep" min="0" max="100" step="5" value="${S.dep}"></div>
+      ${MULTI ? `<div class="seg small fin-co" role="group" aria-label="Jobs in">${SEL.map(co => `<button type="button" data-fco="${co}" aria-pressed="${co === FIN_CO}">${COUNTRIES[co].flag} Jobs in ${COUNTRIES[co].name}</button>`).join("")}</div>` : ""}
+      <div class="jobs-h"><span>${MULTI ? `Jobs in ${FC().full}` : "Jobs"}</span><button type="button" class="btn-plain sm add-job"${J().length >= MAX_JOBS ? " disabled" : ""}>
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add job</button></div>
-      <div class="jobs">${S.jobs.map(jobHTML).join("")}</div>
+      <div class="jobs">${J().map(jobHTML).join("")}</div>
       <p class="visa-warn" data-out="warn" hidden></p>
       <div class="fin-out"><span class="k">Take-home / yr</span><b class="th"></b><span class="fin-sum" data-out="sum"></span></div>`;
   });
+  $("finHowto").textContent = `Deposit comes from savings; the rest of the fee + living from work${MULTI ? " in that course's country" : ""}. Take-home is ` +
+    SEL.map(co => (MULTI ? COUNTRIES[co].name + " " : "") + COUNTRIES[co].taxText + ". " + COUNTRIES[co].visaText + ".").join(" ");
   syncFin();
 }
 // Refresh computed outputs, and copy values into the other copy of the form (never the field being typed in).
 function syncFin(except) {
   FIN.forEach(el => el.querySelectorAll("input[data-k], input[data-f]").forEach(i => {
     if (i === except) return;
-    const v = i.dataset.k ? S[i.dataset.k] : S.jobs[+i.closest(".job").dataset.i]?.[i.dataset.f];
+    const v = i.dataset.k ? S[i.dataset.k] : J()[+i.closest(".job").dataset.i]?.[i.dataset.f];
     if (v !== undefined && String(v) !== i.value) i.value = v;
   }));
-  const th = money(takeHome(avgRate())), wk = weekHrs();
-  const sum = `${money(grossAll())} gross · avg ${LSYM}${avgRate().toFixed(2)}/hr · ${hours().toLocaleString("en-GB")} h/yr`;
-  const warn = wk > COUNTRY.visaHrs ? `If worked at the same time these jobs add up to ${wk} h/week. ${COUNTRY.code === "de" ? "Student visas allow 20 h/week during lectures and 140 full or 280 half days a year" : "Student visas allow 20 h/week in term time; more only in official vacations"} — use weeks/year to model vacation-only work.` : "";
+  const th = fmoney(takeHome(avgRate())), wk = weekHrs();
+  const sum = `${fmoney(grossAll())} gross · avg ${FSYM()}${avgRate().toFixed(2)}/hr · ${hours().toLocaleString("en-GB")} h/yr`;
+  const warn = wk > FC().visaHrs ? `${wk} h/week together — over the 20 h term-time visa limit. Use weeks/year for vacation-only jobs.` : "";
   document.querySelectorAll(".fin-out .th").forEach(b => b.textContent = th);
   document.querySelectorAll('[data-out="sum"]').forEach(b => b.textContent = sum);
   document.querySelectorAll('[data-out="warn"]').forEach(b => { b.hidden = !warn; b.textContent = warn; });
-  S.jobs.forEach((j, i) => document.querySelectorAll(`[data-out="gross${i}"]`).forEach(b => b.textContent = money(jobGross(j)) + "/yr"));
-  $("thMini").textContent = th + "/yr";
+  J().forEach((j, i) => document.querySelectorAll(`[data-out="gross${i}"]`).forEach(b => b.textContent = fmoney(jobGross(j)) + "/yr"));
+  $("thMini").textContent = (MULTI ? FC().flag + " " : "") + th + "/yr";
 }
 FIN.forEach(el => {
   el.addEventListener("input", e => {
     const i = e.target;
     if (i.dataset.k) S[i.dataset.k] = i.value === "" ? 0 : +i.value;
-    else if (i.dataset.f) { const j = S.jobs[+i.closest(".job").dataset.i]; j[i.dataset.f] = i.dataset.f === "name" ? i.value : (i.value === "" ? 0 : +i.value); }
+    else if (i.dataset.f) { const j = J()[+i.closest(".job").dataset.i]; j[i.dataset.f] = i.dataset.f === "name" ? i.value : (i.value === "" ? 0 : +i.value); }
     else return;
     save(); syncFin(i); if (i.dataset.f !== "name") update();
   });
   el.addEventListener("click", e => {
-    const add = e.target.closest(".add-job"), rm = e.target.closest(".rm-job");
-    if (add && S.jobs.length < MAX_JOBS) {
-      const last = S.jobs[S.jobs.length - 1];
-      S.jobs.push(newJob({ rate: last ? last.rate : COUNTRY.minWage, hrs: 10, wks: last ? last.wks : 52 }));
+    const add = e.target.closest(".add-job"), rm = e.target.closest(".rm-job"), fco = e.target.closest("[data-fco]");
+    if (fco) { FIN_CO = S.finCo = fco.dataset.fco; save(); renderFin(); el.querySelector(`[data-fco="${FIN_CO}"]`)?.focus(); return; }
+    const jobs = J();
+    if (add && jobs.length < MAX_JOBS) {
+      const last = jobs[jobs.length - 1];
+      jobs.push(newJob({ rate: last ? last.rate : FC().minWage, hrs: 10, wks: last ? last.wks : 52 }, FC()));
       save(); renderFin(); update();
-      el.querySelector(`.job[data-i="${S.jobs.length - 1}"] .job-name`)?.focus();
+      el.querySelector(`.job[data-i="${jobs.length - 1}"] .job-name`)?.focus();
     } else if (rm) {
-      S.jobs.splice(+rm.dataset.rm, 1);
+      jobs.splice(+rm.dataset.rm, 1);
       save(); renderFin(); update();
       el.querySelector(".add-job")?.focus();
     }
@@ -689,8 +751,9 @@ $("tableClose").addEventListener("click", () => { setView(false); $("viewToggle"
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape" || $("liveReport").open) return;
   if (!$("countryMenu").hidden) { setCountryMenu(false); $("countryBtn").focus(); }
+  else if (!$("lvMenu").hidden) { setLvMenu(false); $("lvBtn").focus(); }
   else if (!$("subjMenu").hidden) { setSubjMenu(false); $("subjBtn").focus(); }
-  else if ($("acctDlg")?.open || $("authDlg")?.open || $("setDlg")?.open || $("acctMenu")?.hidden === false) return; else if (tableOpen) setView(false); else closeCard();
+  else if ($("acctDlg")?.open || $("authDlg")?.open || $("setDlg")?.open || $("shortDlg")?.open || $("acctMenu")?.hidden === false) return; else if (tableOpen) setView(false); else closeCard();
 });
 
 /* ---------------- table ---------------- */
@@ -698,6 +761,10 @@ const hrow = $("hrow"), frow = $("frow");
 COLS.forEach(c => {
   const th = document.createElement("th"); th.dataset.k = c.k; th.scope = "col";
   if (c.type === "none") { th.innerHTML = `<button type="button" tabindex="-1"><span>${c.h}</span></button>`; }
+  else if (c.type === "star") {
+    th.innerHTML = `<button type="button" title="Sort shortlisted first" aria-label="Shortlist"><span class="lbl">${c.h}</span><span class="arr">↕</span></button>`;
+    th.querySelector("button").addEventListener("click", () => { if (S.sortK === c.k) S.dir = -S.dir; else { S.sortK = c.k; S.dir = 1; } save(); renderTable(); });
+  }
   else {
     th.innerHTML = `<button type="button"><span class="lbl">${c.h}</span><span class="arr">↕</span></button>`;
     th.querySelector("button").addEventListener("click", () => {
@@ -707,7 +774,7 @@ COLS.forEach(c => {
   }
   hrow.appendChild(th);
   const fth = document.createElement("th");
-  if (c.type !== "none") {
+  if (c.type !== "none" && c.type !== "star") {
     const inp = document.createElement("input"); inp.type = "search";
     inp.placeholder = c.type === "num" ? (["uk", "qs"].includes(c.k) ? "e.g. <200" : ["hr", "rt"].includes(c.k) ? "e.g. <20" : c.k === "df" ? "e.g. <5000" : "e.g. <30000") : "filter…";
     inp.setAttribute("aria-label", "Filter " + c.h.replace(/<br>/g, " "));
@@ -719,11 +786,13 @@ COLS.forEach(c => {
 
 let LIST = [];
 function sorted(list) {
-  const col = COLS.find(c => c.k === S.sortK) || COLS[11];
+  const col = COLS.find(c => c.k === S.sortK) || COLS.find(c => c.k === "n");
+  // Money (and hourly pay) from different countries is compared in one currency.
+  const val = r => (col.money || col.local) && MULTI ? toBase(col.get(r), r) : col.get(r);
   return list.slice().sort((a, b) => {
-    const x = col.get(a), y = col.get(b);
+    const x = val(a), y = val(b);
     const v = col.type === "num" ? x - y : String(x).localeCompare(String(y));
-    return (v || (a.n - b.n)) * S.dir;
+    return (v || (toBase(a.n, a) - toBase(b.n, b))) * S.dir;
   });
 }
 function renderTable() {
@@ -739,24 +808,25 @@ function renderTable() {
   const list = sorted(LIST);
   $("tbody").innerHTML = list.map(r => {
     const d = deficit(r), h = needHr(r);
-    return `<tr>
+    return `<tr class="${isShort(r) ? "starred" : ""}">
+    <td class="star-td">${starBtn(r)}</td>
     <td>${r.lv}</td>
     <td>${r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g]}</td>
-    <td class="uni"><b>${esc(r.u)}</b><span class="sub">${esc(r.c)}${city && r.c !== city ? ` · ${Math.round(uniKm(r.u, city))} km from ${esc(city)}` : ""}</span></td>
-    <td class="num">${esc(rankText(r.uk, r))}</td>
+    <td class="uni"><b>${esc(r.u)}</b><span class="sub">${MULTI ? coOf(r).flag + " " : ""}${esc(r.c)}${city && r.c !== city ? ` · ${Math.round(uniKm(r.u, city))} km from ${esc(city)}` : ""}</span></td>
+    ${SEL.includes("uk") ? `<td class="num">${esc(ukRankText(r))}</td>` : ""}
     <td class="num">${esc(rankText(r.qs, r))}</td>
     <td>${esc(r.p)}</td>
     <td>${esc(r.i)}</td>
-    <td class="num">~${money(r.f)}${feeNote(r)}</td>
-    <td class="num">~${money(r.l)}</td>
-    <td class="num">~${money(r.t)}</td>
-    <td class="sure ${r.s ? "has" : ""}">${r.s ? `<b>${money(r.s)}</b><span class="sub" style="color:inherit">${esc(r.sl)}</span>` : "None confirmed"}</td>
-    <td class="num net">~${money(r.n)}</td>
-    <td class="num">~${money(Math.round(dep(r) / 50) * 50)}</td>
-    <td class="num">~${money(Math.round(remFee(r) / 50) * 50)}</td>
-    <td class="num hr ${h > 20 ? "hi" : ""}"><b>${LSYM}${isFinite(h) ? h.toFixed(2) : "—"}</b><span class="sub">needs ~${money(r100(need(r)))}/yr</span></td>
+    <td class="num">~${rm(r, r.f)}${feeNote(r)}</td>
+    <td class="num">~${rm(r, r.l)}</td>
+    <td class="num">~${rm(r, r.t)}</td>
+    <td class="sure ${r.s ? "has" : ""}">${r.s ? `<b>${rm(r, r.s)}</b><span class="sub" style="color:inherit">${esc(r.sl)}</span>` : "None confirmed"}</td>
+    <td class="num net">~${rm(r, r.n)}</td>
+    <td class="num">~${rm(r, Math.round(dep(r) / 50) * 50)}</td>
+    <td class="num">~${rm(r, Math.round(remFee(r) / 50) * 50)}</td>
+    <td class="num hr ${h > 20 ? "hi" : ""}"><b>${rsym(r)}${isFinite(h) ? h.toFixed(2) : "—"}</b><span class="sub">needs ~${rm(r, r100(need(r)))}/yr</span></td>
     <td class="rate"><input type="number" min="0" max="200" step="0.01" data-id="${r.id}" class="${r.id in rowRate ? "ovr" : ""}" value="${rateOf(r).toFixed(2)}" aria-label="Hourly rate for ${esc(r.u)}"></td>
-    <td class="num def ${d > 0 ? "short" : "ok"}" data-def="${r.id}">${defText(d)}</td>
+    <td class="num def ${d > 0 ? "short" : "ok"}" data-def="${r.id}">${defText(d, r)}</td>
     <td class="aw">${awardsCell(r)}</td>
     <td>${esc(otherSch(r))}</td>
     <td class="pl ${r.pl.startsWith("Yes") ? "yes" : ""}">${esc(r.pl)}</td>
@@ -766,7 +836,7 @@ function renderTable() {
   $("empty").hidden = list.length > 0;
   const col = COLS.find(c => c.k === S.sortK);
   $("count").textContent = `${list.length} of ${ROWS.length} courses · ${new Set(list.map(r => r.u)).size} universities · sorted by ${(col.dyn ? col.dyn() : col.h).replace(/<br>/g, " ")} (${S.dir === 1 ? "low → high" : "high → low"})`;
-  document.querySelector("#tbl").style.setProperty("--h1", hrow.getBoundingClientRect().height + "px");
+  document.querySelector("#tbl").style.setProperty("--h1", hrow.getBoundingClientRect().height / UIZ() + "px");
 }
 $("tbody").addEventListener("input", e => {
   const inp = e.target.closest("td.rate input"); if (!inp) return;
@@ -774,7 +844,7 @@ $("tbody").addEventListener("input", e => {
   if (inp.value === "") delete rowRate[id]; else rowRate[id] = Math.max(0, +inp.value);
   inp.classList.toggle("ovr", id in rowRate);
   const td = document.querySelector(`td[data-def="${id}"]`), d = deficit(r);
-  td.className = "num def " + (d > 0 ? "short" : "ok"); td.textContent = defText(d);
+  td.className = "num def " + (d > 0 ? "short" : "ok"); td.textContent = defText(d, r);
   refreshMarkers(); if (openUni === r.u) renderCard(r.u, false);
 });
 $("tbody").addEventListener("click", e => {
@@ -784,6 +854,7 @@ $("tbody").addEventListener("click", e => {
 $("clearrates").addEventListener("click", () => { for (const k in rowRate) delete rowRate[k]; update(); });
 
 /* ---------------- map groups ---------------- */
+const uniCo = u => COUNTRIES[UNIS[u].co || "uk"], uniCur = u => uniCo(u).cur;
 function groups() {
   const by = {};
   LIST.forEach(r => (by[r.u] ||= []).push(r));
@@ -797,7 +868,7 @@ function groups() {
 function pinHTML(g) {
   const pct = (g.okCount / g.count * 100).toFixed(1);
   const tip = `${g.u} — ${g.count} course${g.count === 1 ? "" : "s"}: ${g.okCount} covered by your work, ${g.count - g.okCount} short` +
-    (g.best > 0 ? ` (closest: short ${money(r100(g.best))}/yr)` : ` (best: ${money(r100(-g.best))}/yr spare)`);
+    (g.best > 0 ? ` (closest: short ${money(r100(g.best), uniCur(g.u))}/yr)` : ` (best: ${money(r100(-g.best), uniCur(g.u))}/yr spare)`);
   return `<div class="pin ${g.ok ? "ok" : "bad"}${g.u === openUni ? " sel" : ""}" title="${esc(tip)}" style="--pct:${pct}%">` +
     `<span class="ring"><span class="dot">${g.count}</span></span><span class="nm">${esc(g.u)}</span></div>`;
 }
@@ -811,7 +882,9 @@ function clusterHTML(oks) {
 /* ---------------- map: Google implementation ---------------- */
 const loadScript = src => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => no(new Error("Failed: " + src)); document.head.appendChild(s); });
 const loadCss = href => { const l = document.createElement("link"); l.rel = "stylesheet"; l.href = href; document.head.appendChild(l); };
-const UK = COUNTRY.center; // the selected country's map centre
+// Map view: the ticked country, or north-west Europe when the UK and Germany are both shown.
+const VIEW = MULTI ? { center: { lat: 53, lng: 3.5 }, zoom: MOBILE ? 4 : 5 } : { center: COUNTRY.center, zoom: COUNTRY.zoom };
+const UK = VIEW.center;
 // Keep fitted areas clear of the floating toolbar and side cards.
 const pad = () => ({ top: $("hdr").getBoundingClientRect().bottom + 16, left: MOBILE ? 16 : $("side").getBoundingClientRect().right + 16 });
 
@@ -824,7 +897,7 @@ const GoogleMap = {
     await loadScript("https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js");
     this.AME = AdvancedMarkerElement; this.Circle = Circle; this.GMap = Map; this.el = el;
     this.markers = [];
-    this.build({ center: UK, zoom: COUNTRY.zoom });
+    this.build({ center: UK, zoom: VIEW.zoom });
   },
   // Google only accepts a colour scheme when a map is created, so changing theme means building a new map.
   scheme: () => S.theme === "dark" ? "DARK" : S.theme === "light" ? "LIGHT" : "FOLLOW_SYSTEM",
@@ -878,7 +951,7 @@ const GoogleMap = {
       this.map.fitBounds(this.circle.getBounds(), { top: pad().top, left: pad().left, right: 24, bottom: 24 });
     } else { this.map.panTo({ lat: center[0], lng: center[1] }); this.map.setZoom(11); }
   },
-  reset() { this.map.panTo(UK); this.map.setZoom(COUNTRY.zoom); },
+  reset() { this.map.panTo(UK); this.map.setZoom(VIEW.zoom); },
   async place(u) {
     const { Place } = await google.maps.importLibrary("places");
     const { places } = await Place.searchByText({ textQuery: UNIS[u].q, fields: ["id"], maxResultCount: 1, locationBias: { lat: UNIS[u].lat, lng: UNIS[u].lng } });
@@ -899,7 +972,7 @@ const LeafletMap = {
     await loadScript("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js");
     await loadScript("https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js");
     el.innerHTML = "";
-    this.map = L.map(el, { zoomControl: false }).setView([UK.lat, UK.lng], COUNTRY.zoom);
+    this.map = L.map(el, { zoomControl: false }).setView([UK.lat, UK.lng], VIEW.zoom);
     L.control.zoom({ position: "bottomright" }).addTo(this.map);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(this.map);
     this.cluster = L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 50,
@@ -921,7 +994,7 @@ const LeafletMap = {
     if (km > 0) { this.circle = L.circle(center, { radius: km * 1000, color: "#007aff", weight: 2, fillOpacity: .08, interactive: false }).addTo(this.map); this.map.fitBounds(this.circle.getBounds(), { paddingTopLeft: [pad().left, pad().top], paddingBottomRight: [24, 24] }); }
     else this.map.setView(center, 11);
   },
-  reset() { this.map.setView([UK.lat, UK.lng], COUNTRY.zoom); },
+  reset() { this.map.setView([UK.lat, UK.lng], VIEW.zoom); },
   async place() { return null; },
 };
 
@@ -931,14 +1004,14 @@ async function startMap() {
   const el = $("map");
   if (CFG.GOOGLE_MAPS_API_KEY) {
     window.gm_authFailure = async () => { // invalid / restricted key → fall back so the site still works
-      status("Google Maps key rejected — showing OpenStreetMap. Check the key and its allowed referrers (README).");
+      status("Google Maps key rejected — showing OpenStreetMap.");
       MAP = LeafletMap; await MAP.init(el); refreshMarkers(); applyCityOnMap();
     };
     try { await GoogleMap.init(el); MAP = GoogleMap; onThemeChange = () => { if (MAP === GoogleMap) GoogleMap.setScheme(); }; }
     catch (e) { console.error(e); status("Google Maps failed to load — showing OpenStreetMap."); MAP = LeafletMap; await MAP.init(el); }
   } else {
     MAP = LeafletMap; await MAP.init(el);
-    status("No Google Maps key set — add GOOGLE_MAPS_API_KEY to <b>.env</b> (or your Vercel settings) for Google photos &amp; reviews.");
+    status("No Google Maps key — showing OpenStreetMap.");
     setTimeout(() => status(""), 9000);
   }
   refreshMarkers(); applyCityOnMap();
@@ -975,35 +1048,36 @@ function courseHTML(r) {
   return `<article class="course">
     <div class="course-h">
       <div class="tags"><span class="tag ${r.lv === "PhD" ? "phd" : ""}">${r.lv}</span><span class="tag">${r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g]}</span>${r.s ? `<span class="tag sure">Sure scholarship</span>` : ""}${r.pl.startsWith("Yes") ? `<span class="tag pl">Placement</span>` : ""}${r.fl ? `<span class="tag warn">${esc(r.fl)}</span>` : ""}</div>
-      <b>${esc(r.p)}</b>
+      <div class="course-t"><b>${esc(r.p)}</b>${starBtn(r, "lg")}</div>
+      ${isShort(r) ? `<div class="course-st"><span>Application</span>${statusSelect(courseKey(r), S.short[courseKey(r)].st)}</div>` : ""}
     </div>
     <div class="kv">
       ${r.en ? row("Entry", esc(r.en)) : ""}
-      ${row("Intakes", esc(r.i) + (r.iLive ? `<span class="sub">from the course page · listed as ${esc(r.i0)}</span>` : ""))}
+      ${row("Intakes", esc(r.i) + (r.iLive ? `<span class="sub">updated · was ${esc(r.i0)}</span>` : ""))}
       ${r.closed ? row(r.closed.status === "gone" ? "Course page" : "Applications", `<span class="sub warn">${esc(r.closed.note || (r.closed.status === "gone" ? "The page has been removed" : "Not taking applications"))}</span>`, "hl") : ""}
-      ${row("Tuition / yr (intl)", `~${money(r.f)}${feeNote(r)}`)}
-      ${row("Living / yr", "~" + money(r.l))}
-      ${row("Total yr 1", "~" + money(r.t))}
-      ${row("Sure scholarship", r.s ? `${money(r.s)}<span class="sub">${esc(r.sl)}</span>` : "None confirmed")}
-      ${row("Total with sure scholarship", "~" + money(r.n))}
-      ${row(`${COUNTRY.depLabel} (${+S.dep || 0}%)`, "~" + money(Math.round(dep(r) / 50) * 50))}
-      ${row("Remaining fee", "~" + money(Math.round(remFee(r) / 50) * 50))}
-      ${row("Pay needed / hr", `${LSYM}${isFinite(h) ? h.toFixed(2) : "—"}<span class="sub">to earn ~${money(r100(need(r)))}/yr</span>`, h > 20 ? "hl" : "")}
-      ${row(S.jobs.length > 1 ? "Your avg rate" : "Your rate", LSYM + rateOf(r).toFixed(2) + "/hr" + (r.id in rowRate ? "" : `<span class="sub">${S.jobs.length} job${S.jobs.length === 1 ? "" : "s"} · ${hours().toLocaleString("en-GB")} h/yr</span>`))}
-      ${row("Deficit / yr", defText(d), d > 0 ? "hl" : "ok")}
+      ${row("Tuition / yr (intl)", `~${rm(r, r.f)}${feeNote(r)}`)}
+      ${row("Living / yr", "~" + rm(r, r.l))}
+      ${row("Total yr 1", "~" + rm(r, r.t))}
+      ${row("Sure scholarship", r.s ? `${rm(r, r.s)}<span class="sub">${esc(r.sl)}</span>` : "None confirmed")}
+      ${row("Total with sure scholarship", "~" + rm(r, r.n))}
+      ${row(`${coOf(r).depLabel} (${+S.dep || 0}%)`, "~" + rm(r, Math.round(dep(r) / 50) * 50))}
+      ${row("Remaining fee", "~" + rm(r, Math.round(remFee(r) / 50) * 50))}
+      ${row("Pay needed / hr", `${rsym(r)}${isFinite(h) ? h.toFixed(2) : "—"}<span class="sub">to earn ~${rm(r, r100(need(r)))}/yr</span>`, h > 20 ? "hl" : "")}
+      ${row(J(r.co).length > 1 ? "Your avg rate" : "Your rate", rsym(r) + rateOf(r).toFixed(2) + "/hr" + (r.id in rowRate ? "" : `<span class="sub">${J(r.co).length} job${J(r.co).length === 1 ? "" : "s"}${MULTI ? " in " + coOf(r).name : ""} · ${hours(r.co || "uk").toLocaleString("en-GB")} h/yr</span>`))}
+      ${row("Deficit / yr", defText(d, r), d > 0 ? "hl" : "ok")}
       ${row("Placement", esc(r.pl))}
       <div class="full"><b>Other scholarships:</b> ${esc(otherSch(r))}</div>
       ${r.dur ? row("Duration", `${r.dur} semesters`) : ""}
       ${r.dl ? row("Apply by (winter)", esc(r.dl)) : ""}
       ${r.cw ? `<div class="full"><a href="${esc(r.cw)}" target="_blank" rel="noopener">University course page ↗</a> · <a href="${esc(r.url)}" target="_blank" rel="noopener">DAAD listing ↗</a>${courseCheck(r)}</div>`
         : r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>` : ""}
-      ${COUNTRY.code === "uk" ? planRow(r) : ""}
+      ${(r.co || "uk") === "uk" ? planRow(r) : ""}
     </div>
   </article>`;
 }
 function courseCheck(r) {
   const x = LIVE.res[r.url];
-  if (!x) return ` <span class="muted">· not checked yet — use Refresh fees</span>`;
+  if (!x) return ` <span class="muted">· not checked yet</span>`;
   const when = new Date(LIVE.checked).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   return x.ok ? ` <span class="muted">· checked ${when}</span>` : ` <span class="muted">· couldn't read fee (${esc(x.err)})</span>`;
 }
@@ -1039,20 +1113,20 @@ function payHTML_de(u) {
   const rs = ROWS.filter(r => r.u === u), any = rs[0] || {};
   const sem = Math.round((any.f || 0) / 2);
   return `<details class="pp" open><summary><span class="pp-ico" aria-hidden="true">€</span><span>Paying your fees</span><span class="pp-chip">Per semester</span></summary><div class="pp-body">
-    <div class="pp-row"><span class="k">When</span><span class="v">Each semester, before you enrol or re-register (winter semester from October, summer from April)<small>About ${money(sem)} a semester for ${esc(any.p || "this course")}, incl. the semester fee</small></span></div>
-    <div class="pp-row"><span class="k">Blocked account<small>proof of funds for the visa</small></span><span class="v">€11,904 for the first year (€992/month, 2026)<small>Paid into a German blocked account before the visa appointment; released monthly after you arrive</small></span></div>
-    <div class="pp-row"><span class="k">Deposit</span><span class="v">Public universities don't ask for one${/Private university/.test(any.fl || "") ? '<small>This is a private university — check its own payment terms</small>' : ""}</span></div>
-    <p class="pp-src">Check the course page for this programme's exact fees · confirm with your admission letter</p>
+    <div class="pp-row"><span class="k">When</span><span class="v">Each semester, before enrolling (Oct / Apr)<small>~${money(sem, "EUR")} a semester incl. semester fee</small></span></div>
+    <div class="pp-row"><span class="k">Blocked account<small>visa proof of funds</small></span><span class="v">€11,904 (€992/month, 2026)<small>Paid before the visa, released monthly</small></span></div>
+    <div class="pp-row"><span class="k">Deposit</span><span class="v">Public universities don't ask for one${/Private university/.test(any.fl || "") ? '<small>Private university — check its terms</small>' : ""}</span></div>
+    <p class="pp-src">Confirm exact fees on the course page</p>
   </div></details>`;
 }
 function payHTML(u) {
-  if (COUNTRY.code === "de") return payHTML_de(u);
+  if (uniCo(u).code === "de") return payHTML_de(u);
   const P = UNIS[u].pay, when = window.UNIDATA.payChecked ? new Date(window.UNIDATA.payChecked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
   // Short badge: "Deposit £2,000", "Deposit from £1,000", "Deposit 50%" — the full wording is in the rows below.
   const dep = P && P.dep, money = dep && dep.match(/£[\d,]+/), pct = dep && dep.match(/\d+%/);
   const chip = !dep ? "" : /^£[\d,]+$/.test(dep) ? dep : money && (pct ? dep.indexOf(money[0]) < dep.indexOf(pct[0]) : true) ? `from ${money[0]}` : pct ? pct[0] : "";
   const head = `<summary><span class="pp-ico" aria-hidden="true">£</span><span>Paying your fees</span>${chip ? `<span class="pp-chip">Deposit ${esc(chip)}</span>` : ""}</summary>`;
-  if (!P) return `<details class="pp" open>${head}<p class="pp-none">Deposit and installment rules aren't confirmed for this university yet — their pages couldn't be read automatically. Check their <a href="${esc(UNIS[u].web)}" target="_blank" rel="noopener">website ↗</a> or your offer letter.</p></details>`;
+  if (!P) return `<details class="pp" open>${head}<p class="pp-none">Not confirmed yet — check their <a href="${esc(UNIS[u].web)}" target="_blank" rel="noopener">website ↗</a> or your offer letter.</p></details>`;
   const row = (k, v, cls = "") => v ? `<div class="pp-row ${cls}"><span class="k">${k}</span><span class="v">${v}</span></div>` : "";
   const sched = P.sched ? Object.entries(P.sched).map(([k, v]) => row(esc(k), esc(v), "sched")).join("") : "";
   return `<details class="pp" open>${head}<div class="pp-body">
@@ -1060,24 +1134,24 @@ function payHTML(u) {
     ${row("From Nepal", P.nepal ? esc(P.nepal) : "", "nepal")}
     ${row("Installments", P.plan ? esc(P.plan) + (P.n ? `<small>${esc(P.n)} payment${P.n === "1" ? "" : "s"} in total</small>` : "") : `<span class="muted">Not stated on the pages read</span>`)}
     ${sched || (P.plan ? row("Dates", `<span class="muted">Not published — given on your invoice</span>`) : "")}
-    <p class="pp-src"><a href="${esc(P.src)}" target="_blank" rel="noopener">University's payment page ↗</a>${when ? ` · checked ${when}` : ""} · confirm with your offer letter</p>
+    <p class="pp-src"><a href="${esc(P.src)}" target="_blank" rel="noopener">University's payment page ↗</a>${when ? ` · checked ${when}` : ""}</p>
   </div></details>`;
 }
 // Scholarships for this university, matched to your grade (if given) and to its courses.
 function awardsHTML(u) {
-  if (COUNTRY.code === "de") {
+  if (uniCo(u).code === "de") {
     const g = germanGrade(S.grade);
     return `<details class="pp" open><summary><span class="pp-ico aw-ico" aria-hidden="true">★</span><span>Scholarships for you</span>${g ? `<span class="pp-chip">Your grade ≈ ${g.toFixed(1)}</span>` : ""}</summary><div class="pp-body">
-      <div class="pp-row"><span class="k">DAAD scholarships</span><span class="v">Competitive, e.g. Development-Related Postgraduate Courses (EPOS) for professionals from developing countries, incl. Nepal<small><a href="https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/" target="_blank" rel="noopener">DAAD scholarship database ↗</a></small></span></div>
-      <div class="pp-row"><span class="k">Deutschlandstipendium</span><span class="v">€300 a month for a year, merit-based, at most public universities — apply after enrolling</span></div>
-      <p class="pp-none">Tuition at most public universities is just the semester fee, so automatic fee discounts like in the UK are rare.</p>
+      <div class="pp-row"><span class="k">DAAD scholarships</span><span class="v">Competitive, e.g. EPOS for professionals from Nepal<small><a href="https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/" target="_blank" rel="noopener">DAAD scholarship database ↗</a></small></span></div>
+      <div class="pp-row"><span class="k">Deutschlandstipendium</span><span class="v">€300/month for a year, merit-based — apply after enrolling</span></div>
+      <p class="pp-none">Automatic fee discounts are rare in Germany.</p>
     </div></details>`;
   }
   const rows = ROWS.filter(r => r.u === u && r.lv === "Masters"), list = UNIS[u].sch || [], cls = myClass();
   const when = window.UNIDATA.schChecked ? new Date(window.UNIDATA.schChecked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
   const gradeChip = cls ? `<span class="pp-chip">Your grade ≈ ${cls === "3rd" ? "below 2:2" : cls}</span>` : "";
   const head = `<summary><span class="pp-ico aw-ico" aria-hidden="true">★</span><span>Scholarships for you</span>${gradeChip}</summary>`;
-  if (!list.length) return `<details class="pp" open>${head}<p class="pp-none">No Nepal-specific or automatic scholarships found on this university's pages${rows.some(r => r.s0) ? " (the course card shows any built-in scholarship)" : ""}. Check their scholarships page and the competitive awards listed with each course.</p></details>`;
+  if (!list.length) return `<details class="pp" open>${head}<p class="pp-none">No Nepal or automatic scholarships found${rows.some(r => r.s0) ? " (listed ones show on the course)" : ""}.</p></details>`;
   const status = a => {
     if (a.courses && !rows.some(r => a.courses.includes(r.p))) return ["muted", `Only for ${a.courses.join(", ")}`];
     if (a.kind === "nepal") return ["ok", "✓ Automatic for Nepal"];
@@ -1092,7 +1166,7 @@ function awardsHTML(u) {
     ${list.map(a => { const [c, t] = status(a); return `<div class="aw-row"><div class="aw-top"><b>${esc(a.name)}</b><span class="aw-amt">${esc(a.amtText)}</span></div>
       <span class="aw-st ${c}">${esc(t)}${a.courses && rows.some(r => a.courses.includes(r.p)) ? ` · ${esc(a.courses.join(", "))}` : ""}${a.deadline ? ` · deadline ${esc(a.deadline)}` : ""}</span>
       <p class="aw-note">${esc(a.note)} <a href="${esc(a.src)}" target="_blank" rel="noopener">Source ↗</a></p></div>`; }).join("")}
-    <p class="pp-src">Automatic awards you qualify for are counted in each course's "Sure scholarship"${when ? ` · checked ${when}` : ""} · confirm terms with the university</p>
+    <p class="pp-src">Automatic awards count as "Sure scholarship"${when ? ` · checked ${when}` : ""}</p>
   </div></details>`;
 }
 function renderCard(u, withPlace) {
@@ -1101,7 +1175,7 @@ function renderCard(u, withPlace) {
   const any = rs.length ? rs : ROWS.filter(r => r.u === u);
   const f = any[0];
   $("cardTitle").textContent = u;
-  $("cardSub").textContent = [U.c, COUNTRY.rank ? (f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked") : "", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
+  $("cardSub").textContent = [MULTI ? uniCo(u).flag + " " + U.c : U.c, uniCo(u).rank ? (f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked") : "", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
   $("cardAwards").innerHTML = awardsHTML(u);
   $("cardPay").innerHTML = payHTML(u);
@@ -1113,7 +1187,7 @@ async function loadPlace(u) {
   const box = $("gplace"), id = ++placeReq;
   const gmSearch = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UNIS[u].q);
   if (!MAP || MAP.kind !== "google") {
-    box.innerHTML = `<div class="gp-empty">Google photos &amp; reviews need a Google Maps API key (GOOGLE_MAPS_API_KEY).<br><a href="${gmSearch}" target="_blank" rel="noopener">Open ${esc(u)} in Google Maps ↗</a></div>`;
+    box.innerHTML = `<div class="gp-empty">Photos &amp; reviews need a Google Maps key.<br><a href="${gmSearch}" target="_blank" rel="noopener">Open ${esc(u)} in Google Maps ↗</a></div>`;
     return;
   }
   box.innerHTML = `<div class="skeleton"></div><div class="gp-body"><p class="gp-note">Loading Google Maps details…</p></div>`;
@@ -1154,9 +1228,9 @@ const SOURCE_UNIS = [...new Set(ROWS.filter(r => r.url).map(r => r.u))];
 const fmtWhen = iso => new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 function syncLiveBar(msg) {
   const ok = ROWS.filter(r => r.live).length;
-  const st = msg || (LIVE.checked ? `Live fees for ${ok} courses, checked ${fmtWhen(LIVE.checked)}` : "Showing built-in fees");
+  const st = msg || (LIVE.checked ? `Live fees for ${ok} courses, checked ${fmtWhen(LIVE.checked)}` : "Showing saved fees");
   $("liveStatus").textContent = st; // read by screen readers; sighted users get it on hover
-  $("refreshBtn").title = `Refresh fees — re-read the international fee from each university's course page.\n${st}`;
+  $("refreshBtn").title = `Refresh fees from course pages\n${st}`;
   $("liveReportBtn").hidden = !LIVE.checked;
 }
 // Shared fees: the latest readings saved in the database by anyone's refresh (api/fees). Applied on load,
@@ -1194,7 +1268,7 @@ async function refreshFees() {
   refreshing = false; $("refreshBtn").disabled = false; $("refreshBtn").classList.remove("spin");
   if (apiMissing) {
     syncLiveBar();
-    showReport("The refresh service isn't running here. Start the site with <code>npm run dev</code> (not a plain static server), or deploy it to Vercel — the <code>/api/refresh</code> function fetches the university pages.");
+    showReport("Refresh isn't available here — run <code>npm run dev</code> or deploy to Vercel.");
     return;
   }
   LIVE = { checked: new Date().toISOString(), res };
@@ -1210,16 +1284,14 @@ function showReport(errorHTML) {
   const rows = ROWS.filter(r => r.lv === "Masters").map(r => ({ r, st: liveStatus(r) }));
   const n = st => rows.filter(x => x.st === st).length;
   const closed = ROWS.filter(r => r.closed).length, intakes = ROWS.filter(r => r.iLive).length;
-  $("lrSummary").innerHTML = `Checked ${fmtWhen(LIVE.checked)}. <b>${n("updated")}</b> fees changed, <b>${n("same")}</b> unchanged, ` +
-    `<b>${intakes}</b> start dates updated from course pages, <b>${closed}</b> course${closed === 1 ? " looks" : "s look"} closed or removed (flagged as warnings), ` +
-    `<b>${n("mismatch")}</b> need a manual check, <b>${n("unreadable")}</b> pages had no readable fee, and <b>${n("nosource")}</b> courses have no course page on record ` +
-    `(mostly sites that block automated reading). Those keep the built-in figure.`;
+  $("lrSummary").innerHTML = `Checked ${fmtWhen(LIVE.checked)}: <b>${n("updated")}</b> changed · <b>${n("same")}</b> unchanged · <b>${intakes}</b> new start dates · ` +
+    `<b>${closed}</b> closed · <b>${n("mismatch")}</b> to check · <b>${n("unreadable") + n("nosource")}</b> unreadable (last saved fee kept).`;
   const ORDER = { updated: 0, mismatch: 1, unreadable: 2, same: 3, nosource: 4, unchecked: 5 };
   const LABEL = { updated: "Updated", same: "Unchanged", mismatch: "Needs check", unreadable: "Not readable", nosource: "No page on record", unchecked: "Not checked" };
   $("lrBody").innerHTML = rows.sort((a, b) => (!!b.r.closed - !!a.r.closed) || ORDER[a.st] - ORDER[b.st] || a.r.u.localeCompare(b.r.u)).map(({ r, st }) => {
     const x = r.url && LIVE.res[r.url];
     return `<tr class="st-${st}"><td><b>${esc(r.u)}</b><span class="sub">${esc(r.p)}</span></td>
-      <td class="num">${money(r.f0)}</td><td class="num">${x && x.ok ? money(x.fee) : "—"}</td>
+      <td class="num">${rm(r, r.f0)}</td><td class="num">${x && x.ok ? rm(r, x.fee) : "—"}</td>
       <td>${LABEL[st]}${x && !x.ok ? `<span class="sub">${esc(x.err)}</span>` : ""}${r.closed ? `<span class="sub warn">${r.closed.status === "gone" ? "Page removed" : "Not recruiting"}: ${esc(r.closed.note)}</span>` : ""}${r.iLive ? `<span class="sub">Intakes now ${esc(r.i)} (was ${esc(r.i0)})</span>` : ""}</td>
       <td>${r.url ? `<a href="${esc((x && x.src) || r.url)}" target="_blank" rel="noopener">Page ↗</a>` : ""}</td></tr>`;
   }).join("");
@@ -1228,15 +1300,138 @@ function showReport(errorHTML) {
 $("refreshBtn").addEventListener("click", refreshFees);
 $("liveReportBtn").addEventListener("click", () => showReport());
 $("lrClose").addEventListener("click", () => $("liveReport").close());
-$("lrReset").addEventListener("click", () => {
-  LIVE = { checked: null, res: {} }; try { localStorage.removeItem(LIVE_KEY); } catch (e) {}
-  applyLive(); fitMaxCost(); update(); syncLiveBar(); $("liveReport").close();
-});
 syncLiveBar();
 
 /* ---------------- main update ---------------- */
+/* ---------------- shortlist ⭐, application status, "what changed", saved searches ----------------
+   Stored with your other inputs (S → localStorage "ukmap-state"), so they sync to your account when signed in.
+   S.short[key] = { at, st, snap: { f, i, c } } — snap is the fee / start dates / open-closed state you last saw;
+   when the weekly refresh changes any of these, the shortlist shows what changed until you mark it as seen. */
+if (!S.short || typeof S.short !== "object" || Array.isArray(S.short)) S.short = {};
+if (!Array.isArray(S.searches)) S.searches = [];
+const courseKey = r => `${r.co || "uk"}|${r.u}|${r.p}`;
+const keyShown = k => inCountry(k.split("|")[0]);   // shortlisted course in a ticked country
+const KEYED = new Map(ROWS.map(r => [courseKey(r), r]));
+const isShort = r => !!S.short[courseKey(r)];
+const STATUS = [["considering", "Considering"], ["applied", "Applied"], ["offer", "Offer"], ["accepted", "Accepted"], ["rejected", "Rejected"]];
+const STATUS_LBL = Object.fromEntries(STATUS);
+const haveLive = () => !!LIVE.checked;   // only compare once the latest fees/course details are in
+const snapOf = r => ({ f: r.f, i: r.i, c: r.closed ? r.closed.status : null });
+const STAR = on => `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2.8 2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L2.8 8.1l5-.7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="${on ? "currentColor" : "none"}"/></svg>`;
+const starBtn = (r, cls = "") => { const on = isShort(r); return `<button type="button" class="star-btn ${on ? "on" : ""} ${cls}" data-star="${esc(courseKey(r))}" aria-pressed="${on}" aria-label="${on ? "Remove from" : "Add to"} shortlist: ${esc(r.p)}, ${esc(r.u)}" title="${on ? "Remove from shortlist" : "Add to shortlist"}">${STAR(on)}</button>`; };
+const statusSelect = (key, st) => `<select class="st-sel st-${st}" data-status="${esc(key)}" aria-label="Application status">${STATUS.map(([v, l]) => `<option value="${v}"${v === st ? " selected" : ""}>${l}</option>`).join("")}</select>`;
+
+function toggleShort(key) {
+  const r = KEYED.get(key);
+  if (S.short[key]) delete S.short[key];
+  else S.short[key] = { at: new Date().toISOString(), st: "considering", ...(r && haveLive() ? { snap: snapOf(r) } : {}) };
+  save(); refreshShortUI();
+}
+function setStatus(key, st) { if (S.short[key] && STATUS_LBL[st]) { S.short[key].st = st; save(); refreshShortUI(); } }
+// What changed on your shortlisted courses since you last looked.
+function shortChanges() {
+  if (!haveLive()) return [];
+  const out = [];
+  for (const [key, e] of Object.entries(S.short)) {
+    if (!keyShown(key)) continue;
+    const r = KEYED.get(key);
+    if (!r) { out.push({ key, text: "is no longer listed on the map", kind: "gone", title: key.split("|").slice(1).join(" · ") }); continue; }
+    if (!e.snap) continue;
+    const t = `${r.p} · ${r.u}`;
+    if (e.snap.f !== r.f && isFinite(e.snap.f)) out.push({ key, title: t, kind: r.f > e.snap.f ? "up" : "down", text: `tuition ${r.f > e.snap.f ? "went up" : "went down"}: ${rm(r, e.snap.f)} → ${rm(r, r.f)} a year` });
+    if (e.snap.i !== r.i && e.snap.i) out.push({ key, title: t, kind: "info", text: `start dates changed: ${e.snap.i} → ${r.i}` });
+    const c = r.closed ? r.closed.status : null;
+    if (c !== e.snap.c) out.push({ key, title: t, kind: c ? "bad" : "good", text: c === "gone" ? "course page has been removed — check it still runs" : c ? "is no longer taking applications" : "is open for applications again" });
+  }
+  return out;
+}
+function markSeen() {
+  for (const [key, e] of Object.entries(S.short)) { const r = KEYED.get(key); if (r) e.snap = snapOf(r); else if (keyShown(key)) delete S.short[key]; }
+  save(); refreshShortUI();
+}
+function syncShortBtn() {
+  // Courses shortlisted before the latest data loaded get their "last seen" values now (no change reported).
+  if (haveLive()) { let fill = false; for (const [key, e] of Object.entries(S.short)) { const r = KEYED.get(key); if (r && !e.snap) { e.snap = snapOf(r); fill = true; } } if (fill) save(); }
+  const mine = Object.keys(S.short).filter(keyShown).length, ch = shortChanges().length;
+  $("shortCount").textContent = mine; $("shortCount").hidden = !mine;
+  $("shortDot").hidden = !ch;
+  $("shortBtn").title = `My shortlist — ${mine} course${mine === 1 ? "" : "s"}${ch ? ` · ${ch} update${ch === 1 ? "" : "s"}` : ""}`;
+}
+function refreshShortUI() {
+  if (openUni) renderCard(openUni, false);
+  renderTable(); syncShortBtn();
+  if ($("shortDlg").open) renderShortlist();
+}
+function renderShortlist() {
+  const items = Object.entries(S.short).filter(([k]) => keyShown(k)).map(([k, e]) => ({ k, e, r: KEYED.get(k) })).filter(x => x.r)
+    .sort((a, b) => STATUS.findIndex(s => s[0] === a.e.st) - STATUS.findIndex(s => s[0] === b.e.st) || a.r.n - b.r.n);
+  const hidden = Object.keys(S.short).filter(k => !keyShown(k)), other = hidden.length;
+  const otherNames = [...new Set(hidden.map(k => COUNTRIES[k.split("|")[0]]?.full).filter(Boolean))].join(" and ");
+  const counts = STATUS.map(([v, l]) => [l, items.filter(x => x.e.st === v).length]).filter(([, n]) => n);
+  const changes = shortChanges();
+  $("shortSum").innerHTML = items.length ? counts.map(([l, n]) => `<span class="st-chip">${n} ${l.toLowerCase()}</span>`).join("") : "";
+  $("shortBody").innerHTML = (changes.length ? `<section class="sh-changes" aria-label="What changed">
+        <div class="sh-ch-top"><b>What changed since you last looked</b><button type="button" class="btn-plain sm" id="shortSeen">Mark as seen</button></div>
+        <ul>${changes.map(c => `<li class="ch-${c.kind}"><b>${esc(c.title)}</b> ${esc(c.text)}</li>`).join("")}</ul></section>` : "")
+    + (items.length ? `<ul class="sh-list">${items.map(({ k, e, r }) => { const d = deficit(r); return `<li>
+        ${starBtn(r)}
+        <div class="sh-main"><button type="button" class="link-btn sh-open" data-open="${esc(r.u)}" data-key="${esc(k)}">${esc(r.p)}</button>
+          <span class="sub">${esc(r.u)} · ${MULTI ? coOf(r).flag + " " : ""}${esc(r.c)} · starts ${esc(r.i)}${r.closed ? ` · <b class="warn-txt">${r.closed.status === "gone" ? "page removed" : "not recruiting"}</b>` : ""}</span></div>
+        <div class="sh-num"><b>~${rm(r, r.n)}</b><span class="sub">yr 1 total · ${rm(r, r.f)} tuition</span></div>
+        <span class="sh-aff ${d > 0 ? "short" : "ok"}">${d > 0 ? `Short ~${rm(r, r100(d))}/yr` : "Covered by your work"}</span>
+        ${statusSelect(k, e.st)}</li>`; }).join("")}</ul>`
+      : `<p class="sh-empty">${STAR(false)}<span>Star a course to save it here.</span></p>`)
+    + (other ? `<p class="acct-hint">+${other} in ${esc(otherNames)} (not ticked).</p>` : "")
+    + `<p class="signin-nudge">Saved in this browser only. <button type="button" class="link-btn" data-signin="signup">Sign in</button> to keep your shortlist on any device — no email, just a username &amp; password.</p>`;
+  $("shortSeen")?.addEventListener("click", markSeen);
+}
+$("shortBtn").addEventListener("click", () => { renderShortlist(); $("shortDlg").showModal(); });
+$("shortClose").addEventListener("click", () => $("shortDlg").close());
+$("shortDlg").addEventListener("click", e => {
+  if (e.target === $("shortDlg")) return $("shortDlg").close();
+  const o = e.target.closest("[data-open]");
+  if (o) {   // open the university card and bring this course into view
+    $("shortDlg").close(); setView(false); openCard(o.dataset.open, true);
+    const art = [...document.querySelectorAll("#card [data-star]")].find(b => b.dataset.star === o.dataset.key)?.closest(".course");
+    if (art) { art.scrollIntoView({ block: "start", behavior: "smooth" }); art.classList.remove("flash"); void art.offsetWidth; art.classList.add("flash"); }
+  }
+});
+// Stars and status menus anywhere: course cards, list rows, the shortlist.
+document.addEventListener("click", e => { const b = e.target.closest("[data-star]"); if (b) { e.stopPropagation(); toggleShort(b.dataset.star); } }, true);
+document.addEventListener("change", e => { const s = e.target.closest("select[data-status]"); if (s) setStatus(s.dataset.status, s.value); });
+
+/* saved searches: the current filters under a name, re-applied in one click (per set of ticked countries) */
+const SEL_KEY = SEL.join("+");
+const CHIPS = ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"];
+const filterSnap = () => ({ q: $("q").value, max: $("maxcost").value === $("maxcost").max ? null : +$("maxcost").value, city: $("city").value, radius: $("radius").value,
+  rank: $("rank").value, chips: CHIPS.filter(id => $(id).checked), lvs: S.lvs.slice(), subjs: S.subjs.slice() });
+function applySearch(f) {
+  $("q").value = f.q || ""; $("city").value = f.city || ""; $("radius").value = f.radius || ""; $("rank").value = f.rank || "";
+  $("maxcost").value = f.max == null ? $("maxcost").max : Math.min(+$("maxcost").max, f.max);
+  CHIPS.forEach(id => $(id).checked = (f.chips || []).includes(id));
+  S.lvs = Array.isArray(f.lvs) ? f.lvs.filter(l => LEVELS.includes(l)) : f.lv && f.lv !== "ALL" ? [f.lv] : []; S.subjs = Array.isArray(f.subjs) ? f.subjs.filter(g => PNAME[g]) : [];
+  save(); update({ fit: true });
+}
+function renderSearches() {
+  const mine = S.searches.filter(s => s.co === SEL_KEY);
+  $("ssSel").innerHTML = `<option value="">${mine.length ? "Saved searches…" : "No saved searches yet"}</option>` + mine.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
+  $("ssDel").hidden = !$("ssSel").value;
+}
+$("ssSel").addEventListener("change", () => { const s = S.searches.find(x => x.id === $("ssSel").value); if (s) applySearch(s.f); $("ssDel").hidden = !s; });
+$("ssSaveBtn").addEventListener("click", () => { $("ssForm").hidden = false; $("ssSaveBtn").hidden = true; $("ssName").value = ""; $("ssName").focus(); });
+$("ssCancel").addEventListener("click", () => { $("ssForm").hidden = true; $("ssSaveBtn").hidden = false; });
+$("ssForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = $("ssName").value.replace(/\s+/g, " ").trim().slice(0, 40); if (!name) return $("ssName").focus();
+  const id = Date.now().toString(36);
+  S.searches = [{ id, co: SEL_KEY, name, f: filterSnap() }, ...S.searches.filter(s => !(s.co === SEL_KEY && s.name.toLowerCase() === name.toLowerCase()))].slice(0, 30);
+  save(); $("ssForm").hidden = true; $("ssSaveBtn").hidden = false; renderSearches(); $("ssSel").value = id; $("ssDel").hidden = false;
+});
+$("ssDel").addEventListener("click", () => { S.searches = S.searches.filter(s => s.id !== $("ssSel").value); save(); renderSearches(); });
+renderSearches();
+
 function update(opts = {}) {
-  $("lv").value = S.lv;
+  syncLv();
   syncSubj();
   $("maxv").textContent = money(+$("maxcost").value);
   const nf = activeFilterCount(); $("fCount").hidden = !nf; $("fCount").textContent = nf;
@@ -1247,6 +1442,7 @@ function update(opts = {}) {
   if (opts.fit) applyCityOnMap();
   if (openUni) renderCard(openUni, false);
   renderTable();
+  syncShortBtn();
 }
 
 update();

@@ -65,6 +65,18 @@
           </div>
           <div class="grade-out" id="gradeOut" role="status" hidden></div>
         </fieldset>
+        <div class="ss-box" aria-label="Saved searches">
+          <div class="ss-row field">
+            <select id="ssSel" aria-label="Saved searches"></select>
+            <button type="button" class="link-btn danger small" id="ssDel" hidden>Delete</button>
+          </div>
+          <button type="button" class="btn-plain sm" id="ssSaveBtn"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 3.5h9v13l-4.5-3-4.5 3z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></svg>Save these filters</button>
+          <p class="signin-nudge">Saved in this browser only. <button type="button" class="link-btn" data-signin="signup">Sign in</button> to keep saved searches on any device — no email, just a username &amp; password.</p>
+          <form class="ss-form field" id="ssForm" hidden>
+            <input id="ssName" type="search" maxlength="40" placeholder="Name, e.g. London under £25k" aria-label="Name for this search" autocomplete="off">
+            <button type="submit" class="btn-plain sm">Save</button><button type="button" class="link-btn small" id="ssCancel">Cancel</button>
+          </form>
+        </div>
         <button type="button" class="btn-plain" id="reset">Reset filters</button>
       </div>
     </section>
@@ -74,7 +86,13 @@
         <svg class="ph-ico" viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4.5" width="14" height="11" rx="2.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M3 8.5h14" stroke="currentColor" stroke-width="1.7"/></svg>
         <span>Budget &amp; work</span><span class="takehome" id="thMini"></span><span class="caret" aria-hidden="true"></span>
       </button>
-      <div class="panel-body" id="budgetBody"></div>
+      <div class="panel-body" id="budgetBody">
+        <!-- the job inputs are added above this, the colour key below it (js/app.js) -->
+        <a class="btn-primary plan-link" href="planner.html" title="Plan installments, costs and work month by month">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="2.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M3 8h14M7 2.5v3M13 2.5v3M6.5 11.5h3M6.5 14h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span>Budget planner</span></a>
+        <p class="signin-nudge">Saved in this browser only. <button type="button" class="link-btn" data-signin="signup">Sign in</button> to keep your jobs and plan on any device — no email, just a username &amp; password.</p>
+      </div>
     </aside>
   </div>
 
@@ -97,20 +115,17 @@
 </main>
 
 <!-- Floating toolbar -->
-<header class="topbar glass" id="hdr">
+<header class="topbar glass tb3" id="hdr">
+  <div class="tb-l">
   <a class="brand" href="./"><span class="brand-pin" aria-hidden="true"></span><span class="brand-t">Uni Map</span></a>
 
-  <button type="button" class="country-btn" id="countryBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="countryMenu" aria-label="Country: United Kingdom">
+  <button type="button" class="country-btn" id="countryBtn" aria-haspopup="true" aria-expanded="false" aria-controls="countryMenu" aria-label="Countries: United Kingdom">
     <span class="flag" aria-hidden="true">🇬🇧</span><span class="c-name">UK</span>
     <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 
-  <label class="pill-pick" id="lvPick"><span class="sr">Level</span>
-    <select id="lv">
-      <option value="ALL">All levels</option>
-      <option value="Masters">Masters</option>
-      <option value="PhD">PhD</option>
-    </select></label>
+  <div class="pill-pick" id="lvPick">
+    <button type="button" class="mp-btn" id="lvBtn" aria-haspopup="true" aria-expanded="false" aria-controls="lvMenu"><span class="sr">Study levels: </span><span id="lvLbl">All levels</span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
 
   <div class="pill-pick" id="subjPick">
     <button type="button" class="mp-btn" id="subjBtn" aria-haspopup="true" aria-expanded="false" aria-controls="subjMenu"><span class="sr">Subjects: </span><span id="subjLbl">All subjects</span><svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
@@ -119,6 +134,7 @@
     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5.5h9M7 10h9M7 14.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="3.8" cy="5.5" r="1.2" fill="currentColor"/><circle cx="3.8" cy="10" r="1.2" fill="currentColor"/><circle cx="3.8" cy="14.5" r="1.2" fill="currentColor"/></svg>
     <span class="vt-label">View list</span><span class="vt-count" id="vtCount">0</span>
   </button>
+  </div>
 
   <!-- University search (centre of the toolbar) -->
   <div class="uni-search" id="uniSearchBox">
@@ -130,6 +146,7 @@
     <ul class="us-list glass" id="uniSuggest" role="listbox" aria-label="Universities" hidden></ul>
   </div>
 
+  <div class="tb-r">
   <div class="live">
     <button type="button" class="linkish" id="liveReportBtn" hidden>Details</button>
     <button type="button" class="icon-btn" id="refreshBtn" aria-describedby="liveStatus">
@@ -137,30 +154,38 @@
       <span class="sr">Refresh fees</span></button>
     <span class="sr" id="liveStatus" role="status"></span>
   </div>
+  <button type="button" class="btn-plain vt-btn sh-btn" id="shortBtn" title="My shortlist">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2.8 2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5L2.8 8.1l5-.7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/></svg>
+    <span class="vt-label">Shortlist</span><span class="vt-count" id="shortCount" hidden>0</span><span class="sh-dot" id="shortDot" hidden aria-label="updates"></span>
+  </button>
 
-  <label class="pill-pick cur-pick" id="curPick"><span class="sr">Show prices in</span>
-    <select id="cur"></select></label>
 
-  <a class="btn-primary plan-link" href="planner.html" title="Already enrolled? Plan installments, living costs and work month by month">
-    <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="2.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M3 8h14M7 2.5v3M13 2.5v3M6.5 11.5h3M6.5 14h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-    <span>Budget planner</span></a>
   <button type="button" class="icon-btn" id="settingsBtn" aria-label="Appearance" aria-expanded="false" aria-controls="settings">
     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h7m4 0h1M4 14h1m4 0h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="13" cy="6" r="2" stroke="currentColor" stroke-width="1.7" fill="none"/><circle cx="7" cy="14" r="2" stroke="currentColor" stroke-width="1.7" fill="none"/></svg>
   </button>
+  </div>
 </header>
 
 <div class="alert glass" id="alert"><span class="dot" aria-hidden="true"></span><span><b>Chevening 2027–28 closes 6 Oct 2026, 11:00 UTC (4:45 pm NPT).</b> Full tuition + stipend, any UK master's.</span>
   <button type="button" id="alertX" aria-label="Dismiss"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 6 8 8m0-8-8 8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button></div>
 
-<!-- Country picker (the UK and Germany have data so far) -->
-<div class="country-menu glass" id="countryMenu" role="menu" aria-label="Country" hidden>
-  <button type="button" role="menuitemradio" aria-checked="true" data-c="uk"><span class="flag" aria-hidden="true">🇬🇧</span><span class="c-t">United Kingdom</span>
-    <svg class="tick" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10.5 3.2 3.2L15 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-  <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇺🇸</span><span class="c-t">United States</span><span class="soon">Coming soon</span></button>
-  <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇨🇦</span><span class="c-t">Canada</span><span class="soon">Coming soon</span></button>
-  <button type="button" role="menuitemradio" aria-checked="false" aria-disabled="true"><span class="flag" aria-hidden="true">🇦🇺</span><span class="c-t">Australia</span><span class="soon">Coming soon</span></button>
-  <button type="button" role="menuitemradio" aria-checked="false" data-c="de"><span class="flag" aria-hidden="true">🇩🇪</span><span class="c-t">Germany</span>
-    <svg class="tick" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10.5 3.2 3.2L15 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<!-- Countries: tick one or more (the UK and Germany have data so far); changes apply when the menu closes -->
+<div class="country-menu glass" id="countryMenu" role="group" aria-label="Countries" hidden>
+  <label class="c-opt"><input type="checkbox" value="uk"><span class="flag" aria-hidden="true">🇬🇧</span><span class="c-t">United Kingdom</span><small id="coN-uk"></small></label>
+  <label class="c-opt"><input type="checkbox" value="de"><span class="flag" aria-hidden="true">🇩🇪</span><span class="c-t">Germany</span><small id="coN-de"></small></label>
+  <button type="button" class="btn-plain sm c-apply" id="coApply" hidden>Show these countries</button>
+  <div class="mp-sep" aria-hidden="true"></div>
+  <button type="button" aria-disabled="true"><span class="flag" aria-hidden="true">🇺🇸</span><span class="c-t">United States</span><span class="soon">Coming soon</span></button>
+  <button type="button" aria-disabled="true"><span class="flag" aria-hidden="true">🇨🇦</span><span class="c-t">Canada</span><span class="soon">Coming soon</span></button>
+  <button type="button" aria-disabled="true"><span class="flag" aria-hidden="true">🇦🇺</span><span class="c-t">Australia</span><span class="soon">Coming soon</span></button>
+</div>
+
+<!-- Study levels: tick any (none ticked = all levels) -->
+<div class="mp-menu glass mp-narrow" id="lvMenu" role="group" aria-label="Study levels" hidden>
+  <label class="mp-all"><input type="checkbox" value="ALL"><span>All levels</span><small id="lvN-ALL"></small></label>
+  <div class="mp-sep" aria-hidden="true"></div>
+  <label><input type="checkbox" value="Masters"><span>Masters</span><small id="lvN-Masters"></small></label>
+  <label><input type="checkbox" value="PhD"><span>PhD</span><small id="lvN-PhD"></small></label>
 </div>
 
 <!-- Subjects: tick any number (none ticked = all subjects) -->
@@ -180,6 +205,10 @@
 <!-- Appearance settings -->
 <section class="settings glass" id="settings" hidden aria-label="Appearance">
   <h3>Appearance</h3>
+  <div class="set-row">
+    <label class="set-k" for="cur">Show prices in</label>
+    <span class="pill-pick cur-pick" id="curPick"><select id="cur"></select></span>
+  </div>
   <div class="set-row">
     <span class="set-k">Theme</span>
     <div class="seg small" role="group" aria-label="Theme" id="themeSeg">
@@ -218,6 +247,16 @@
   </div>
 </section>
 
+<dialog class="report glass sh-dlg" id="shortDlg" aria-labelledby="shortTitle">
+  <div class="report-top">
+    <h2 id="shortTitle">My shortlist</h2>
+    <button type="button" class="icon-btn" id="shortClose" aria-label="Close">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="sh-sum" id="shortSum"></div>
+  <div class="report-scroll sh-scroll" id="shortBody"></div>
+</dialog>
+
 <dialog class="report glass" id="liveReport" aria-labelledby="lrTitle">
   <div class="report-top">
     <h2 id="lrTitle">Fee &amp; course refresh</h2>
@@ -227,13 +266,12 @@
   <p class="report-sum" id="lrSummary"></p>
   <div class="report-scroll">
     <table class="report-tbl">
-      <thead><tr><th scope="col">Course</th><th scope="col">Built-in</th><th scope="col">On page</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead>
+      <thead><tr><th scope="col">Course</th><th scope="col">Saved fee</th><th scope="col">On page</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead>
       <tbody id="lrBody"></tbody>
     </table>
   </div>
   <div class="report-foot">
-    <span>Live fees are saved in this browser. PhD fees are re-estimated from the refreshed masters fees.</span>
-    <button type="button" class="btn-plain" id="lrReset">Use built-in data</button>
+    <span>PhD fees follow the refreshed masters fees.</span>
   </div>
 </dialog>
 
