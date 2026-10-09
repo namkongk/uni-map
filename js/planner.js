@@ -52,7 +52,8 @@ function save() {
 
 /* ---------------- university / course lookup (from the map's data) ---------------- */
 const DATA = window.UNIDATA || { rows: [], unis: {} };
-const UNI_NAMES = Object.keys(DATA.unis).sort((a, b) => a.localeCompare(b));
+// The planner uses UK fees, tax and visa rules, so it lists UK universities only for now.
+const UNI_NAMES = Object.keys(DATA.unis).filter(u => (DATA.unis[u].co || "uk") === "uk").sort((a, b) => a.localeCompare(b));
 $("uniList").innerHTML = UNI_NAMES.map(u => `<option value="${esc(u)}"></option>`).join("");
 const coursesOf = u => DATA.rows.filter(r => r.u === u);
 const courseRow = () => coursesOf(P.uni).find(x => x.p === P.course);

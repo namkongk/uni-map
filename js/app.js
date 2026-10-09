@@ -3,14 +3,39 @@
 "use strict";
 
 const CFG = window.APP_CONFIG || {};
-const { rows: ROWS, unis: UNIS, cities: CITY } = window.UNIDATA;
+/* ---------------- country ---------------- */
+// Each country has its own currency, map view, work rules and take-home pay model. The page shows one country at a
+// time (switching reloads), so everything below only ever sees that country's universities.
+const COUNTRIES = {
+  uk: { code: "uk", name: "UK", full: "United Kingdom", flag: "🇬🇧", cur: "GBP", center: { lat: 54.6, lng: -3.2 }, zoom: 6, region: "GB",
+        minWage: 12.71, visaHrs: 20, rank: "UK rank<br>(CUG 2027)",
+        // 20% income tax + 8% National Insurance above the £12,570 personal allowance
+        tax: g => 0.28 * Math.max(0, g - 12570),
+        taxText: "take-home is after 20% tax + 8% NI above £12,570",
+        visaText: "Visa cap: 20 h/week in term time (full-time allowed in official vacations)",
+        depLabel: "Pre-CAS deposit" },
+  de: { code: "de", name: "DE", full: "Germany", flag: "🇩🇪", cur: "EUR", center: { lat: 51.2, lng: 10.4 }, zoom: 6, region: "DE",
+        minWage: 13.90, visaHrs: 20, rank: null,
+        // Working students (Werkstudent): ≈9.3% pension contribution above the €603/month mini-job limit, plus income tax
+        // (from 14%, ≈15% here) above the €12,348 tax-free allowance (2026).
+        tax: g => 0.093 * Math.max(0, g - 7236) + 0.15 * Math.max(0, g - 12348),
+        taxText: "take-home is after ≈9.3% pension contribution above €603/month and ≈15% income tax above €12,348 (2026)",
+        visaText: "Visa limit: 140 full or 280 half days a year, at most 20 h/week during lectures",
+        depLabel: "Paid before arrival" },
+};
+const SAVED_STATE = (() => { try { return JSON.parse(localStorage.getItem("ukmap-state") || "{}"); } catch (e) { return {}; } })();
+const ALL = window.UNIDATA;
+const COUNTRY = COUNTRIES[SAVED_STATE.country] || COUNTRIES.uk;
+const inCountry = co => (co || "uk") === COUNTRY.code;
+const ROWS = ALL.rows.filter(r => inCountry(r.co));
+const UNIS = Object.fromEntries(Object.entries(ALL.unis).filter(([, u]) => inCountry(u.co)));
+const CITY = Object.fromEntries(Object.entries(ALL.cities).filter(([c]) => inCountry(ALL.cityCo?.[c])));
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 /* ---------------- country + display currency ---------------- */
 // Course data is stored in the selected country's own currency; yearly amounts can be shown in another one.
 // Hourly pay stays in the local currency because that's what jobs in that country pay in.
-const COUNTRY = { code: "uk", name: "UK", cur: "GBP" };
 const CUR = {
   GBP: { sym: "£", name: "British pound" },
   NPR: { sym: "Rs ", name: "Nepalese rupee", grp: "en-IN" },
@@ -36,17 +61,22 @@ function money(n) {
 }
 const r100 = n => Math.round(n / 100) * 100;
 const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health & public health", NUR: "Nursing", DEV: "Development economics & finance", SF: "Sustainable & green finance", DM: "International development & NGO management" };
-const PA = 12570, DED = 0.28; // personal allowance; 20% income tax + 8% NI above it
+// Gross pay needed for a given take-home under the country's tax model (bisection — the model is piecewise linear).
+const grossFor = net => { if (net <= 0) return 0; let lo = net, hi = net * 3; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (m - COUNTRY.tax(m) < net) lo = m; else hi = m; } return hi; };
 
 ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 = r.sl; r.i0 = r.i; r.fl0 = r.fl; });
 
 /* ---------------- state ---------------- */
 const MOBILE = matchMedia("(max-width:760px)").matches;
 const GLASS_DEF = { theme: "auto", glassT: 45, glassBlur: 22 };
-const newJob = (o = {}) => ({ name: "", rate: 12.71, hrs: 20, wks: 52, ...o });
+const newJob = (o = {}) => ({ name: "", rate: COUNTRY.minWage, hrs: 20, wks: 52, ...o });
 const DEF = { lv: "ALL", dep: 50, jobs: [newJob()], sortK: "n", dir: 1, cur: COUNTRY.cur, grade: { uni: "", years: "4", type: "", val: "" }, subjs: [], budgetOpen: !MOBILE, filtersOpen: !MOBILE, alert: true, ...GLASS_DEF };
 let S = { ...DEF, colf: {} };
 try { Object.assign(S, JSON.parse(localStorage.getItem("ukmap-state") || "{}"), { colf: {} }); } catch (e) {}
+// Jobs are kept per country (UK pay in £, German pay in €): "jobs" for the UK, "jobs_<code>" for others.
+const JOBS_KEY = COUNTRY.code === "uk" ? "jobs" : "jobs_" + COUNTRY.code;
+const UK_JOBS = S.jobs;
+if (COUNTRY.code !== "uk") S.jobs = S[JOBS_KEY];
 // Older saves had a single rate / hours / weeks — turn that into the first job.
 if (!Array.isArray(S.jobs) || !S.jobs.length || S.jobs === DEF.jobs) S.jobs = [newJob("rate" in S ? { rate: +S.rate || 0, hrs: +S.hrs || 0, wks: +S.wks || 0 } : {})];
 delete S.rate; delete S.hrs; delete S.wks;
@@ -54,7 +84,11 @@ delete S.rate; delete S.hrs; delete S.wks;
 if (!Array.isArray(S.subjs)) S.subjs = [];
 if (typeof S.subj === "string" && S.subj !== "ALL" && !S.subjs.length) S.subjs = [S.subj];
 delete S.subj;
-const save = () => { try { const { colf, ...rest } = S; localStorage.setItem("ukmap-state", JSON.stringify(rest)); } catch (e) {} };
+const save = () => { try {
+  const { colf, ...rest } = S;
+  if (COUNTRY.code !== "uk") { rest[JOBS_KEY] = S.jobs; rest.jobs = UK_JOBS; }
+  localStorage.setItem("ukmap-state", JSON.stringify(rest));
+} catch (e) {} };
 const rowRate = {};
 
 /* ---------------- finance ---------------- */
@@ -66,12 +100,12 @@ const hours = () => S.jobs.reduce((a, j) => a + jobHours(j), 0);          // tot
 const grossAll = () => S.jobs.reduce((a, j) => a + jobGross(j), 0);
 const avgRate = () => hours() ? grossAll() / hours() : 0;                 // blended £/hr across all jobs
 const weekHrs = () => S.jobs.reduce((a, j) => a + clamp(j.hrs, 168), 0);
-const takeHome = rate => { const g = rate * hours(); return g - DED * Math.max(0, g - PA); };
+const takeHome = rate => { const g = rate * hours(); return g - COUNTRY.tax(g); };
 const netFee = r => Math.max(0, r.f - r.s);
 const dep = r => Math.min(100, Math.max(0, +S.dep || 0)) / 100 * netFee(r);
 const remFee = r => netFee(r) - dep(r);
 const need = r => remFee(r) + r.l;
-const needHr = r => { const q = need(r), H = hours(); if (!H) return Infinity; const g = q <= PA ? q : (q - DED * PA) / (1 - DED); return g / H; };
+const needHr = r => { const q = need(r), H = hours(); if (!H) return Infinity; return grossFor(q) / H; };
 const rateOf = r => rowRate[r.id] ?? avgRate();
 const deficit = r => need(r) - takeHome(rateOf(r));
 const defText = d => d > 0 ? "~" + money(r100(d)) : "Covered" + (d < 0 ? " (+" + money(r100(-d)) + ")" : "");
@@ -193,7 +227,7 @@ const COLS = [
   { k: "lv", h: "Level", type: "text", get: r => r.lv },
   { k: "g", h: "Subject", type: "text", get: r => r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g] },
   { k: "u", h: "University", type: "text", get: r => r.u + " " + r.c },
-  { k: "uk", h: "UK rank<br>(CUG 2027)", type: "num", get: r => r.uk ?? 99999, disp: r => rankText(r.uk, r) },
+  ...(COUNTRY.rank ? [{ k: "uk", h: COUNTRY.rank, type: "num", get: r => r.uk ?? 99999, disp: r => rankText(r.uk, r) }] : []),
   { k: "qs", h: "World rank<br>(QS 2027)", type: "num", get: r => r.qss ?? 99999, disp: r => rankText(r.qs, r) },
   { k: "p", h: "Programme", type: "text", get: r => r.p },
   { k: "i", h: "Intakes", type: "text", get: r => r.i },
@@ -202,7 +236,7 @@ const COLS = [
   { k: "t", h: "Total yr 1", type: "num", get: r => r.t, money: true },
   { k: "s", h: "Sure scholarship<br>(automatic)", type: "num", get: r => r.s, money: true },
   { k: "n", h: "Total with sure<br>scholarship", type: "num", get: r => r.n, money: true },
-  { k: "dep", h: "Pre-CAS deposit", type: "num", get: dep, dyn: () => `Pre-CAS deposit<br>(${+S.dep || 0}% tuition)`, money: true },
+  { k: "dep", h: COUNTRY.depLabel, type: "num", get: dep, dyn: () => `${COUNTRY.depLabel}<br>(${+S.dep || 0}% tuition)`, money: true },
   { k: "rem", h: "Remaining fee<br>(after deposit)", type: "num", get: remFee, money: true },
   { k: "hr", h: "Pay needed / hr<br>(fee + living)", type: "num", get: needHr },
   { k: "rt", h: `Your avg rate<br>${LSYM}/hr`, type: "num", get: rateOf },
@@ -324,7 +358,9 @@ $("reset").addEventListener("click", () => {
   document.querySelectorAll("#frow input").forEach(i => i.value = ""); S.colf = {};
   S.lv = "ALL"; S.subjs = []; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
 });
-if (!S.alert) $("alert").hidden = true;
+if (!S.alert || COUNTRY.code !== "uk") $("alert").hidden = true; // the alert is about a UK scholarship
+// UK-only filter: "Outside London".
+if (COUNTRY.code !== "uk") { $("f-london").checked = false; $("f-london").closest("label").hidden = true; }
 $("alertX").addEventListener("click", () => { $("alert").hidden = true; S.alert = false; save(); });
 
 /* ---------------- floating filter card ---------------- */
@@ -354,7 +390,27 @@ function syncGradeForm() {
   $("gUni").value = S.grade.uni; $("gYears").value = S.grade.years || "4"; $("gType").value = S.grade.type;
   renderGradeInput(); syncGradeOut();
 }
+// Germany: the modified Bavarian formula used by most German universities, N = 1 + 3 × (best − yours) / (best − pass),
+// on a 1.0 (best) – 4.0 (pass) scale. Pass marks assumed: 40% or CGPA 2.0; divisions use a typical percentage.
+function germanGrade(g) {
+  if (!g || !g.type || g.val === "") return null;
+  let best, pass, v;
+  if (g.type === "pct") { best = 100; pass = 40; v = +g.val; }
+  else if (g.type === "gpa") { best = 4; pass = 2; v = +g.val; }
+  else if (g.type === "letter") { best = 4; pass = 2; v = LETTER_GPA[g.val]; }
+  else if (g.type === "div") { best = 100; pass = 40; v = { dist: 80, first: 65, second: 50, third: 42 }[g.val]; }
+  if (!isFinite(v)) return null;
+  return Math.min(4, Math.max(1, 1 + 3 * (best - v) / (best - pass)));
+}
 function syncGradeOut() {
+  if (COUNTRY.code === "de") {
+    const g = S.grade, n = germanGrade(g), out = $("gradeOut");
+    out.hidden = n == null; if (n == null) return;
+    out.innerHTML = `<div class="go-main"><span class="go-k">German grade</span><b class="go-cls">${n.toFixed(1)}</b></div>
+      <p class="go-sub">Modified Bavarian formula (1.0 best, 4.0 pass), assuming a ${g.type === "gpa" || g.type === "letter" ? "2.0 CGPA" : "40%"} pass mark — universities convert it themselves (often via uni-assist).</p>
+      <p class="go-note">${n <= 2.5 ? "Within the 2.5 or better many German master's ask for." : "Many German master's ask for 2.5 or better — check each course's requirements."}</p>`;
+    return;
+  }
   const g = S.grade, cls = ukClassOf(g), out = $("gradeOut");
   out.hidden = !cls;
   if (!cls) return;
@@ -422,7 +478,13 @@ $("themeSeg").querySelectorAll("button").forEach(x => x.addEventListener("click"
 $("glassT").addEventListener("input", e => { S.glassT = +e.target.value; save(); applyAppearance(); });
 $("glassBlur").addEventListener("input", e => { S.glassBlur = +e.target.value; save(); applyAppearance(); });
 $("glassReset").addEventListener("click", () => { Object.assign(S, GLASS_DEF); save(); applyAppearance(); });
-/* ---------------- country picker (UK only for now; others listed as coming soon) ---------------- */
+/* ---------------- country picker ---------------- */
+(function syncCountryUI() {
+  $("countryBtn").querySelector(".flag").textContent = COUNTRY.flag;
+  $("countryBtn").querySelector(".c-name").textContent = COUNTRY.name;
+  $("countryBtn").setAttribute("aria-label", "Country: " + COUNTRY.full);
+  $("countryMenu").querySelectorAll("button[data-c]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.c === COUNTRY.code)));
+})();
 const countryItems = () => [...$("countryMenu").querySelectorAll("button")];
 function setCountryMenu(open) {
   const btn = $("countryBtn"), menu = $("countryMenu");
@@ -439,6 +501,12 @@ $("countryMenu").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.getAttribute("aria-disabled") === "true") { b.classList.remove("nudge"); void b.offsetWidth; b.classList.add("nudge"); return; }
   setCountryMenu(false); $("countryBtn").focus();
+  const to = b.dataset.c;
+  if (to && to !== COUNTRY.code && COUNTRIES[to]) {
+    // Keep the chosen display currency unless it was the old country's own; the city filter is per country.
+    if (S.cur === COUNTRY.cur) S.cur = COUNTRIES[to].cur;
+    S.country = to; S.colf = {}; save(); location.reload();
+  }
 });
 $("countryMenu").addEventListener("keydown", e => {
   const items = countryItems(), i = items.indexOf(document.activeElement);
@@ -466,7 +534,7 @@ $("budgetBody").insertAdjacentHTML("beforeend", `
     <span class="lg"><i class="ring-k" style="--pct:40%"></i>Split ring: share of that university's courses covered</span>
     <span class="lg"><span class="cl-tally demo"><span class="t ok"><i></i>3</span><span class="t bad"><i></i>5</span></span>Groups: universities covered / in deficit</span>
   </div>
-  <p class="howto">Deposit = % × (tuition − sure scholarship), paid before CAS from savings. Remaining fee + 12 months' living must come from work. Earnings from all jobs are added up; take-home is after 20% tax + 8% NI above £12,570. Visa cap: 20 h/week in term time (full-time allowed in official vacations). Number on pin = matching courses.</p>`);
+  <p class="howto">Deposit = % × (tuition − sure scholarship), paid before CAS from savings. Remaining fee + 12 months' living must come from work. Earnings from all jobs are added up; ${COUNTRY.taxText}. ${COUNTRY.visaText}. Number on pin = matching courses.</p>`);
 
 const jobHTML = (j, i) => `
   <div class="job" data-i="${i}">
@@ -484,7 +552,7 @@ const jobHTML = (j, i) => `
 function renderFin() {
   FIN.forEach(el => {
     el.querySelector(".fin").innerHTML = `
-      <div class="field dep"><label for="dep-${el.id}">Pre-CAS deposit (% of tuition)</label><input type="number" id="dep-${el.id}" data-k="dep" min="0" max="100" step="5" value="${S.dep}"></div>
+      <div class="field dep"><label for="dep-${el.id}">${COUNTRY.depLabel} (% of tuition)</label><input type="number" id="dep-${el.id}" data-k="dep" min="0" max="100" step="5" value="${S.dep}"></div>
       <div class="jobs-h"><span>Jobs</span><button type="button" class="btn-plain sm add-job"${S.jobs.length >= MAX_JOBS ? " disabled" : ""}>
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add job</button></div>
       <div class="jobs">${S.jobs.map(jobHTML).join("")}</div>
@@ -502,7 +570,7 @@ function syncFin(except) {
   }));
   const th = money(takeHome(avgRate())), wk = weekHrs();
   const sum = `${money(grossAll())} gross · avg ${LSYM}${avgRate().toFixed(2)}/hr · ${hours().toLocaleString("en-GB")} h/yr`;
-  const warn = wk > 20 ? `If worked at the same time these jobs add up to ${wk} h/week. Student visas allow 20 h/week in term time; more only in official vacations — use weeks/year to model vacation-only work.` : "";
+  const warn = wk > COUNTRY.visaHrs ? `If worked at the same time these jobs add up to ${wk} h/week. ${COUNTRY.code === "de" ? "Student visas allow 20 h/week during lectures and 140 full or 280 half days a year" : "Student visas allow 20 h/week in term time; more only in official vacations"} — use weeks/year to model vacation-only work.` : "";
   document.querySelectorAll(".fin-out .th").forEach(b => b.textContent = th);
   document.querySelectorAll('[data-out="sum"]').forEach(b => b.textContent = sum);
   document.querySelectorAll('[data-out="warn"]').forEach(b => { b.hidden = !warn; b.textContent = warn; });
@@ -521,7 +589,7 @@ FIN.forEach(el => {
     const add = e.target.closest(".add-job"), rm = e.target.closest(".rm-job");
     if (add && S.jobs.length < MAX_JOBS) {
       const last = S.jobs[S.jobs.length - 1];
-      S.jobs.push(newJob({ rate: last ? last.rate : 12.71, hrs: 10, wks: last ? last.wks : 52 }));
+      S.jobs.push(newJob({ rate: last ? last.rate : COUNTRY.minWage, hrs: 10, wks: last ? last.wks : 52 }));
       save(); renderFin(); update();
       el.querySelector(`.job[data-i="${S.jobs.length - 1}"] .job-name`)?.focus();
     } else if (rm) {
@@ -745,7 +813,7 @@ function clusterHTML(oks) {
 /* ---------------- map: Google implementation ---------------- */
 const loadScript = src => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => no(new Error("Failed: " + src)); document.head.appendChild(s); });
 const loadCss = href => { const l = document.createElement("link"); l.rel = "stylesheet"; l.href = href; document.head.appendChild(l); };
-const UK = { lat: 54.6, lng: -3.2 };
+const UK = COUNTRY.center; // the selected country's map centre
 // Keep fitted areas clear of the floating toolbar and side cards.
 const pad = () => ({ top: $("hdr").getBoundingClientRect().bottom + 16, left: MOBILE ? 16 : $("side").getBoundingClientRect().right + 16 });
 
@@ -753,12 +821,12 @@ const GoogleMap = {
   kind: "google",
   async init(el) {
     // Official Google Maps dynamic library loader
-    ((g) => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })({ key: CFG.GOOGLE_MAPS_API_KEY, v: "weekly", region: "GB" });
+    ((g) => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })({ key: CFG.GOOGLE_MAPS_API_KEY, v: "weekly", region: COUNTRY.region });
     const [{ Map, Circle }, { AdvancedMarkerElement }] = await Promise.all([google.maps.importLibrary("maps"), google.maps.importLibrary("marker")]);
     await loadScript("https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js");
     this.AME = AdvancedMarkerElement; this.Circle = Circle; this.GMap = Map; this.el = el;
     this.markers = [];
-    this.build({ center: UK, zoom: 6 });
+    this.build({ center: UK, zoom: COUNTRY.zoom });
   },
   // Google only accepts a colour scheme when a map is created, so changing theme means building a new map.
   scheme: () => S.theme === "dark" ? "DARK" : S.theme === "light" ? "LIGHT" : "FOLLOW_SYSTEM",
@@ -812,7 +880,7 @@ const GoogleMap = {
       this.map.fitBounds(this.circle.getBounds(), { top: pad().top, left: pad().left, right: 24, bottom: 24 });
     } else { this.map.panTo({ lat: center[0], lng: center[1] }); this.map.setZoom(11); }
   },
-  reset() { this.map.panTo(UK); this.map.setZoom(6); },
+  reset() { this.map.panTo(UK); this.map.setZoom(COUNTRY.zoom); },
   async place(u) {
     const { Place } = await google.maps.importLibrary("places");
     const { places } = await Place.searchByText({ textQuery: UNIS[u].q, fields: ["id"], maxResultCount: 1, locationBias: { lat: UNIS[u].lat, lng: UNIS[u].lng } });
@@ -833,7 +901,7 @@ const LeafletMap = {
     await loadScript("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js");
     await loadScript("https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js");
     el.innerHTML = "";
-    this.map = L.map(el, { zoomControl: false }).setView([UK.lat, UK.lng], 6);
+    this.map = L.map(el, { zoomControl: false }).setView([UK.lat, UK.lng], COUNTRY.zoom);
     L.control.zoom({ position: "bottomright" }).addTo(this.map);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap contributors" }).addTo(this.map);
     this.cluster = L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 50,
@@ -855,7 +923,7 @@ const LeafletMap = {
     if (km > 0) { this.circle = L.circle(center, { radius: km * 1000, color: "#007aff", weight: 2, fillOpacity: .08, interactive: false }).addTo(this.map); this.map.fitBounds(this.circle.getBounds(), { paddingTopLeft: [pad().left, pad().top], paddingBottomRight: [24, 24] }); }
     else this.map.setView(center, 11);
   },
-  reset() { this.map.setView([UK.lat, UK.lng], 6); },
+  reset() { this.map.setView([UK.lat, UK.lng], COUNTRY.zoom); },
   async place() { return null; },
 };
 
@@ -920,15 +988,18 @@ function courseHTML(r) {
       ${row("Total yr 1", "~" + money(r.t))}
       ${row("Sure scholarship", r.s ? `${money(r.s)}<span class="sub">${esc(r.sl)}</span>` : "None confirmed")}
       ${row("Total with sure scholarship", "~" + money(r.n))}
-      ${row(`Pre-CAS deposit (${+S.dep || 0}%)`, "~" + money(Math.round(dep(r) / 50) * 50))}
+      ${row(`${COUNTRY.depLabel} (${+S.dep || 0}%)`, "~" + money(Math.round(dep(r) / 50) * 50))}
       ${row("Remaining fee", "~" + money(Math.round(remFee(r) / 50) * 50))}
       ${row("Pay needed / hr", `${LSYM}${isFinite(h) ? h.toFixed(2) : "—"}<span class="sub">to earn ~${money(r100(need(r)))}/yr</span>`, h > 20 ? "hl" : "")}
       ${row(S.jobs.length > 1 ? "Your avg rate" : "Your rate", LSYM + rateOf(r).toFixed(2) + "/hr" + (r.id in rowRate ? "" : `<span class="sub">${S.jobs.length} job${S.jobs.length === 1 ? "" : "s"} · ${hours().toLocaleString("en-GB")} h/yr</span>`))}
       ${row("Deficit / yr", defText(d), d > 0 ? "hl" : "ok")}
       ${row("Placement", esc(r.pl))}
       <div class="full"><b>Other scholarships:</b> ${esc(otherSch(r))}</div>
-      ${r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>` : ""}
-      ${planRow(r)}
+      ${r.dur ? row("Duration", `${r.dur} semesters`) : ""}
+      ${r.dl ? row("Apply by (winter)", esc(r.dl)) : ""}
+      ${r.cw ? `<div class="full"><a href="${esc(r.cw)}" target="_blank" rel="noopener">University course page ↗</a> · <a href="${esc(r.url)}" target="_blank" rel="noopener">DAAD listing ↗</a>${courseCheck(r)}</div>`
+        : r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>` : ""}
+      ${COUNTRY.code === "uk" ? planRow(r) : ""}
     </div>
   </article>`;
 }
@@ -965,7 +1036,19 @@ function planRow(r) {
   return `<div class="full plan-row"><label class="intake-pick"><span class="plan-q">Enrolled here? Intake</span><select data-intake="${r.id}" aria-label="Your intake for ${esc(r.p)}">${opts.map(o => `<option value="${o.v}"${o.v === pick ? " selected" : ""}>${o.name}</option>`).join("")}</select></label>
     <a href="${plannerLink(r, pick)}" data-plan="${r.id}" title="Opens the budget planner with this course's fee, scholarship, the installment dates for your intake, living costs and your work filled in">Plan my budget →</a></div>`;
 }
+// Germany: fees are paid per semester; the visa needs proof of funds (a blocked account).
+function payHTML_de(u) {
+  const rs = ROWS.filter(r => r.u === u), any = rs[0] || {};
+  const sem = Math.round((any.f || 0) / 2);
+  return `<details class="pp" open><summary><span class="pp-ico" aria-hidden="true">€</span><span>Paying your fees</span><span class="pp-chip">Per semester</span></summary><div class="pp-body">
+    <div class="pp-row"><span class="k">When</span><span class="v">Each semester, before you enrol or re-register (winter semester from October, summer from April)<small>About ${money(sem)} a semester for ${esc(any.p || "this course")}, incl. the semester fee</small></span></div>
+    <div class="pp-row"><span class="k">Blocked account<small>proof of funds for the visa</small></span><span class="v">€11,904 for the first year (€992/month, 2026)<small>Paid into a German blocked account before the visa appointment; released monthly after you arrive</small></span></div>
+    <div class="pp-row"><span class="k">Deposit</span><span class="v">Public universities don't ask for one${/Private university/.test(any.fl || "") ? '<small>This is a private university — check its own payment terms</small>' : ""}</span></div>
+    <p class="pp-src">Check the course page for this programme's exact fees · confirm with your admission letter</p>
+  </div></details>`;
+}
 function payHTML(u) {
+  if (COUNTRY.code === "de") return payHTML_de(u);
   const P = UNIS[u].pay, when = window.UNIDATA.payChecked ? new Date(window.UNIDATA.payChecked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
   // Short badge: "Deposit £2,000", "Deposit from £1,000", "Deposit 50%" — the full wording is in the rows below.
   const dep = P && P.dep, money = dep && dep.match(/£[\d,]+/), pct = dep && dep.match(/\d+%/);
@@ -984,6 +1067,14 @@ function payHTML(u) {
 }
 // Scholarships for this university, matched to your grade (if given) and to its courses.
 function awardsHTML(u) {
+  if (COUNTRY.code === "de") {
+    const g = germanGrade(S.grade);
+    return `<details class="pp" open><summary><span class="pp-ico aw-ico" aria-hidden="true">★</span><span>Scholarships for you</span>${g ? `<span class="pp-chip">Your grade ≈ ${g.toFixed(1)}</span>` : ""}</summary><div class="pp-body">
+      <div class="pp-row"><span class="k">DAAD scholarships</span><span class="v">Competitive, e.g. Development-Related Postgraduate Courses (EPOS) for professionals from developing countries, incl. Nepal<small><a href="https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/" target="_blank" rel="noopener">DAAD scholarship database ↗</a></small></span></div>
+      <div class="pp-row"><span class="k">Deutschlandstipendium</span><span class="v">€300 a month for a year, merit-based, at most public universities — apply after enrolling</span></div>
+      <p class="pp-none">Tuition at most public universities is just the semester fee, so automatic fee discounts like in the UK are rare.</p>
+    </div></details>`;
+  }
   const rows = ROWS.filter(r => r.u === u && r.lv === "Masters"), list = UNIS[u].sch || [], cls = myClass();
   const when = window.UNIDATA.schChecked ? new Date(window.UNIDATA.schChecked).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
   const gradeChip = cls ? `<span class="pp-chip">Your grade ≈ ${cls === "3rd" ? "below 2:2" : cls}</span>` : "";
@@ -1012,7 +1103,7 @@ function renderCard(u, withPlace) {
   const any = rs.length ? rs : ROWS.filter(r => r.u === u);
   const f = any[0];
   $("cardTitle").textContent = u;
-  $("cardSub").textContent = [U.c, f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
+  $("cardSub").textContent = [U.c, COUNTRY.rank ? (f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked") : "", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
   $("cardAwards").innerHTML = awardsHTML(u);
   $("cardPay").innerHTML = payHTML(u);

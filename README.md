@@ -4,7 +4,9 @@
 
 It was built for international students (particularly from Nepal), for whom the real question isn't only "which university?" but "can I afford it?". Each university is a pin on a map. Each course shows its international tuition, living costs, the deposit and scholarships open to Nepali students. You enter the jobs you expect to do while studying, and the map shows which courses your earnings would cover.
 
-> **Current scope: United Kingdom 🇬🇧**: 108 universities · 414 courses (Master's + PhD), currently in Computer Science, AI, HCI/UX, health & public health, nursing, international development & NGO management, development economics & finance, and sustainable & green finance.
+> **Current scope: United Kingdom 🇬🇧 and Germany 🇩🇪** (switch with the country picker)
+> - **UK:** 108 universities · 414 courses (Master's + PhD) in Computer Science, AI, HCI/UX, health & public health, nursing, international development & NGO management, development economics & finance, and sustainable & green finance.
+> - **Germany:** 74 universities · 151 English-taught master's in the same subjects, from DAAD's International Programmes database, with fees in euros, German work rules and the blocked-account requirement.
 > More countries and subjects are planned; see [Future scope](#future-scope).
 
 ---
@@ -15,7 +17,7 @@ It was built for international students (particularly from Nepal), for whom the 
 Filter by level (Master's / PhD), subject, city and radius, QS world ranking, maximum total cost, sure (automatic) scholarships, placement years, January/spring intakes, outside London, and more. Click a university for its courses, costs, Google photos and reviews, and links to the course pages.
 
 **💼 Budget & work calculator**
-Add one or more jobs, each with its own pay rate, hours per week and weeks per year. For example, a 20 h/week term-time job plus a full-time summer job. Earnings are added up and taxed using UK rules (20% income tax + 8% National Insurance above £12,570). For every course the calculator shows:
+Add one or more jobs, each with its own pay rate, hours per week and weeks per year. For example, a 20 h/week term-time job plus a full-time summer job. Earnings are added up and taxed using the selected country's rules: in the UK, 20% income tax + 8% National Insurance above £12,570; in Germany, roughly 9.3% pension contribution above the €603/month mini-job limit and income tax above €12,348. For every course the calculator shows:
 - the pre-CAS deposit you'd need from savings
 - the remaining fee + 12 months' living that work has to cover
 - your yearly surplus or deficit, and the hourly rate you'd need to break even
@@ -45,22 +47,23 @@ A frosted-glass UI floating over the map, with light/dark themes and adjustable 
 - **Figures are estimates for shortlisting, not quotes.** Always confirm fees, deposits and scholarship rules on the university's own website before applying.
 - **PhD fees are estimated** (≈85% of the same university's Master's fee). PhD funding is usually competitive studentships.
 - **Live refresh can't read every site.** Some universities block automated access (e.g. UCL, Oxford, Cardiff) and some don't publish fees on the course page (e.g. KCL, Warwick). Those courses keep their stored figure, and the refresh report says which is which.
-- **Visa work limits:** UK student visas normally allow up to 20 hours a week in term time. The calculator warns when your jobs add up to more.
+- **Visa work limits:** UK student visas normally allow up to 20 hours a week in term time; German student visas allow 140 full or 280 half days a year, at most 20 hours a week during lectures. The calculator warns when your jobs add up to more.
+- **Germany:** most public universities charge only a semester fee (≈€100–400); Baden-Württemberg charges non-EU students €1,500 a semester and TUM €4,000–6,000. Living costs are at least the €11,904 a year a student visa needs in a blocked account. Only Germany's top 10 universities have QS 2027 positions checked; the rest show "Not checked". The budget planner page is UK-only for now.
 - Rankings are CUG 2027 (UK) and QS 2027 (world). Six universities added recently (Roehampton, Cranfield, Canterbury Christ Church, Suffolk, Bath Spa, Bucks New) don't have rankings, placements or scholarships checked yet, and show "Not checked".
 
 ---
 
 ## Future scope
 
-The UK is the first country. The plan is to cover the main study destinations, each with its own fees, living costs, scholarships and work and tax rules:
+The UK and Germany are available. The plan is to cover the main study destinations, each with its own fees, living costs, scholarships and work and tax rules:
 
 | Country | Status |
 |---|---|
 | 🇬🇧 United Kingdom | ✅ Available |
+| 🇩🇪 Germany | ✅ Available |
 | 🇺🇸 United States | Planned |
 | 🇨🇦 Canada | Planned |
 | 🇦🇺 Australia | Planned |
-| 🇩🇪 Germany | Planned |
 | 🌍 Other countries (Ireland, the Netherlands and more) | Future |
 
 Each new country will bring the same features: map pins, filters, the budget & work calculator with that country's tax and student-visa work limits, and live fee refresh where university sites allow it.

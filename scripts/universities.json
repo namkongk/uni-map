@@ -758,5 +758,537 @@
   "c": "London",
   "lat": 51.4386,
   "lng": -0.3378
+ },
+ "Otto von Guericke University Magdeburg": {
+  "web": "https://www.ovgu.de",
+  "c": "Magdeburg",
+  "lat": 52.1406,
+  "lng": 11.6456,
+  "co": "de"
+ },
+ "Justus Liebig University Giessen": {
+  "web": "https://www.uni-giessen.de",
+  "c": "Gießen",
+  "lat": 50.5736,
+  "lng": 8.7,
+  "co": "de"
+ },
+ "University of Technology Nuremberg": {
+  "web": "https://direc.to",
+  "c": "Nürnberg",
+  "lat": 49.4524,
+  "lng": 11.094,
+  "co": "de"
+ },
+ "Technische Hochschule Ingolstadt": {
+  "web": "https://www.thi.de",
+  "c": "Ingolstadt",
+  "lat": 48.7669,
+  "lng": 11.4335,
+  "co": "de"
+ },
+ "Technical University of Munich": {
+  "web": "https://www.cit.tum.de",
+  "c": "Garching b. München",
+  "lat": 48.2655,
+  "lng": 11.6692,
+  "co": "de"
+ },
+ "Leibniz University Hannover": {
+  "web": "https://www.maschinenbau.uni-hannover.de",
+  "c": "Hannover",
+  "lat": 52.4196,
+  "lng": 9.6243,
+  "co": "de"
+ },
+ "Hof University of Applied Sciences": {
+  "web": "https://www.hof-university.com",
+  "c": "Hof",
+  "lat": 50.3253,
+  "lng": 11.9405,
+  "co": "de"
+ },
+ "Deggendorf Institute of Technology": {
+  "web": "https://www.th-deg.de",
+  "c": "Cham",
+  "lat": 49.2178,
+  "lng": 12.6664,
+  "co": "de"
+ },
+ "Heilbronn University of Applied Sciences": {
+  "web": "https://www.hs-heilbronn.de",
+  "c": "Heilbronn",
+  "lat": 49.1423,
+  "lng": 9.2187,
+  "co": "de"
+ },
+ "SRH University": {
+  "web": "https://www.srh-university.de",
+  "c": "Heidelberg",
+  "lat": 49.4129,
+  "lng": 8.6532,
+  "co": "de"
+ },
+ "University of Göttingen": {
+  "web": "https://uni-goettingen.de",
+  "c": "Göttingen",
+  "lat": 51.5328,
+  "lng": 9.9352,
+  "co": "de"
+ },
+ "University of Bonn": {
+  "web": "https://www.informatik.uni-bonn.de",
+  "c": "Bonn",
+  "lat": 50.7338,
+  "lng": 7.1022,
+  "co": "de"
+ },
+ "Brandenburg University of Technology Cottbus-Senftenberg": {
+  "web": "https://www.b-tu.de",
+  "c": "Cottbus",
+  "lat": 51.7567,
+  "lng": 14.3357,
+  "co": "de"
+ },
+ "FAU Erlangen-Nürnberg": {
+  "web": "https://www.ai.study.fau.eu",
+  "c": "Erlangen",
+  "lat": 49.6015,
+  "lng": 11.0177,
+  "co": "de"
+ },
+ "Neu-Ulm University of Applied Sciences": {
+  "web": "https://www.hnu.de",
+  "c": "Neu-Ulm",
+  "lat": 48.3803,
+  "lng": 10.0101,
+  "co": "de"
+ },
+ "Heinrich Heine University Düsseldorf": {
+  "web": "https://www.heicad.hhu.de",
+  "c": "Düsseldorf",
+  "lat": 51.1908,
+  "lng": 6.7935,
+  "co": "de"
+ },
+ "Ostbayerische Technische Hochschule Amberg-Weiden (OTH)": {
+  "web": "https://www.oth-aw.de",
+  "c": "Amberg",
+  "lat": 49.4544,
+  "lng": 11.8474,
+  "co": "de"
+ },
+ "Technische Universität Braunschweig": {
+  "web": "https://www.tu-braunschweig.de",
+  "c": "Braunschweig",
+  "lat": 52.2731,
+  "lng": 10.5288,
+  "co": "de"
+ },
+ "Chemnitz University of Technology": {
+  "web": "https://www.tu-chemnitz.de",
+  "c": "Chemnitz",
+  "lat": 50.8142,
+  "lng": 12.9294,
+  "co": "de"
+ },
+ "Hochschule Bonn-Rhein-Sieg": {
+  "web": "https://www.h-brs.de",
+  "c": "Sankt Augustin",
+  "lat": 50.7796,
+  "lng": 7.1822,
+  "co": "de"
+ },
+ "Saarland University": {
+  "web": "https://www.uni-saarland.de",
+  "c": "Saarbrücken",
+  "lat": 49.2542,
+  "lng": 7.0415,
+  "co": "de"
+ },
+ "University of Potsdam": {
+  "web": "https://www.uni-potsdam.de",
+  "c": "Potsdam",
+  "lat": 52.389,
+  "lng": 13.1176,
+  "co": "de"
+ },
+ "University of Tübingen": {
+  "web": "https://uni-tuebingen.de",
+  "c": "Tübingen",
+  "lat": 48.5341,
+  "lng": 9.0712,
+  "co": "de"
+ },
+ "Marburg University": {
+  "web": "https://www.uni-marburg.de",
+  "c": "Marburg",
+  "lat": 50.8125,
+  "lng": 8.7722,
+  "co": "de"
+ },
+ "Osnabrück University": {
+  "web": "https://www.uni-osnabrueck.de",
+  "c": "Osnabrück",
+  "lat": 52.2724,
+  "lng": 8.0394,
+  "co": "de"
+ },
+ "Ulm University": {
+  "web": "https://www.uni-ulm.de",
+  "c": "Ulm",
+  "lat": 48.4086,
+  "lng": 9.9977,
+  "co": "de"
+ },
+ "University of Rostock": {
+  "web": "https://www.ief.uni-rostock.de",
+  "c": "Rostock",
+  "lat": 54.0936,
+  "lng": 12.106,
+  "co": "de"
+ },
+ "University of Stuttgart": {
+  "web": "https://www.uni-stuttgart.de",
+  "c": "Stuttgart",
+  "lat": 48.7783,
+  "lng": 9.1863,
+  "co": "de"
+ },
+ "University of Siegen": {
+  "web": "https://www.master-cs.eti.uni-siegen.de",
+  "c": "Siegen",
+  "lat": 50.8751,
+  "lng": 8.0256,
+  "co": "de"
+ },
+ "University of Regensburg": {
+  "web": "https://www.uni-regensburg.de",
+  "c": "Regensburg",
+  "lat": 49.0031,
+  "lng": 12.0963,
+  "co": "de"
+ },
+ "Kiel University of Applied Sciences": {
+  "web": "https://www.haw-kiel.de",
+  "c": "Kiel",
+  "lat": 54.3227,
+  "lng": 10.1356,
+  "co": "de"
+ },
+ "Dresden University of Technology": {
+  "web": "https://tu-dresden.de",
+  "c": "Dresden",
+  "lat": 51.0493,
+  "lng": 13.7381,
+  "co": "de"
+ },
+ "RPTU University Kaiserslautern-Landau": {
+  "web": "https://cs.rptu.de",
+  "c": "Kaiserslautern",
+  "lat": 49.4432,
+  "lng": 7.769,
+  "co": "de"
+ },
+ "Hochschule Fresenius - University of Applied Sciences": {
+  "web": "https://www.hs-fresenius.com",
+  "c": "Berlin",
+  "lat": 52.5174,
+  "lng": 13.3951,
+  "co": "de"
+ },
+ "Bauhaus-Universität Weimar": {
+  "web": "https://www.uni-weimar.de",
+  "c": "Weimar",
+  "lat": 50.9757,
+  "lng": 11.3301,
+  "co": "de"
+ },
+ "University of Konstanz": {
+  "web": "https://www.informatik.uni-konstanz.de",
+  "c": "Konstanz",
+  "lat": 47.69,
+  "lng": 9.1883,
+  "co": "de"
+ },
+ "Ruhr-Universität Bochum": {
+  "web": "https://informatik.rub.de",
+  "c": "Bochum",
+  "lat": 51.4442,
+  "lng": 7.261,
+  "co": "de"
+ },
+ "University of Bayreuth": {
+  "web": "https://www.uni-bayreuth.de",
+  "c": "Bayreuth",
+  "lat": 49.9271,
+  "lng": 11.5872,
+  "co": "de"
+ },
+ "University of Oldenburg": {
+  "web": "https://uol.de",
+  "c": "Oldenburg",
+  "lat": 53.1467,
+  "lng": 8.1829,
+  "co": "de"
+ },
+ "University of Hildesheim": {
+  "web": "https://www.uni-hildesheim.de",
+  "c": "Hildesheim",
+  "lat": 52.1527,
+  "lng": 9.9518,
+  "co": "de"
+ },
+ "University of Münster": {
+  "web": "https://master-geoinformatics.info",
+  "c": "Münster",
+  "lat": 51.9673,
+  "lng": 7.5992,
+  "co": "de"
+ },
+ "Albstadt-Sigmaringen University": {
+  "web": "https://www.hs-albsig-international.de",
+  "c": "Albstadt",
+  "lat": 48.233,
+  "lng": 8.9991,
+  "co": "de"
+ },
+ "Ulm University of Applied Sciences": {
+  "web": "https://www.thu.de",
+  "c": "Ulm",
+  "lat": 48.3985,
+  "lng": 9.9912,
+  "co": "de"
+ },
+ "Technische Hochschule Nürnberg Georg Simon Ohm": {
+  "web": "https://www.th-nuernberg.de",
+  "c": "Nürnberg",
+  "lat": 49.4524,
+  "lng": 11.094,
+  "co": "de"
+ },
+ "Leuphana University Lüneburg": {
+  "web": "https://master-international-law-erasmusmundus.eu",
+  "c": "Lüneburg",
+  "lat": 53.2288,
+  "lng": 10.4015,
+  "co": "de"
+ },
+ "Leipzig University": {
+  "web": "https://www.jointdegree.eu",
+  "c": "Leipzig",
+  "lat": 51.3274,
+  "lng": 12.3909,
+  "co": "de"
+ },
+ "Osnabrück University of Applied Sciences": {
+  "web": "https://www.hs-osnabrueck.de",
+  "c": "Osnabrück",
+  "lat": 52.272,
+  "lng": 8.0476,
+  "co": "de"
+ },
+ "University of Bremen": {
+  "web": "https://www.uni-bremen.de",
+  "c": "Bremen",
+  "lat": 53.108,
+  "lng": 8.8557,
+  "co": "de"
+ },
+ "Frankfurt School of Finance & Management": {
+  "web": "https://www.frankfurt-school.de",
+  "c": "Frankfurt am Main",
+  "lat": 50.1327,
+  "lng": 8.6802,
+  "co": "de"
+ },
+ "University of Passau": {
+  "web": "https://www.uni-passau.de",
+  "c": "Passau",
+  "lat": 48.5675,
+  "lng": 13.4521,
+  "co": "de"
+ },
+ "Friedensau Adventist University": {
+  "web": "https://www.thh-friedensau.de",
+  "c": "Möckern",
+  "lat": 52.1406,
+  "lng": 11.9526,
+  "co": "de"
+ },
+ "Aalen University": {
+  "web": "https://www.hs-aalen.de",
+  "c": "Aalen",
+  "lat": 48.8377,
+  "lng": 10.0735,
+  "co": "de"
+ },
+ "Hertie School": {
+  "web": "https://www.hertie-school.org",
+  "c": "Berlin",
+  "lat": 52.5129,
+  "lng": 13.3893,
+  "co": "de"
+ },
+ "HTW Berlin University of Applied Sciences": {
+  "web": "https://mide.htw-berlin.de",
+  "c": "Berlin",
+  "lat": 52.5174,
+  "lng": 13.3951,
+  "co": "de"
+ },
+ "Hamburg University of Applied Sciences": {
+  "web": "https://www.haw-hamburg.de",
+  "c": "Hamburg",
+  "lat": 53.5502,
+  "lng": 10.0013,
+  "co": "de"
+ },
+ "Ludwig-Maximilians-Universität München": {
+  "web": "https://www.en.ibe.med.uni-muenchen.de",
+  "c": "München",
+  "lat": 48.1505,
+  "lng": 11.5798,
+  "co": "de"
+ },
+ "RWTH Aachen University": {
+  "web": "https://bit.ly",
+  "c": "Aachen",
+  "lat": 50.7792,
+  "lng": 6.0689,
+  "co": "de"
+ },
+ "Technical University of Darmstadt": {
+  "web": "https://www.informatik.tu-darmstadt.de",
+  "c": "Darmstadt",
+  "lat": 49.8728,
+  "lng": 8.6512,
+  "co": "de"
+ },
+ "Freie Universität Berlin": {
+  "web": "https://www.mi.fu-berlin.de",
+  "c": "Berlin",
+  "lat": 52.4529,
+  "lng": 13.2907,
+  "co": "de"
+ },
+ "Bingen University of Applied Sciences": {
+  "web": "https://www.th-bingen.de",
+  "c": "Bingen am Rhein",
+  "lat": 49.9675,
+  "lng": 7.8944,
+  "co": "de"
+ },
+ "Paderborn University": {
+  "web": "https://go.upb.de",
+  "c": "Paderborn",
+  "lat": 51.7075,
+  "lng": 8.7724,
+  "co": "de"
+ },
+ "Kiel University": {
+  "web": "https://www.uni-kiel.de",
+  "c": "Kiel",
+  "lat": 54.3458,
+  "lng": 10.1131,
+  "co": "de"
+ },
+ "University of Freiburg": {
+  "web": "https://www.tf.uni-freiburg.de",
+  "c": "Freiburg im Breisgau",
+  "lat": 48.007,
+  "lng": 7.8373,
+  "co": "de"
+ },
+ "Johannes Gutenberg University Mainz": {
+  "web": "https://www.unimedizin-mainz.de",
+  "c": "Mainz",
+  "lat": 49.992,
+  "lng": 8.2371,
+  "co": "de"
+ },
+ "Trier University": {
+  "web": "https://www.uni-trier.de",
+  "c": "Trier",
+  "lat": 49.6081,
+  "lng": 7.1693,
+  "co": "de"
+ },
+ "HafenCity University Hamburg": {
+  "web": "https://www.hcu-hamburg.de",
+  "c": "Hamburg",
+  "lat": 53.5403,
+  "lng": 10.0049,
+  "co": "de"
+ },
+ "Charité - Universitätsmedizin Berlin": {
+  "web": "https://internationalhealth.charite.de",
+  "c": "Berlin",
+  "lat": 52.53,
+  "lng": 13.3487,
+  "co": "de"
+ },
+ "University of Augsburg": {
+  "web": "https://elite-se.informatik.uni-augsburg.de",
+  "c": "Augsburg",
+  "lat": 48.3554,
+  "lng": 10.9043,
+  "co": "de"
+ },
+ "Heidelberg University": {
+  "web": "https://mastersc.iwr.uni-heidelberg.de",
+  "c": "Heidelberg",
+  "lat": 49.4186,
+  "lng": 8.6692,
+  "co": "de"
+ },
+ "University of Applied Sciences Emden/Leer": {
+  "web": "https://www.hs-emden-leer.de",
+  "c": "Emden",
+  "lat": 53.3671,
+  "lng": 7.2058,
+  "co": "de"
+ },
+ "Dortmund University of Applied Sciences and Arts": {
+  "web": "https://www.fh-dortmund.de",
+  "c": "Dortmund",
+  "lat": 51.5142,
+  "lng": 7.4653,
+  "co": "de"
+ },
+ "Technical University of Applied Sciences Würzburg-Schweinfurt (THWS)": {
+  "web": "https://mai.thws.de",
+  "c": "Würzburg",
+  "lat": 49.778,
+  "lng": 9.9435,
+  "co": "de"
+ },
+ "Stuttgart Technical University of Applied Sciences": {
+  "web": "https://www.hft-stuttgart.com",
+  "c": "Stuttgart",
+  "lat": 48.7784,
+  "lng": 9.18,
+  "co": "de"
+ },
+ "Karlsruhe Institute of Technology": {
+  "web": "https://www.sle.kit.edu",
+  "c": "Karlsruhe",
+  "lat": 49.0069,
+  "lng": 8.4034,
+  "co": "de"
+ },
+ "University of Applied Sciences Erfurt": {
+  "web": "https://ai.fh-erfurt.de",
+  "c": "Erfurt",
+  "lat": 50.985,
+  "lng": 11.0428,
+  "co": "de"
+ },
+ "Rhine-Waal University of Applied Sciences": {
+  "web": "https://www.hochschule-rhein-waal.de",
+  "c": "Kleve",
+  "lat": 51.7951,
+  "lng": 6.1426,
+  "co": "de"
  }
 }

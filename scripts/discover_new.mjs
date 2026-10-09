@@ -1,5 +1,7 @@
-// Weekly discovery: look for master's in the map's subjects at UK universities that aren't on the map yet, and put
-// what's found in the database table course_candidates for review (nothing is added to the map automatically).
+// Weekly discovery: look for master's in the map's subjects that aren't on the map yet, and put what's found in the
+// database table course_candidates for review (nothing is added to the map automatically):
+//   • UK: universities not on the map, by scanning their sitemaps;
+//   • Germany: new programmes in DAAD's International Programmes database (run `npm run import-germany` to add them).
 //   npm run discover-new                 → all unlisted universities
 //   npm run discover-new -- "Derby"      → only names containing this text
 // Universities scanned: those in universities.json with no courses on the map, plus scripts/discovery_unis.json.
@@ -7,6 +9,7 @@ import { readFile, appendFile } from "node:fs/promises";
 import { join } from "node:path";
 import { HERE, pool, loadRows, loadUnis, cached } from "./_rows.mjs";
 import { sitemapUrls, fetchText, htmlToText, extractIntlFee, extractCourseInfo } from "../api/_lib/scrape.js";
+import { DAAD, daadMasters, daadPick } from "../api/_lib/daad.js";
 
 try {
   for (const line of (await readFile(join(HERE, "..", ".env"), "utf8")).split(/\r?\n/)) {
@@ -72,10 +75,24 @@ await pool(todo, 5, async u => {
   });
   process.stderr.write(".");
 });
+// Germany: DAAD programmes in our subjects that aren't in the data yet.
+let deNew = 0;
+if (!only) {
+  const listed = new Set(rows.filter(r => r.co === "de").map(r => r.url));
+  for (const { g, c } of daadPick(await daadMasters())) {
+    const url = DAAD + c.link;
+    if (listed.has(url)) continue;
+    if (known.has(url)) { seenAgain.push({ url, uni: c.academy }); continue; }
+    const fee = /no tuition/i.test(c.tuitionFees || "") ? 0 : /^[\d,.]+$/.test(c.tuitionFees || "") ? Math.round(+c.tuitionFees.replace(/[,.]/g, "") * 2) : null;
+    found.push({ url, uni: c.academy + " (Germany)", subject: g, title: c.courseName, fee,
+      intakes: [/winter/i.test(c.beginning) && "Oct", /summer/i.test(c.beginning) && "Apr"].filter(Boolean), entry: "" });
+    deNew++;
+  }
+}
 await saveCandidates(found);
 await touchCandidates(seenAgain.filter(x => known.get(x.url) === "new"));
 
-console.log(`\nScanned ${todo.length} universities not on the map. New candidates: ${found.length}.` +
+console.log(`\nScanned ${todo.length} UK universities not on the map and DAAD for Germany. New candidates: ${found.length} (${deNew} in Germany).` +
   (noSitemap.length ? `\nNo readable sitemap (not scanned): ${noSitemap.join(", ")}` : ""));
 for (const c of found) console.log(`  + ${c.uni} | ${c.subject} | ${c.title} | ${c.fee ? "£" + c.fee.toLocaleString("en-GB") : "fee not found"} | ${c.url}`);
 

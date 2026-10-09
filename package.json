@@ -8,7 +8,8 @@
     "data": "python3 scripts/build_data.py",
     "discover": "node scripts/discover.mjs",
     "refresh-all": "node scripts/refresh_all.mjs",
-    "discover-new": "node scripts/discover_new.mjs"
+    "discover-new": "node scripts/discover_new.mjs",
+    "import-germany": "node scripts/import_germany.mjs && python3 scripts/build_data.py"
   },
   "type": "module",
   "engines": {

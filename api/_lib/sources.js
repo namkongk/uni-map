@@ -432,5 +432,304 @@ export default {
  ],
  "St Mary's University, Twickenham": [
   "https://www.prospects.ac.uk/universities/st-marys-university-twickenham-london-3993/courses/charity-management-41509"
+ ],
+ "Aalen University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9129/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11240/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9737/"
+ ],
+ "Albstadt-Sigmaringen University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9995/"
+ ],
+ "Bauhaus-Universität Weimar": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4238/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4660/"
+ ],
+ "Bingen University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8324/"
+ ],
+ "Brandenburg University of Technology Cottbus-Senftenberg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8322/"
+ ],
+ "Charité - Universitätsmedizin Berlin": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6101/"
+ ],
+ "Chemnitz University of Technology": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4122/"
+ ],
+ "Deggendorf Institute of Technology": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9024/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9841/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7691/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4870/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7124/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7728/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7744/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6399/"
+ ],
+ "Dortmund University of Applied Sciences and Arts": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10606/"
+ ],
+ "Dresden University of Technology": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10354/"
+ ],
+ "Frankfurt School of Finance & Management": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9643/"
+ ],
+ "Freie Universität Berlin": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4724/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7055/"
+ ],
+ "Friedensau Adventist University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9135/"
+ ],
+ "HafenCity University Hamburg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4254/"
+ ],
+ "Hamburg University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4029/"
+ ],
+ "Heidelberg University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4443/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10709/"
+ ],
+ "Heilbronn University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10374/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3960/"
+ ],
+ "Heinrich Heine University Düsseldorf": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6937/"
+ ],
+ "Hertie School": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7169/"
+ ],
+ "Hochschule Bonn-Rhein-Sieg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3799/"
+ ],
+ "Hochschule Fresenius - University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9953/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9954/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5690/"
+ ],
+ "Hof University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9941/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6236/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9909/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8518/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3667/"
+ ],
+ "HTW Berlin University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3797/"
+ ],
+ "Johannes Gutenberg University Mainz": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9813/"
+ ],
+ "Justus Liebig University Giessen": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9988/"
+ ],
+ "Karlsruhe Institute of Technology": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6163/"
+ ],
+ "Kiel University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6148/"
+ ],
+ "Kiel University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9058/"
+ ],
+ "Leibniz University Hannover": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10548/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8935/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9917/"
+ ],
+ "Leipzig University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4066/"
+ ],
+ "Ludwig-Maximilians-Universität München": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4415/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5590/"
+ ],
+ "Marburg University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9043/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9042/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9603/"
+ ],
+ "Neu-Ulm University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4734/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11083/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8538/"
+ ],
+ "Osnabrück University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10334/"
+ ],
+ "Osnabrück University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9066/"
+ ],
+ "Ostbayerische Technische Hochschule Amberg-Weiden (OTH)": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8977/"
+ ],
+ "Otto von Guericke University Magdeburg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10712/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11113/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7670/"
+ ],
+ "Paderborn University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5616/"
+ ],
+ "Rhine-Waal University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4687/"
+ ],
+ "RPTU University Kaiserslautern-Landau": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3629/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3590/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11105/"
+ ],
+ "Ruhr-Universität Bochum": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9673/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3848/"
+ ],
+ "RWTH Aachen University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9198/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3728/"
+ ],
+ "Saarland University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11000/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3624/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6296/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4758/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4634/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4842/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3827/"
+ ],
+ "SRH University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3981/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4886/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10502/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9077/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9691/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5564/"
+ ],
+ "Stuttgart Technical University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6963/"
+ ],
+ "Technical University of Applied Sciences Würzburg-Schweinfurt (THWS)": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7852/"
+ ],
+ "Technical University of Darmstadt": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4258/"
+ ],
+ "Technical University of Munich": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10676/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9617/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3591/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3607/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4517/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10359/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4717/"
+ ],
+ "Technische Hochschule Ingolstadt": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8922/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9704/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6140/"
+ ],
+ "Technische Hochschule Nürnberg Georg Simon Ohm": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10474/"
+ ],
+ "Technische Universität Braunschweig": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9735/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3685/"
+ ],
+ "Trier University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6304/"
+ ],
+ "Ulm University": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4581/"
+ ],
+ "Ulm University of Applied Sciences": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4728/"
+ ],
+ "University of Applied Sciences Emden/Leer": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4775/"
+ ],
+ "University of Applied Sciences Erfurt": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11093/"
+ ],
+ "University of Augsburg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4001/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10558/"
+ ],
+ "University of Bayreuth": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5245/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4694/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9583/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5244/"
+ ],
+ "University of Bonn": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11006/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7606/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7734/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3622/"
+ ],
+ "University of Bremen": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9585/"
+ ],
+ "University of Freiburg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3736/"
+ ],
+ "University of Göttingen": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4700/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8408/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4204/"
+ ],
+ "University of Hildesheim": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11089/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8417/"
+ ],
+ "University of Konstanz": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10588/"
+ ],
+ "University of Münster": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3877/"
+ ],
+ "University of Oldenburg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9906/"
+ ],
+ "University of Passau": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/3922/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7784/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4455/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10672/"
+ ],
+ "University of Potsdam": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5373/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6262/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/8305/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/10384/"
+ ],
+ "University of Regensburg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9856/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9863/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/11050/"
+ ],
+ "University of Rostock": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4593/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7618/"
+ ],
+ "University of Siegen": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4591/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4686/"
+ ],
+ "University of Stuttgart": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/4439/"
+ ],
+ "University of Technology Nuremberg": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9894/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/9892/"
+ ],
+ "University of Tübingen": [
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6119/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/7639/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5634/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6104/",
+  "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6535/"
  ]
 };

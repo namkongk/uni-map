@@ -249,6 +249,7 @@ input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px var(-
 .country-menu .flag{font-size:18px;line-height:1}
 .country-menu .c-t{flex:1}
 .country-menu .tick{width:16px;height:16px}
+.country-menu button[aria-checked="false"] .tick{visibility:hidden}
 .country-menu button[aria-disabled="true"]{cursor:default;color:var(--muted)}
 .country-menu button[aria-disabled="true"] .flag{filter:grayscale(.6);opacity:.7}
 .country-menu .soon{font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:999px;background:var(--fill);color:var(--muted);white-space:nowrap}
