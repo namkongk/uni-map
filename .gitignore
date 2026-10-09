@@ -1,8 +1,30 @@
+# Dependencies & deployment
 node_modules/
 .vercel/
-.DS_Store
-scripts/.cache/
+
+# Secrets (keep only the template)
 .env
 .env.*
 !.env.example
+
+# Local caches & build leftovers
+scripts/.cache/
+__pycache__/
+*.pyc
+
+# Supabase CLI local files (if you ever use it; schema.sql stays tracked)
+supabase/.temp/
+supabase/.branches/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editors & OS
 .claude/
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db

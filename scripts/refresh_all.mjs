@@ -2,6 +2,9 @@
 // but run from your computer — useful to fill the database the first time, or on a schedule).
 //   npm run refresh-all            → all universities
 //   npm run refresh-all -- "UCL"   → only universities whose name contains this text
+// A website dropping the connection mid-download can surface as an uncaught network error in newer Node versions;
+// treat it as one failed page, not a reason to stop the whole run.
+process.on("uncaughtException", e => { if (/^UND_ERR|ECONNRESET|EPIPE/.test(e?.code || "")) console.warn(`  (network error ignored: ${e.code})`); else { console.error(e); process.exit(1); } });
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { HERE, pool } from "./_rows.mjs";

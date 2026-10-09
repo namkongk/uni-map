@@ -3,6 +3,9 @@
 // Keeps English-taught, on-campus master's in the map's subjects, reads each programme's DAAD page for fees, start
 // semesters, living costs and requirements, and places new universities on the map (OpenStreetMap geocoding, cached
 // in universities.json / cities_de.json). Then run `npm run data` to rebuild js/data.js.
+// A website dropping the connection mid-download can surface as an uncaught network error in newer Node versions;
+// treat it as one failed page, not a reason to stop the whole run.
+process.on("uncaughtException", e => { if (/^UND_ERR|ECONNRESET|EPIPE/.test(e?.code || "")) console.warn(`  (network error ignored: ${e.code})`); else { console.error(e); process.exit(1); } });
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { HERE, loadRows, saveRows, loadUnis, pool } from "./_rows.mjs";

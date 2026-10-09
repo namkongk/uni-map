@@ -58,3 +58,6 @@ create table if not exists public.course_candidates (
   last_seen   timestamptz not null default now()
 );
 alter table public.course_candidates enable row level security;
+
+-- Make the API see the new columns and table straight away.
+notify pgrst, 'reload schema';

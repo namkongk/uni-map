@@ -9,7 +9,10 @@ async function rest(path, { method = "GET", body, prefer } = {}) {
   const headers = { apikey: key, "content-type": "application/json" };
   if (key.startsWith("ey")) headers.authorization = "Bearer " + key;   // legacy service_role keys are JWTs
   if (prefer) headers.prefer = prefer;
-  const r = await fetch(`${url}/rest/v1/${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(10000) });
+  // One retry: the free plan can be slow to answer the first request after a quiet spell.
+  const send = () => fetch(`${url}/rest/v1/${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(25000) });
+  let r;
+  try { r = await send(); } catch (e) { await new Promise(res => setTimeout(res, 1500)); r = await send(); }
   if (!r.ok) throw new Error(`Database ${r.status}: ${(await r.text()).slice(0, 200)}`);
   const text = await r.text();
   return text ? JSON.parse(text) : null;

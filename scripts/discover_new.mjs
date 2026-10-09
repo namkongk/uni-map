@@ -5,6 +5,9 @@
 //   npm run discover-new                 → all unlisted universities
 //   npm run discover-new -- "Derby"      → only names containing this text
 // Universities scanned: those in universities.json with no courses on the map, plus scripts/discovery_unis.json.
+// A website dropping the connection mid-download can surface as an uncaught network error in newer Node versions;
+// treat it as one failed page, not a reason to stop the whole run.
+process.on("uncaughtException", e => { if (/^UND_ERR|ECONNRESET|EPIPE/.test(e?.code || "")) console.warn(`  (network error ignored: ${e.code})`); else { console.error(e); process.exit(1); } });
 import { readFile, appendFile } from "node:fs/promises";
 import { join } from "node:path";
 import { HERE, pool, loadRows, loadUnis, cached } from "./_rows.mjs";
@@ -24,7 +27,8 @@ const rows = loadRows(), UNIS = loadUnis();
 const onMap = new Set(rows.map(r => r.u));
 const extra = JSON.parse(await readFile(join(HERE, "discovery_unis.json"), "utf8"));
 const TARGETS = {
-  ...Object.fromEntries(Object.entries(UNIS).filter(([u]) => !onMap.has(u)).map(([u, x]) => [u, x.web])),
+  // UK universities only here (German ones are covered through DAAD below).
+  ...Object.fromEntries(Object.entries(UNIS).filter(([u, x]) => !onMap.has(u) && (x.co || "uk") === "uk").map(([u, x]) => [u, x.web])),
   ...Object.fromEntries(Object.entries(extra).filter(([u]) => !u.startsWith("_") && !onMap.has(u))),
 };
 const only = process.argv[2];
@@ -44,7 +48,8 @@ const SUBJECTS = [
 const BAD = /(phd|doctor|research-degree|mres\b|pgcert|pg-cert|pgdip|pg-dip|postgraduate-certificate|postgraduate-diploma|short-course|cpd|module|undergrad|\/ug\/|bsc|-ba-|\/ba-|ba-hons|\bba\b|foundation|apprentice|news|event|blog|staff|people|profile|research\/|clearing|top-up|online|distance|part-time|\.pdf|alumni|stor(y|ies)|case-stud|podcast|webinar|scholarship|funding|welcome|induction|open-day)/;
 const PG = /(postgrad|masters|\/pg|taught|msc|\/ma-|-ma\b|\/ma\/|mba|\/courses?\/|graduate)/;
 const MASTERS = /\b(MSc|MA|MRes|MPhil|MBA|MPH|MSt|LLM|MNurs|Master'?s?|Masters)\b/i;
-const NOT_PG = /\b(BSc|BA|PhD|PGCert|PGDip|Foundation|Apprenticeship|Short course|Online|Distance learning)\b/i;
+const NOT_PG = /\b(BSc|BA|PhD|PGCert|PGDip|Foundation|Apprenticeship|Short course|Online|Distance learning|Executive|timetables?|session|appointments?|events?|open day|webinar)\b|Robert Kennedy College/i;
+const NOT_URL = /\/cy\/|robert-kennedy|executive|online/i;   // Welsh-language duplicates, online-only partner courses
 
 const known = await candidateUrls();
 const found = [], seenAgain = [], noSitemap = [];
@@ -56,7 +61,7 @@ await pool(todo, 5, async u => {
   const picks = [], keys = new Set();
   for (const url of urls) {
     const l = decodeURIComponent(url).toLowerCase();
-    if (BAD.test(l) || !PG.test(l)) continue;
+    if (BAD.test(l) || !PG.test(l) || NOT_URL.test(l)) continue;
     const s = SUBJECTS.find(([, re]) => re.test(l)); if (!s) continue;
     const k = l.replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop().replace(/-?\d{4}.*$/, "");
     if (keys.has(k)) continue; keys.add(k);
