@@ -247,20 +247,26 @@
   </div>
 </section>
 
-<dialog class="report glass sh-dlg" id="shortDlg" aria-labelledby="shortTitle">
-  <div class="report-top">
-    <h2 id="shortTitle">My shortlist</h2>
-    <button type="button" class="icon-btn" id="shortClose" aria-label="Close">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+<dialog class="glass sh-dlg" id="shortDlg" aria-labelledby="shortTitle">
+  <header class="shx-head">
+    <div class="shx-title"><h2 id="shortTitle">My shortlist</h2><span class="shx-sub" id="shortSub"></span></div>
+    <div class="sh-tools" id="shortTools">
+      <button type="button" class="btn-plain sm" id="cmpBtn" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="5.5" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/><rect x="11.5" y="4" width="5.5" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>Compare <span id="cmpN">0</span></button>
+      <button type="button" class="btn-plain sm" id="icsBtn" title="Download your deadlines as a calendar file (Google, Apple or Outlook calendar)"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4.5" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M3 8.5h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Add to calendar</button>
+      <button type="button" class="btn-plain sm" id="shareBtn" title="A link that shows this shortlist to family or your consultancy"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 11.5 12 8M8.5 13.5 6 16a2.5 2.5 0 0 1-3.5-3.5L5 10m7-3.5L14.5 4A2.5 2.5 0 0 1 18 7.5L15.5 10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>Share link</button>
+      <button type="button" class="btn-plain sm" id="printBtn" title="Print or save as PDF"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 7V3.5h8V7M6 14H4a1.5 1.5 0 0 1-1.5-1.5v-4A1.5 1.5 0 0 1 4 7h12a1.5 1.5 0 0 1 1.5 1.5v4A1.5 1.5 0 0 1 16 14h-2M6 11.5h8v5H6z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></svg>Print / PDF</button>
+    </div>
+    <button type="button" class="icon-btn" id="shortClose" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+  </header>
+  <div class="shx-body">
+    <aside class="shx-side" id="shortSide" aria-label="Overview">
+      <section class="shx-box"><h3>Status</h3><div class="shx-filter" id="shortSum" role="group" aria-label="Show courses by status"></div></section>
+      <section class="shx-box" id="shortUp" aria-label="Upcoming deadlines"></section>
+      <div id="shortChanges"></div>
+      <div class="shx-foot" id="shortFoot"></div>
+    </aside>
+    <div class="shx-main"><p class="sh-msg" id="shortMsg" role="status" hidden></p><div id="shortBody"></div></div>
   </div>
-  <div class="sh-sum" id="shortSum"></div>
-  <div class="sh-tools" id="shortTools">
-    <button type="button" class="btn-plain sm" id="cmpBtn" disabled>Compare <span id="cmpN">0</span></button>
-    <button type="button" class="btn-plain sm" id="icsBtn" title="Download your deadlines as a calendar file (Google, Apple or Outlook calendar)">Add dates to calendar</button>
-    <button type="button" class="btn-plain sm" id="shareBtn" title="A link that shows this shortlist to family or your consultancy">Share link</button>
-    <button type="button" class="btn-plain sm" id="printBtn" title="Print or save as PDF">Print / PDF</button>
-  </div>
-  <div class="report-scroll sh-scroll" id="shortBody"></div>
 </dialog>
 
 <dialog class="report glass cmp-dlg" id="cmpDlg" aria-labelledby="cmpTitle">

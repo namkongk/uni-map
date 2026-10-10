@@ -1083,9 +1083,9 @@ function courseHTML(r) {
       ${r.cw ? `<div class="full"><a href="${esc(r.cw)}" target="_blank" rel="noopener">University course page ↗</a> · <a href="${esc(r.url)}" target="_blank" rel="noopener">DAAD listing ↗</a>${courseCheck(r)}</div>`
         : r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>` : ""}
       ${(r.co || "uk") === "uk" ? planRow(r) : ""}
-      <div class="full card-acts"><button type="button" class="btn-plain sm" data-funds="${esc(courseKey(r))}">Proof of funds</button>
-        <button type="button" class="link-btn small" data-report="${esc(courseKey(r))}">Report wrong info</button></div>
-      <div class="full">${noteHTML(courseKey(r), "Your notes")}</div>
+      <div class="full card-acts"><button type="button" class="act-btn" data-funds="${esc(courseKey(r))}" title="Proof of funds for the visa">${IC.funds}<span>Proof of funds</span></button>
+        <button type="button" class="act-btn quiet" data-report="${esc(courseKey(r))}" title="Report wrong information about this course">${IC.flag}<span>Report</span></button></div>
+      <div class="full">${noteHTML(courseKey(r))}</div>
     </div>
   </article>`;
 }
@@ -1191,7 +1191,7 @@ function renderCard(u, withPlace) {
   $("cardTitle").textContent = u;
   $("cardSub").textContent = [MULTI ? uniCo(u).flag + " " + U.c : U.c, uniCo(u).rank ? (f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked") : "", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
-  $("cardAwards").innerHTML = `<div class="uni-note">${noteHTML(uniKey(u), "Your notes on " + esc(u))}</div>` + awardsHTML(u);
+  $("cardAwards").innerHTML = `<div class="uni-note">${noteHTML(uniKey(u))}</div>` + awardsHTML(u);
   $("cardPay").innerHTML = payHTML(u);
   $("cardCourses").innerHTML = (rs.length ? rs : []).sort((a, b) => a.n - b.n).map(courseHTML).join("") || `<p class="gp-empty">No courses here match the current filters.</p>`;
   if (withPlace) loadPlace(u);
@@ -1376,30 +1376,52 @@ function refreshShortUI() {
   renderTable(); syncShortBtn();
   if ($("shortDlg").open) renderShortlist();
 }
+let shortFilter = "all";   // status shown in the shortlist ("all" or a status)
 function renderShortlist() {
-  const items = Object.entries(S.short).filter(([k]) => keyShown(k)).map(([k, e]) => ({ k, e, r: KEYED.get(k) })).filter(x => x.r)
+  const all = Object.entries(S.short).filter(([k]) => keyShown(k)).map(([k, e]) => ({ k, e, r: KEYED.get(k) })).filter(x => x.r)
     .sort((a, b) => STATUS.findIndex(s => s[0] === a.e.st) - STATUS.findIndex(s => s[0] === b.e.st) || a.r.n - b.r.n);
+  if (shortFilter !== "all" && !all.some(x => x.e.st === shortFilter)) shortFilter = "all";
+  const items = shortFilter === "all" ? all : all.filter(x => x.e.st === shortFilter);
   const hidden = Object.keys(S.short).filter(k => !keyShown(k)), other = hidden.length;
   const otherNames = [...new Set(hidden.map(k => COUNTRIES[k.split("|")[0]]?.full).filter(Boolean))].join(" and ");
-  const counts = STATUS.map(([v, l]) => [l, items.filter(x => x.e.st === v).length]).filter(([, n]) => n);
   const changes = shortChanges();
-  $("shortSum").innerHTML = items.length ? counts.map(([l, n]) => `<span class="st-chip">${n} ${l.toLowerCase()}</span>`).join("") : "";
   syncTools();
-  $("shortBody").innerHTML = `<p class="sh-msg" id="shortMsg" role="status" hidden></p>` + upcomingHTML() + (changes.length ? `<section class="sh-changes" aria-label="What changed">
-        <div class="sh-ch-top"><b>What changed since you last looked</b><button type="button" class="btn-plain sm" id="shortSeen">Mark as seen</button></div>
-        <ul>${changes.map(c => `<li class="ch-${c.kind}"><b>${esc(c.title)}</b> ${esc(c.text)}</li>`).join("")}</ul></section>` : "")
-    + (items.length ? `<ul class="sh-list">${items.map(({ k, e, r }) => { const d = deficit(r); return `<li>
-        ${starBtn(r)}
-        <div class="sh-main"><button type="button" class="link-btn sh-open" data-open="${esc(r.u)}" data-key="${esc(k)}">${esc(r.p)}</button>
-          <span class="sub">${esc(r.u)} · ${MULTI ? coOf(r).flag + " " : ""}${esc(r.c)} · starts ${esc(r.i)}${r.closed ? ` · <b class="warn-txt">${r.closed.status === "gone" ? "page removed" : "not recruiting"}</b>` : ""}</span></div>
-        <div class="sh-num"><b>~${rm(r, r.n)}</b><span class="sub">yr 1 total · ${rm(r, r.f)} tuition</span></div>
-        <span class="sh-aff ${d > 0 ? "short" : "ok"}">${d > 0 ? `Short ~${rm(r, r100(d))}/yr` : "Covered by your work"}</span>
-        ${statusSelect(k, e.st)}${planHTML(k)}</li>`; }).join("")}</ul>`
-      : `<p class="sh-empty">${STAR(false)}<span>Star a course to save it here.</span></p>`)
-    + (other ? `<p class="acct-hint">+${other} in ${esc(otherNames)} (not ticked).</p>` : "")
+  $("shortSub").textContent = all.length ? `${all.length} course${all.length === 1 ? "" : "s"}${changes.length ? ` · ${changes.length} update${changes.length === 1 ? "" : "s"}` : ""}` : "";
+  // sidebar: status filter, upcoming deadlines, what changed, notes
+  $("shortSum").innerHTML = [["all", "All courses", all.length], ...STATUS.map(([v, l]) => [v, l, all.filter(x => x.e.st === v).length])]
+    .map(([v, l, n]) => `<button type="button" class="shx-f st-${v}" data-sfilter="${v}" aria-pressed="${shortFilter === v}"${!n && v !== "all" ? " disabled" : ""}><i aria-hidden="true"></i><span>${l}</span><b>${n}</b></button>`).join("");
+  $("shortUp").innerHTML = upcomingHTML();
+  $("shortChanges").innerHTML = changes.length ? `<section class="shx-box sh-changes" aria-label="What changed">
+      <h3>What changed <span class="shx-badge">${changes.length}</span></h3>
+      <ul>${changes.map(c => `<li class="ch-${c.kind}"><b>${esc(c.title)}</b><span>${esc(c.text)}</span></li>`).join("")}</ul>
+      <button type="button" class="btn-plain sm" id="shortSeen">Mark as seen</button></section>` : "";
+  $("shortFoot").innerHTML = (other ? `<p class="acct-hint">+${other} shortlisted in ${esc(otherNames)} (not ticked in the country menu).</p>` : "")
     + `<p class="signin-nudge">Saved in this browser only. <button type="button" class="link-btn" data-signin="signup">Sign in</button> to keep your shortlist on any device — no email, just a username &amp; password.</p>`;
+  // main: one card per course
+  $("shortBody").innerHTML = items.length ? `<div class="shx-cards">${items.map(({ k, e, r }) => { const d = deficit(r);
+    return `<article class="shc st-${e.st}">
+      <div class="shc-top">${starBtn(r)}
+        <div class="shc-name"><button type="button" class="shc-title sh-open" data-open="${esc(r.u)}" data-key="${esc(k)}" title="Show on the map">${esc(r.p)}</button>
+          <span class="shc-uni">${coOf(r).flag} ${esc(r.u)} <span class="shc-city">${IC.pin}${esc(r.c)}</span></span></div>
+        ${statusSelect(k, e.st)}</div>
+      ${r.closed ? `<p class="shc-warn">${r.closed.status === "gone" ? "Course page removed — check it still runs" : "Not taking applications (per course page)"}</p>` : ""}
+      <dl class="shc-figs">
+        <div class="tot" title="Total for year 1, after any sure scholarship"><dt>${IC.pound}Year 1</dt><dd>~${rm(r, r.n)}</dd></div>
+        <div title="Tuition per year"><dt>${IC.doc}Tuition</dt><dd>${rm(r, r.f)}</dd></div>
+        <div title="Intakes"><dt>${IC.cal}Starts</dt><dd>${esc(r.i)}</dd></div>
+        <div class="aff ${d > 0 ? "short" : "ok"}" title="Whether your jobs cover the remaining fee and living costs"><dt>${IC.work}Work</dt><dd>${d > 0 ? `−${rm(r, r100(d))}/yr` : "✓ Covered"}</dd></div>
+      </dl>
+      ${planHTML(k)}
+      ${noteHTML(k)}
+      <div class="shc-acts">
+        <label class="act-btn cmp-pick" title="Add to the side-by-side comparison"><input type="checkbox" data-cmp="${esc(k)}"${S.cmp.includes(k) ? " checked" : ""}>${IC.cmp}<span>Compare</span></label>
+        <button type="button" class="act-btn" data-funds="${esc(k)}" title="Proof of funds for the visa">${IC.funds}<span>Funds</span></button>
+        <button type="button" class="act-btn quiet" data-report="${esc(k)}" title="Report wrong information about this course">${IC.flag}<span>Report</span></button>
+      </div></article>`; }).join("")}</div>`
+    : `<p class="sh-empty">${STAR(false)}<span>${all.length ? "No courses with this status." : "Star a course on the map or in the list to save it here."}</span></p>`;
   $("shortSeen")?.addEventListener("click", markSeen);
 }
+$("shortSum").addEventListener("click", e => { const b = e.target.closest("[data-sfilter]"); if (b) { shortFilter = b.dataset.sfilter; renderShortlist(); } });
 $("shortBtn").addEventListener("click", () => { renderShortlist(); $("shortDlg").showModal(); });
 $("shortClose").addEventListener("click", () => $("shortDlg").close());
 $("shortDlg").addEventListener("click", e => {
@@ -1474,21 +1496,17 @@ const docsOf = k => DOCS[keyCo(k).code] || DOCS.uk;
 function planSummary(k) {
   const e = S.short[k] || {}, docs = docsOf(k), done = docs.filter(([id]) => e.docs?.[id]).length;
   const next = DATES(keyCo(k).code).map(([f, l]) => ({ l, d: e.d?.[f] })).filter(x => x.d && daysTo(x.d) >= 0).sort((a, b) => a.d.localeCompare(b.d))[0];
-  return `<span class="pl-prog"><i style="--p:${Math.round(done / docs.length * 100)}%"></i>${done}/${docs.length} documents</span>` +
-    (next ? `<span class="pl-next">Next: <b>${esc(next.l)}</b> ${fmtDate(next.d)}${daysTo(next.d) <= 14 ? ` <em>in ${daysTo(next.d)} day${daysTo(next.d) === 1 ? "" : "s"}</em>` : ""}</span>` : `<span class="pl-next muted">Add your dates</span>`);
+  return `<span class="pl-prog" title="${done} of ${docs.length} documents ready">${IC.doc}<i style="--p:${Math.round(done / docs.length * 100)}%"></i>${done}/${docs.length}</span>` +
+    (next ? `<span class="pl-next" title="Next date">${IC.clock}<b>${esc(next.l)}</b> ${fmtDate(next.d)}${daysTo(next.d) <= 14 ? ` <em>${daysTo(next.d)}d</em>` : ""}</span>` : `<span class="pl-next muted">${IC.clock}No dates yet</span>`);
 }
 function planHTML(k) {
   const e = S.short[k] || {}, co = keyCo(k).code;
-  return `<details class="sh-plan" data-plan="${esc(k)}"${openPlans.has(k) ? " open" : ""}><summary><span class="pl-t">Dates &amp; checklist</span><span class="pl-sum">${planSummary(k)}</span></summary>
+  return `<details class="sh-plan" data-plan="${esc(k)}"${openPlans.has(k) ? " open" : ""}><summary title="Dates and document checklist">${IC.list}<span class="pl-t">Checklist</span><span class="pl-sum">${planSummary(k)}</span></summary>
     <div class="pl-body">
+      <h4>${IC.cal}Key dates</h4>
       <div class="pl-dates">${DATES(co).map(([f, l]) => `<label><span>${l}</span><input type="date" data-date="${esc(k)}|${f}" value="${esc(e.d?.[f] || "")}"></label>`).join("")}</div>
+      <h4>${IC.doc}Documents</h4>
       <div class="pl-docs">${docsOf(k).map(([id, l]) => `<label><input type="checkbox" data-doc="${esc(k)}|${id}"${e.docs?.[id] ? " checked" : ""}><span>${l}</span></label>`).join("")}</div>
-      ${noteHTML(k, "Notes for this course")}
-      <div class="pl-acts">
-        <label class="cmp-pick"><input type="checkbox" data-cmp="${esc(k)}"${S.cmp.includes(k) ? " checked" : ""}> Compare</label>
-        <button type="button" class="btn-plain sm" data-funds="${esc(k)}">Proof of funds</button>
-        <button type="button" class="link-btn small" data-report="${esc(k)}">Report wrong info</button>
-      </div>
     </div></details>`;
 }
 const openPlans = new Set();
@@ -1499,15 +1517,16 @@ function upcomingHTML() {
     const r = KEYED.get(k); if (!r) continue;
     for (const [f, l] of DATES(keyCo(k).code)) { const d = e.d[f]; if (d && daysTo(d) >= -7 && daysTo(d) <= 120) t.push({ d, l, r }); }
   }
-  if (!t.length) return "";
+  if (!t.length) return `<h3>${IC.clock}Upcoming</h3><p class="shx-empty">Add dates in a course's checklist to see them here.</p>`;
   t.sort((a, b) => a.d.localeCompare(b.d));
-  return `<section class="sh-up" aria-label="Upcoming"><b>Upcoming</b><ul>${t.slice(0, 6).map(x => { const n = daysTo(x.d);
-    return `<li class="${n < 0 ? "past" : n <= 7 ? "soon" : ""}"><span class="up-d">${fmtDate(x.d)}</span><span><b>${esc(x.l)}</b> · ${esc(x.r.p)}, ${esc(x.r.u)}</span><span class="up-n">${n < 0 ? "passed" : n === 0 ? "today" : `in ${n} day${n === 1 ? "" : "s"}`}</span></li>`; }).join("")}</ul></section>`;
+  return `<h3>${IC.clock}Upcoming</h3><ul class="sh-up">${t.slice(0, 8).map(x => { const n = daysTo(x.d), dt = new Date(x.d + "T00:00");
+    return `<li class="${n < 0 ? "past" : n <= 7 ? "soon" : ""}"><span class="up-cal"><b>${dt.getDate()}</b>${dt.toLocaleDateString("en-GB", { month: "short" })}</span>
+      <span class="up-t"><b>${esc(x.l)}</b><span>${esc(x.r.p)} · ${esc(x.r.u)}</span></span><span class="up-n">${n < 0 ? "passed" : n === 0 ? "today" : `${n} day${n === 1 ? "" : "s"}`}</span></li>`; }).join("")}</ul>`;
 }
 function syncTools() {
   S.cmp = S.cmp.filter(k => S.short[k] && keyShown(k) && KEYED.has(k));
   $("cmpN").textContent = S.cmp.length; $("cmpBtn").disabled = S.cmp.length < 2;
-  $("cmpBtn").title = S.cmp.length < 2 ? "Tick Compare on 2–4 courses (under Dates & checklist)" : "Compare the ticked courses side by side";
+  $("cmpBtn").title = S.cmp.length < 2 ? "Tick Compare on 2–4 course cards" : "Compare the ticked courses side by side";
 }
 // Typing in dates, documents, notes and compare boxes saves straight away without redrawing the list.
 document.addEventListener("change", e => {
@@ -1525,17 +1544,30 @@ document.addEventListener("change", e => {
   } else return;
   save(); syncTools();
   const box = t.closest(".sh-plan"); if (box) box.querySelector(".pl-sum").innerHTML = planSummary(box.dataset.plan);
-  if (t.dataset.date) {   // redraw "Upcoming" only if it actually changed (avoids the list jumping under the pointer)
-    const up = $("shortBody").querySelector(".sh-up"), html = upcomingHTML();
-    if (up) { if (up.outerHTML !== html) up.outerHTML = html || ""; } else if (html) $("shortMsg").insertAdjacentHTML("afterend", html);
-  }
+  if (t.dataset.date) { const html = upcomingHTML(); if ($("shortUp").innerHTML !== html) $("shortUp").innerHTML = html; }   // only if it changed
 });
 document.addEventListener("toggle", e => { const d = e.target; if (d.classList?.contains("sh-plan")) { if (d.open) openPlans.add(d.dataset.plan); else openPlans.delete(d.dataset.plan); } }, true);
 
 /* private notes on a course or a university */
 const uniKey = u => `u|${UNIS[u]?.co || "uk"}|${u}`;
-const noteHTML = (key, label) => `<details class="note-box"${S.notes[key] ? " open" : ""}><summary>${label}${S.notes[key] ? "" : ` <i class="opt">private</i>`}</summary>
-  <textarea data-note="${esc(key)}" maxlength="2000" rows="3" placeholder="Contacts, interview dates, scholarship emails… only you can see these">${esc(S.notes[key] || "")}</textarea></details>`;
+const ICO = (d, cls = "") => `<svg class="ico ${cls}" viewBox="0 0 20 20" aria-hidden="true">${d}</svg>`;
+const IC = {
+  funds: ICO('<rect x="2.5" y="5" width="15" height="11" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M2.5 8.5h15" stroke="currentColor" stroke-width="1.6"/><circle cx="13.5" cy="12.3" r="1.2" fill="currentColor"/>'),
+  flag: ICO('<path d="M5 17V3.5m0 0h9l-1.8 3.2L14 10H5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
+  cmp: ICO('<rect x="3" y="4" width="5.5" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/><rect x="11.5" y="4" width="5.5" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/>'),
+  list: ICO('<path d="M8.5 6h8M8.5 10h8M8.5 14h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="m3.5 6 1 1 2-2M3.5 10l1 1 2-2M3.5 14l1 1 2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
+  doc: ICO('<path d="M5.5 2.5h6l3.5 3.5v11.5h-9.5z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><path d="M11.5 2.5V6H15" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>'),
+  clock: ICO('<circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M10 6.2V10l2.6 1.6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>'),
+  cal: ICO('<rect x="3" y="4.5" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M3 8.5h14M7 2.8v3.2M13 2.8v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
+  pin: ICO('<path d="M10 17.5s5.5-5 5.5-9.3a5.5 5.5 0 1 0-11 0c0 4.3 5.5 9.3 5.5 9.3z" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="10" cy="8.2" r="2" stroke="currentColor" stroke-width="1.5" fill="none"/>'),
+  pound: ICO('<circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12.6 6.6A2.4 2.4 0 0 0 8.4 8.1v5.4M7 10.5h4.4M7 13.5h6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>'),
+  work: ICO('<rect x="2.5" y="6" width="15" height="10.5" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M7 6V4.5A1.5 1.5 0 0 1 8.5 3h3A1.5 1.5 0 0 1 13 4.5V6" stroke="currentColor" stroke-width="1.6" fill="none"/>'),
+};
+const NOTE_ICO = `<svg class="note-ico" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3h9A1.5 1.5 0 0 1 16 4.5V12l-4 4.5H5.5A1.5 1.5 0 0 1 4 15z" fill="currentColor" fill-opacity=".22" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 12h-2.5a1.5 1.5 0 0 0-1.5 1.5v3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 7h6M7 9.8h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+// University notes use keys "u|…"; everything else is a course.
+const noteHTML = key => { const what = key.startsWith("u|") ? "this university" : "this course";
+  return `<details class="note-box"${S.notes[key] ? " open" : ""}><summary title="Only you can see your notes">${NOTE_ICO}<span>${S.notes[key] ? `Your notes on ${what}` : `Add a note for ${what}`}</span></summary>
+  <textarea data-note="${esc(key)}" maxlength="2000" rows="3" placeholder="Contacts, interview dates, scholarship emails… only you can see these">${esc(S.notes[key] || "")}</textarea></details>`; };
 let noteT;
 document.addEventListener("input", e => {
   const t = e.target.closest?.("textarea[data-note]"); if (!t) return;
@@ -1715,15 +1747,37 @@ function openShared() {
   $("sharedDlg").showModal();
 }
 function printShortlist() {
-  const items = Object.entries(S.short).map(([k, e]) => ({ k, e, r: ALLKEYED.get(k) })).filter(x => x.r);
+  const items = Object.entries(S.short).map(([k, e]) => ({ k, e, r: ALLKEYED.get(k) })).filter(x => x.r)
+    .sort((a, b) => STATUS.findIndex(s => s[0] === a.e.st) - STATUS.findIndex(s => s[0] === b.e.st) || toBase(a.r.n, a.r) - toBase(b.r.n, b.r));
   if (!items.length) return toolMsg("Star some courses first.");
-  $("printArea").innerHTML = `<h1>My shortlist</h1><p>Uni Map · ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · first-year estimates</p>
-    ${items.map(({ k, e, r }) => { const d = keyShown(k) ? deficit(r) : null, docs = docsOf(k);
-      return `<section><h2>${esc(r.p)} <small>${STATUS_LBL[e.st] || ""}</small></h2><p>${esc(r.u)} · ${esc(r.c)} · starts ${esc(r.i)}</p>
-      <p>Tuition ~${rm(r, r.f)} · living ~${rm(r, r.l)} · <b>total ~${rm(r, r.n)}</b>${r.s ? ` (after ${rm(r, r.s)} scholarship)` : ""}${d != null ? ` · ${d > 0 ? `short ~${rm(r, r100(d))}/yr` : "covered by work"}` : ""}</p>
-      ${DATES(keyCo(k).code).filter(([f]) => e.d?.[f]).length ? `<p>${DATES(keyCo(k).code).filter(([f]) => e.d?.[f]).map(([f, l]) => `${l}: <b>${fmtDate(e.d[f])}</b>`).join(" · ")}</p>` : ""}
-      <p>Documents: ${docs.map(([id, l]) => `${e.docs?.[id] ? "☑" : "☐"} ${l}`).join(" &nbsp; ")}</p>
-      ${S.notes[k] ? `<p class="pn">${esc(S.notes[k]).replace(/\n/g, "<br>")}</p>` : ""}</section>`; }).join("")}`;
+  const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const counts = STATUS.map(([v, l]) => [v, l, items.filter(x => x.e.st === v).length]).filter(x => x[2]);
+  // every dated step across the shortlist, soonest first
+  const dates = items.flatMap(({ k, e, r }) => DATES(keyCo(k).code).filter(([f]) => e.d?.[f]).map(([f, l]) => ({ d: e.d[f], l, r }))).sort((a, b) => a.d.localeCompare(b.d));
+  const g = S.grade || {}, cls = myClass(), m = myEng();
+  const edu = [g.subj, cls ? `UK ≈ ${cls === "3rd" ? "below 2:2" : cls}` : "", m.overall ? `${m.T.name} ${m.raw.overall}${m.test === "ielts" ? "" : ` (≈ IELTS ${m.overall.toFixed(1)})`}` : ""].filter(Boolean).join(" · ");
+  $("printArea").innerHTML = `<header class="pr-head"><div><h1>My shortlist</h1><p>${items.length} course${items.length === 1 ? "" : "s"} · ${today}${edu ? ` · ${esc(edu)}` : ""}</p></div><span class="pr-brand">Uni Map</span></header>
+    <div class="pr-counts">${counts.map(([v, l, n]) => `<span class="pr-pill st-${v}">${n} ${l}</span>`).join("")}</div>
+    ${dates.length ? `<section class="pr-sec"><h2>Deadlines</h2><div class="pr-dates">${dates.map(x => { const n = daysTo(x.d);
+      return `<div class="pr-dr ${n < 0 ? "past" : n <= 14 ? "soon" : ""}"><span class="dd">${fmtDate(x.d)}</span><b>${esc(x.l)}</b><span>${esc(x.r.p)} — ${esc(x.r.u)}</span><span class="dn">${n < 0 ? "passed" : n === 0 ? "today" : `in ${n} day${n === 1 ? "" : "s"}`}</span></div>`; }).join("")}</div></section>` : ""}
+    <section class="pr-sec"><h2>Courses</h2>
+    ${items.map(({ k, e, r }) => { const d = keyShown(k) ? deficit(r) : null, docs = docsOf(k), done = docs.filter(([id]) => e.docs?.[id]).length, ds = DATES(keyCo(k).code).filter(([f]) => e.d?.[f]);
+      return `<article class="pr-card st-${e.st}">
+        <div class="pr-top"><div><h3>${esc(r.p)}</h3><p>${coOf(r).flag} ${esc(r.u)} · ${esc(r.c)} · starts ${esc(r.i)}</p></div><span class="pr-pill st-${e.st}">${STATUS_LBL[e.st] || "Considering"}</span></div>
+        <div class="pr-figs">
+          <div><span>Tuition / yr</span><b>${rm(r, r.f)}</b></div>
+          <div><span>Living / yr</span><b>${rm(r, r.l)}</b></div>
+          <div><span>Scholarship</span><b>${r.s ? rm(r, r.s) : "—"}</b></div>
+          <div class="tot"><span>Total year 1</span><b>~${rm(r, r.n)}</b></div>
+          ${d != null ? `<div class="${d > 0 ? "short" : "ok"}"><span>Your work</span><b>${d > 0 ? `Short ~${rm(r, r100(d))}/yr` : "Covers it"}</b></div>` : ""}
+        </div>
+        ${r.en ? `<p class="pr-line"><b>Entry:</b> ${esc(r.en)}</p>` : ""}
+        ${ds.length ? `<p class="pr-line"><b>Dates:</b> ${ds.map(([f, l]) => `${l} <b>${fmtDate(e.d[f])}</b>`).join(" &nbsp;·&nbsp; ")}</p>` : ""}
+        <div class="pr-docs"><div class="pr-docs-h"><b>Documents</b><span>${done} of ${docs.length} ready</span><i style="--p:${Math.round(done / docs.length * 100)}%"></i></div>
+          <ul>${docs.map(([id, l]) => `<li class="${e.docs?.[id] ? "on" : ""}">${l}</li>`).join("")}</ul></div>
+        ${S.notes[k] ? `<div class="pr-note"><b>Notes</b><p>${esc(S.notes[k]).replace(/\n/g, "<br>")}</p></div>` : ""}
+      </article>`; }).join("")}</section>
+    <footer class="pr-foot">First-year estimates from Uni Map, ${today}. Fees, deadlines and requirements change — confirm each one with the university.</footer>`;
   window.print();
 }
 
