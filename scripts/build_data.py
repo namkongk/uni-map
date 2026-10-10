@@ -22,6 +22,7 @@ for r in rows:
     if r["u"] not in unis:
         U = UNIS[r["u"]]
         unis[r["u"]] = {"c": r["c"], "lat": U["lat"], "lng": U["lng"], "q": gq(r["u"], r["c"], r["co"]), "web": U["web"], "co": r["co"]}
+        if U.get("priv"): unis[r["u"]]["priv"] = True   # privately run (everything else is public)
 
 # PhD rows: one per university. Fees estimated (≈85% of that university's masters fee), labelled "est."
 SPECIAL = {

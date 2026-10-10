@@ -78,6 +78,8 @@ const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health &
 // Gross pay needed for a given take-home under the country's tax model (bisection — the model is piecewise linear).
 const grossFor = (net, co = COUNTRY) => { if (net <= 0) return 0; let lo = net, hi = net * 3; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (m - co.tax(m) < net) lo = m; else hi = m; } return hi; };
 
+// "Private university" used to be a warning on German courses; it's now the University type filter and a tag.
+ROWS.forEach(r => { if (r.fl) r.fl = r.fl.split("; ").filter(x => x !== "Private university").join("; "); });
 ROWS.forEach((r, i) => { r.id = i; r.f0 = r.f; r.fn0 = r.fn; r.s0 = r.s; r.sl0 = r.sl; r.i0 = r.i; r.fl0 = r.fl; });
 
 /* ---------------- state ---------------- */
@@ -273,6 +275,7 @@ const COLS = [
   { k: "map", h: "Map", type: "none", get: () => "" },
 ];
 // Universities added later (nr) haven't had their league-table positions checked yet.
+const isPrivate = u => !!UNIS[u]?.priv;   // privately run; all other universities are public
 const rankText = (v, r) => v ?? (r.nr ? "Not checked" : "Unranked");
 const ukRankText = r => (r.co || "uk") === "uk" ? rankText(r.uk, r) : "—";   // the UK league table only ranks UK universities
 // Small note under a tuition figure: live source link, or why the stored figure is still shown.
@@ -310,7 +313,7 @@ function numMatch(val, expr) {
 }
 function filtered() {
   const q = $("q").value.trim().toLowerCase();
-  const max = +$("maxcost").value, city = $("city").value, rank = $("rank").value, rad = +$("radius").value || 0;
+  const max = +$("maxcost").value, city = $("city").value, rank = $("rank").value, rad = +$("radius").value || 0, utype = $("utype").value;
   return ROWS.filter(r => {
     if (S.lvs.length && !S.lvs.includes(r.lv)) return false;
     if (S.subjs.length && !r.subj.some(g => S.subjs.includes(g))) return false;
@@ -318,6 +321,7 @@ function filtered() {
     if (city) { if (rad > 0 ? uniKm(r.u, city) > rad : r.c !== city) return false; }
     if (rank === "ranked" && r.qs == null) return false;
     if (rank && rank !== "ranked" && !(r.qss <= +rank)) return false;
+    if (utype && (utype === "private") !== isPrivate(r.u)) return false;
     if ($("f-sure").checked && !r.s) return false;
     if ($("f-place").checked && !r.pl.startsWith("Yes")) return false;
     if ($("f-jan").checked && !/Jan|Feb|Mar|Apr|May|Jun|Jul|Nov/.test(r.i)) return false;
@@ -401,9 +405,13 @@ function fitMaxCost() {
   if (atMax) el.value = el.max;
 }
 fitMaxCost(); $("maxcost").value = $("maxcost").max;
-["q", "maxcost", "city", "radius", "rank", "f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).addEventListener("input", () => update({ fit: ["city", "radius"].includes(id) })));
+// University type: how many courses each option has (in the ticked countries)
+{ const nPriv = ROWS.filter(r => isPrivate(r.u)).length;
+  $("utype").options[1].textContent = `Public (${ROWS.length - nPriv})`; $("utype").options[2].textContent = `Private (${nPriv})`;
+  if (!nPriv) $("utype").options[2].disabled = true; }
+["q", "maxcost", "city", "radius", "rank", "utype", "f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).addEventListener("input", () => update({ fit: ["city", "radius"].includes(id) })));
 $("reset").addEventListener("click", () => {
-  $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = "";
+  $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = ""; $("utype").value = "";
   ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"].forEach(id => $(id).checked = false);
   document.querySelectorAll("#frow input").forEach(i => i.value = ""); S.colf = {};
   S.lvs = []; S.subjs = []; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
@@ -419,7 +427,7 @@ $("filtersToggle").addEventListener("click", () => { S.filtersOpen = !S.filtersO
 const applyFilters = () => { $("filtersToggle").setAttribute("aria-expanded", String(S.filtersOpen)); $("filtersBody").hidden = !S.filtersOpen; };
 applyFilters();
 function activeFilterCount() {
-  let n = ["q", "city", "rank"].filter(id => $(id).value.trim()).length;
+  let n = ["q", "city", "rank", "utype"].filter(id => $(id).value.trim()).length;
   n += ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"].filter(id => $(id).checked).length;
   if ($("maxcost").value !== $("maxcost").max) n++;
   return n;
@@ -1058,7 +1066,7 @@ function courseHTML(r) {
   const row = (k, v, cls = "") => `<div class="lbl">${k}</div><div class="${cls}">${v}</div>`;
   return `<article class="course">
     <div class="course-h">
-      <div class="tags"><span class="tag ${r.lv === "PhD" ? "phd" : ""}">${r.lv}</span><span class="tag">${r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g]}</span>${r.s ? `<span class="tag sure">Sure scholarship</span>` : ""}${r.pl.startsWith("Yes") ? `<span class="tag pl">Placement</span>` : ""}${r.fl ? `<span class="tag warn">${esc(r.fl)}</span>` : ""}</div>
+      <div class="tags"><span class="tag ${r.lv === "PhD" ? "phd" : ""}">${r.lv}</span><span class="tag">${r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g]}</span>${isPrivate(r.u) ? `<span class="tag priv" title="Privately run university">Private</span>` : ""}${r.s ? `<span class="tag sure">Sure scholarship</span>` : ""}${r.pl.startsWith("Yes") ? `<span class="tag pl">Placement</span>` : ""}${r.fl ? `<span class="tag warn">${esc(r.fl)}</span>` : ""}</div>
       <div class="course-t"><b>${esc(r.p)}</b>${starBtn(r, "lg")}</div>
       ${isShort(r) ? `<div class="course-st"><span>Application</span>${statusSelect(courseKey(r), S.short[courseKey(r)].st)}</div>` : ""}
     </div>
@@ -1129,7 +1137,7 @@ function payHTML_de(u) {
   return `<details class="pp" open><summary><span class="pp-ico" aria-hidden="true">€</span><span>Paying your fees</span><span class="pp-chip">Per semester</span></summary><div class="pp-body">
     <div class="pp-row"><span class="k">When</span><span class="v">Each semester, before enrolling (Oct / Apr)<small>~${money(sem, "EUR")} a semester incl. semester fee</small></span></div>
     <div class="pp-row"><span class="k">Blocked account<small>visa proof of funds</small></span><span class="v">€11,904 (€992/month, 2026)<small>Paid before the visa, released monthly</small></span></div>
-    <div class="pp-row"><span class="k">Deposit</span><span class="v">Public universities don't ask for one${/Private university/.test(any.fl || "") ? '<small>Private university — check its terms</small>' : ""}</span></div>
+    <div class="pp-row"><span class="k">Deposit</span><span class="v">${UNIS[u]?.priv ? "Private university — may ask for one<small>Check its own payment terms</small>" : "Public universities don't ask for one"}</span></div>
     <p class="pp-src">Confirm exact fees on the course page</p>
   </div></details>`;
 }
@@ -1189,7 +1197,7 @@ function renderCard(u, withPlace) {
   const any = rs.length ? rs : ROWS.filter(r => r.u === u);
   const f = any[0];
   $("cardTitle").textContent = u;
-  $("cardSub").textContent = [MULTI ? uniCo(u).flag + " " + U.c : U.c, uniCo(u).rank ? (f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked") : "", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
+  $("cardSub").textContent = [MULTI ? uniCo(u).flag + " " + U.c : U.c, U.priv ? "Private" : "", uniCo(u).rank ? (f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked") : "", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
   $("cardAwards").innerHTML = `<div class="uni-note">${noteHTML(uniKey(u))}</div>` + awardsHTML(u);
   $("cardPay").innerHTML = payHTML(u);
@@ -1441,9 +1449,9 @@ document.addEventListener("change", e => { const s = e.target.closest("select[da
 const SEL_KEY = SEL.join("+");
 const CHIPS = ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"];
 const filterSnap = () => ({ q: $("q").value, max: $("maxcost").value === $("maxcost").max ? null : +$("maxcost").value, city: $("city").value, radius: $("radius").value,
-  rank: $("rank").value, chips: CHIPS.filter(id => $(id).checked), lvs: S.lvs.slice(), subjs: S.subjs.slice() });
+  rank: $("rank").value, utype: $("utype").value, chips: CHIPS.filter(id => $(id).checked), lvs: S.lvs.slice(), subjs: S.subjs.slice() });
 function applySearch(f) {
-  $("q").value = f.q || ""; $("city").value = f.city || ""; $("radius").value = f.radius || ""; $("rank").value = f.rank || "";
+  $("q").value = f.q || ""; $("city").value = f.city || ""; $("radius").value = f.radius || ""; $("rank").value = f.rank || ""; $("utype").value = f.utype || "";
   $("maxcost").value = f.max == null ? $("maxcost").max : Math.min(+$("maxcost").max, f.max);
   CHIPS.forEach(id => $(id).checked = (f.chips || []).includes(id));
   S.lvs = Array.isArray(f.lvs) ? f.lvs.filter(l => LEVELS.includes(l)) : f.lv && f.lv !== "ALL" ? [f.lv] : []; S.subjs = Array.isArray(f.subjs) ? f.subjs.filter(g => PNAME[g]) : [];

@@ -1075,3 +1075,6 @@ button.ent.add{background:none;border:0;padding:0;font:inherit;font-size:11.5px;
   .shx-f span{flex:none}
   .shx-f:disabled{display:none}
 }
+.tag.priv{background:rgb(175 82 222 / .14);color:#8e44ad}
+:root[data-theme="dark"] .tag.priv{color:#d39af0}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .tag.priv{color:#d39af0} }

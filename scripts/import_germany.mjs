@@ -61,6 +61,7 @@ let added = 0; const skipped = [];
 for (const { g, c, url, d } of details.sort((a, b) => a.c.academy.localeCompare(b.c.academy) || a.c.courseName.localeCompare(b.c.courseName))) {
   const u = c.academy;
   if (!UNIS[u]) { skipped.push(`${u} | ${c.courseName} (no location)`); continue; }
+  if (PRIVATE.test(u)) UNIS[u].priv = true;   // privately run — the map's Public / Private filter
   const t = nonEuTuition({ uni: u, city: c.city, title: c.courseName, parsed: d });
   if (t.tuition == null) { skipped.push(`${u} | ${c.courseName} (fee not stated)`); continue; }
   const { f, fn } = yearlyFee(d, t.tuition);

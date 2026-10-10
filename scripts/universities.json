@@ -827,7 +827,8 @@
   "c": "Heidelberg",
   "lat": 49.4129,
   "lng": 8.6532,
-  "co": "de"
+  "co": "de",
+  "priv": true
  },
  "University of Göttingen": {
   "web": "https://uni-goettingen.de",
@@ -995,7 +996,8 @@
   "c": "Berlin",
   "lat": 52.5174,
   "lng": 13.3951,
-  "co": "de"
+  "co": "de",
+  "priv": true
  },
  "Bauhaus-Universität Weimar": {
   "web": "https://www.uni-weimar.de",
@@ -1100,7 +1102,8 @@
   "c": "Frankfurt am Main",
   "lat": 50.1327,
   "lng": 8.6802,
-  "co": "de"
+  "co": "de",
+  "priv": true
  },
  "University of Passau": {
   "web": "https://www.uni-passau.de",
@@ -1114,7 +1117,8 @@
   "c": "Möckern",
   "lat": 52.1406,
   "lng": 11.9526,
-  "co": "de"
+  "co": "de",
+  "priv": true
  },
  "Aalen University": {
   "web": "https://www.hs-aalen.de",
@@ -1128,7 +1132,8 @@
   "c": "Berlin",
   "lat": 52.5129,
   "lng": 13.3893,
-  "co": "de"
+  "co": "de",
+  "priv": true
  },
  "HTW Berlin University of Applied Sciences": {
   "web": "https://mide.htw-berlin.de",

@@ -39,8 +39,12 @@
           <div class="field"><label for="city">City</label><select id="city"><option value="">Any city</option></select></div>
           <div class="field"><label for="radius">Radius (km)</label><input type="number" id="radius" min="0" max="1000" step="5" placeholder="City only"></div>
         </div>
-        <div class="field"><label for="rank">World rank (QS 2027)</label>
-          <select id="rank"><option value="">Any</option><option value="100">Top 100</option><option value="200">Top 200</option><option value="400">Top 400</option><option value="1000">Top 1000</option><option value="ranked">Ranked only</option></select></div>
+        <div class="row2">
+          <div class="field"><label for="rank">World rank (QS 2027)</label>
+            <select id="rank"><option value="">Any</option><option value="100">Top 100</option><option value="200">Top 200</option><option value="400">Top 400</option><option value="1000">Top 1000</option><option value="ranked">Ranked only</option></select></div>
+          <div class="field"><label for="utype">University type</label>
+            <select id="utype"><option value="">Any</option><option value="public">Public</option><option value="private">Private</option></select></div>
+        </div>
         <div class="field"><label for="maxcost" class="range-lbl"><span>Max total after sure scholarship</span><b id="maxv"></b></label><input type="range" id="maxcost" min="20000" max="64000" step="500"></div>
         <div class="chips" role="group" aria-label="Options">
           <label class="chip-t"><input type="checkbox" id="f-sure"><span>Sure scholarship</span></label>
