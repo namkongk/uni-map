@@ -39,6 +39,7 @@ const SUBJECTS = [
   ["NUR", /(adult|mental-health|child(ren'?s)?|learning-disabilit(y|ies))-nursing|nursing-(adult|mental-health|child|pre-?reg|with-(nmc-)?registration)|pre-?registration-nursing/],
   ["HM", /(health(-and-social)?-?care-management|health-management|healthcare-leadership|health-services-management|public-health|global-health|international-health)/],
   ["SF", /(sustainable-finance|green-finance|climate-finance|finance-and-sustainab|sustainab[a-z-]*-finance|responsible-(finance|invest)|esg|impact-invest|sustainable-investment|carbon-finance)/],
+  ["FT", /(fintech|financial-technolog)/],
   ["DEV", /(development-economics|development-finance|economics-(of|and|for)-development|finance-and-development|microfinance|financial-inclusion|economic-development)/],
   ["DM", /(international-development|development-studies|global-development|development-management|development-practice|ngo|non-?profit|charity-management|humanitarian|sustainable-development|social-innovation)/],
   ["HCI", /(human-computer-interaction|user-experience|ux-design|interaction-design|\bhci\b)/],

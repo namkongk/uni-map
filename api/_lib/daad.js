@@ -76,6 +76,7 @@ export function nonEuTuition({ uni, city = "", title = "", parsed }) {
 export const DAAD_SUBJECTS = [
   ["HM", /public health|global health|international health|health (care |services? )?(management|economics|policy)|healthcare management|epidemiology|health sciences?|health promotion/i],
   ["SF", /sustainab\w* finance|green finance|climate finance|finance and sustainab|sustainab\w* (and|&) finance|responsible (finance|invest)|\besg\b|impact invest|sustainable (investment|banking)/i],
+  ["FT", /fintech|financial technolog/i],
   ["DEV", /development economics|development finance|economics of development|international and development economics|economic development|microfinance/i],
   ["DM", /international development|development studies|global development|development management|development cooperation|\bngo\b|non-?profit|humanitarian|sustainable development|development (policy|practice)|social (innovation|entrepreneurship)|peace and conflict/i],
   ["HCI", /human[- ]computer|\bhci\b|interaction design|user experience|\bux\b|human[- ]cent(er|re)d|usability/i],

@@ -74,5 +74,8 @@
  ],
  "University of Lancashire (UCLan)": [
   { "name": "Articulation Scholarship", "kind": "partner", "amtText": "£2,000", "note": "Automatic only if your bachelor's is from one of UCLan's partner institutions in Nepal (see their list).", "src": "https://www.lancashire.ac.uk/international-students/country/nepal" }
+ ],
+ "Leeds Trinity University": [
+  { "name": "International Scholarship", "kind": "auto", "amt": 3100, "amtText": "£3,100", "courses": ["MSc Computer Science", "MSc Data Science and Artificial Intelligence", "MSc Financial Technology"], "note": "Applied automatically to eligible international students in the first year — no application. Listed for Computer Science, Data Science & AI and Financial Technology, not Public Health.", "src": "https://www.leedstrinity.ac.uk/international/international-fees-and-funding/tuition-fees/" }
  ]
 }

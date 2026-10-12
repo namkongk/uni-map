@@ -34,7 +34,9 @@ by_uni = {}
 # (Computing PhDs: estimated from that university's CS / AI / HCI master's only, not its health or nursing courses.)
 for r in rows:
     if r["g"] in ("CS", "AI", "HCI") and r.get("co", "uk") == "uk": by_uni.setdefault(r["u"], []).append(r)
+NO_PHD = {"Leeds Trinity University"}   # no computing PhD found on its pages (it lists a Masters by Research)
 for u, rs in by_uni.items():
+    if u in NO_PHD: continue
     first = rs[0]
     fee = sum(x["f"] for x in rs) / len(rs) * 0.85
     fee = int(min(42000, max(15000, round(fee / 500) * 500)))

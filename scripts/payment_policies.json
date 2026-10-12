@@ -506,5 +506,18 @@
   "n": "3",
   "src": "https://www.bucks.ac.uk/study/fees-and-funding/fees-liability-and-instalment-dates",
   "pf": {"bal": true, "sep": [["~09-21", 33.34], ["~01-15", 33.33], ["~04-15", 33.33]]}
+ },
+ "Leeds Trinity University": {
+  "dep": "50% of the first-year fee",
+  "depNote": "Before registration — by 21 Aug 2026 for September starts",
+  "nepal": "Apply through Leeds Trinity's South Asia team (southasia@leedstrinity.ac.uk) — direct applications from Nepal aren't considered",
+  "plan": "Remaining 50% in 2 installments: 25% within the first 8 weeks, 25% in the next 8 weeks",
+  "n": "3",
+  "sched": {
+   "September intake": "25% by mid-Nov · 25% by mid-Jan (≈ 8 + 8 weeks after starting)",
+   "January intake": "25% by late Mar · 25% by late May (≈ 8 + 8 weeks after starting)"
+  },
+  "src": "https://www.leedstrinity.ac.uk/international/international-fees-and-funding/paying-your-tuition-fees/",
+  "pf": {"dep": "50%", "bal": true, "sep": [["~11-15", 50, "25% (first 8 weeks)"], ["~01-15", 50, "Final 25%"]], "jan": [["~03-25", 50, "25% (first 8 weeks)"], ["~05-25", 50, "Final 25%"]]}
  }
 }

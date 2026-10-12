@@ -74,7 +74,7 @@ function money(n, from = COUNTRY.cur) {
 const r100 = n => Math.round(n / 100) * 100;
 const rm = (r, n) => money(n, coOf(r).cur);   // an amount belonging to course r
 const rsym = r => CUR[coOf(r).cur].sym;       // r's local currency symbol (hourly pay is always local)
-const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health & public health", NUR: "Nursing", DEV: "Development economics & finance", SF: "Sustainable & green finance", DM: "International development & NGO management" };
+const PNAME = { CS: "Computer Science", AI: "AI", HCI: "HCI / UX", HM: "Health & public health", NUR: "Nursing", DEV: "Development economics & finance", SF: "Sustainable & green finance", FT: "FinTech (financial technology)", DM: "International development & NGO management" };
 // Gross pay needed for a given take-home under the country's tax model (bisection — the model is piecewise linear).
 const grossFor = (net, co = COUNTRY) => { if (net <= 0) return 0; let lo = net, hi = net * 3; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (m - co.tax(m) < net) lo = m; else hi = m; } return hi; };
 

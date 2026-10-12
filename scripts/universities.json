@@ -716,10 +716,9 @@
  "Leeds Trinity University": {
   "web": "https://www.leedstrinity.ac.uk",
   "c": "Leeds",
-  "lat": 53.846,
-  "lng": -1.643,
-  "l": 13000,
-  "new": true
+  "lat": 53.7953,
+  "lng": -1.5424,
+  "l": 13000
  },
  "University of Greater Manchester": {
   "web": "https://greatermanchester.ac.uk",

@@ -731,5 +731,11 @@ export default {
   "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/5634/",
   "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6104/",
   "https://www2.daad.de/deutschland/studienangebote/international-programmes/en/detail/6535/"
+ ],
+ "Leeds Trinity University": [
+  "https://www.leedstrinity.ac.uk/courses/postgraduate/computer-science/",
+  "https://www.leedstrinity.ac.uk/courses/postgraduate/data-science-and-artificial-intelligence/",
+  "https://www.leedstrinity.ac.uk/courses/postgraduate/public-health/",
+  "https://www.leedstrinity.ac.uk/courses/postgraduate/financial-technology/"
  ]
 };
