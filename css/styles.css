@@ -423,13 +423,13 @@ body.show-names .pin .nm,.pin.sel .nm{display:block}
 .aw-top b{font-size:13px}
 .aw-amt{font-weight:700;font-size:13px;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
 .aw-st{font-size:11.5px;font-weight:650}
-.aw-st.ok{color:var(--green-ink)} .aw-st.need{color:var(--amber-ink)} .aw-st.apply{color:var(--accent)} .aw-st.early{color:var(--ink-2)} .aw-st.muted{color:var(--muted)}
+.aw-st.ok{color:var(--green-ink)} .aw-st.need{color:var(--amber-ink)} .aw-st.apply{color:var(--accent)} .aw-st.maybe{color:var(--ink-2);font-style:italic} .aw-st.early{color:var(--ink-2)} .aw-st.muted{color:var(--muted)}
 .aw-note{margin:0;font-size:11.5px;color:var(--muted);line-height:1.45}
 .aw-note a{color:var(--accent);font-weight:600;text-decoration:none}
 td.aw{min-width:200px}
 .awc{display:block;font-weight:650;font-size:12px;line-height:1.35;margin-bottom:3px}
 .awc small{font-weight:500;color:var(--muted)}
-.awc.ok{color:var(--green-ink)} .awc.need{color:var(--amber-ink)} .awc.apply{color:var(--accent)} .awc.early{color:var(--ink-2)}
+.awc.ok{color:var(--green-ink)} .awc.need{color:var(--amber-ink)} .awc.apply{color:var(--accent)} .awc.maybe{color:var(--ink-2)} .awc.early{color:var(--ink-2)}
 
 /* fee payment policy (info card) */
 .pp{border-radius:var(--r-lg);background:rgb(var(--tint) / calc(var(--glass-a) * .7 + .1));box-shadow:0 1px 0 rgb(var(--rim) / calc(var(--rim-a) * .7)) inset, 0 0 0 .5px var(--line)}

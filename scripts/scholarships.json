@@ -1,12 +1,13 @@
 {
- "_about": "Scholarships Nepali self-funded master's students can actually get, read from each university's own pages (checked 4–5 Oct 2026). kind: nepal = only for Nepal; auto = given automatically to eligible international students; grade = automatic if you reach the UK grade in `min`; apply = you must apply and awards are competitive; early = discount for paying the deposit or fees early; pathway = only via the university's pathway/pre-master's college; partner = only if your bachelor's is from a listed partner institution. amt is the £ value used for cost totals (only nepal/auto/grade awards count towards the 'sure scholarship'). courses limits an award to listed programmes.",
- "_checked": "2026-10-05",
+ "_about": "Scholarships Nepali self-funded master's students can actually get, read from each university's own pages (checked 4–14 Oct 2026). kind: nepal = only for Nepal; auto = given automatically to eligible international students; grade = automatic if you reach the UK grade in `min`; considered = every applicant is assessed automatically but awards are limited / at the university's discretion (shown, never counted); apply = you must apply and awards are competitive; early = discount for paying the deposit or fees early; pathway = only via the university's pathway/pre-master's college; partner = only if your bachelor's is from a listed partner institution. amt is the £ value used for cost totals (only nepal/auto/grade awards count towards the 'sure scholarship'). courses limits an award to listed programmes.",
+ "_checked": "2026-10-14",
  "University of Exeter": [
   { "name": "PGT Scholarship for Nepal", "kind": "nepal", "amt": 7500, "amtText": "£7,500", "courses": ["MSc Computer Science"], "note": "Automatic for Nepali citizens on an eligible master's (January 2027 list includes MSc Computer Science, Data Science and Advanced Data Science — not Advanced Computer Science). Must meet offer conditions and pay the deposit. Can combine with Exeter Excellence up to £10,000.", "deadline": "1 Dec 2026", "src": "https://www.exeter.ac.uk/study/funding/award/?id=5676" },
   { "name": "Exeter Excellence Scholarship", "kind": "apply", "amtText": "Up to £15,000 (2027/28)", "note": "Competitive, for high-achieving offer holders; apply after getting an offer (January 2027 applications under the 2026/27 scheme until 26 Nov 2026).", "src": "https://www.exeter.ac.uk/study/funding/exeterexcellence/" }
  ],
  "Swansea University": [
-  { "name": "Nepal and Sri Lanka Thrive Bursary", "kind": "pathway", "amtText": "£6,000", "note": "Automatic for students from Nepal — but offered by The College, Swansea University (the pathway / pre-master's college), not for direct MSc entry.", "src": "https://www.swansea.ac.uk/the-college/admissionandfees/scholarships/postgraduate/" }
+  { "name": "Nepal and Sri Lanka Thrive Bursary", "kind": "pathway", "amtText": "£6,000", "note": "Automatic for students from Nepal — but offered by The College, Swansea University (the pathway / pre-master's college), not for direct MSc entry.", "src": "https://www.swansea.ac.uk/the-college/admissionandfees/scholarships/postgraduate/" },
+  { "name": "Nepal Bursary", "kind": "nepal", "amt": 6000, "amtText": "£6,000", "courses": ["MSc Advanced Computer Science"], "note": "Automatic £6,000 tuition fee reduction for self-funding students domiciled in Nepal starting a postgraduate taught course — no application. (The research MSc isn't a taught course.)", "src": "https://www.swansea.ac.uk/international-students/my-country/nepal/" }
  ],
  "Birmingham City University": [
   { "name": "International Postgraduate Scholarship", "kind": "auto", "amt": 3000, "amtText": "£3,000", "note": "For self-funded international students on a full-time taught master's (listed on BCU's Nepal page).", "src": "https://www.bcu.ac.uk/international/bcu-in-your-country/nepal" }
@@ -51,20 +52,24 @@
  ],
  "Queen's University Belfast": [
   { "name": "South Asia Postgraduate Scholarship", "kind": "apply", "amtText": "£3,000–£5,000", "note": "For new students from South Asia on full-time taught master's; check the terms for how it is awarded.", "src": "https://www.qub.ac.uk/Study/international-students/your-country/nepal/" },
-  { "name": "Early Confirmation / full payment discount", "kind": "early", "amtText": "£1,500", "note": "Unconditional offer holders who pay tuition in full by the deadline (18 Sep 2026 for taught master's).", "src": "https://www.qub.ac.uk/Study/international-students/your-country/nepal/" }
+  { "name": "Early Confirmation / full payment discount", "kind": "early", "amtText": "£1,500", "note": "Unconditional offer holders who pay tuition in full by the deadline (18 Sep 2026 for taught master's).", "src": "https://www.qub.ac.uk/Study/international-students/your-country/nepal/" },
+  { "name": "International Postgraduate Taught Scholarship (South Asia)", "kind": "nepal", "amt": 4000, "amtText": "£4,000", "courses": ["MSc Artificial Intelligence"], "note": "Awarded automatically on enrolment to new full-time international students from South Asia (incl. Nepal) — no application; £4,000 for MSc Artificial Intelligence on the 2026/27 South Asia table.", "src": "https://www.qub.ac.uk/Study/international-students/international-scholarships/south-asia/South-Asia-Scholarships/" }
  ],
  "University for the Creative Arts": [
   { "name": "Full payment discount", "kind": "early", "amtText": "£1,000", "note": "Non-EU international students who pay full tuition (after scholarships) before or at CAS issue.", "src": "https://www.uca.ac.uk/study-at-uca/scholarships/" }
  ],
  "University of Surrey": [
   { "name": "Vice-Chancellor's International Scholarship", "kind": "apply", "amtText": "£7,500", "note": "Competitive award for selected postgraduates with academic excellence (listed for Nepalese students; apply by 20 Aug 2027).", "src": "https://www.surrey.ac.uk/nepal" },
-  { "name": "International Excellence Award", "kind": "apply", "amtText": "£5,000", "note": "Self-funded international students; apply before your CAS is issued.", "src": "https://www.surrey.ac.uk/fees-and-funding/scholarships-and-bursaries/international-excellence-award-postgraduate" }
+  { "name": "International Excellence Award", "kind": "apply", "amtText": "£5,000", "note": "Self-funded international students; apply before your CAS is issued.", "src": "https://www.surrey.ac.uk/fees-and-funding/scholarships-and-bursaries/international-excellence-award-postgraduate" },
+  { "name": "Professor GQ Max Lu Global Scholarship (PG)", "kind": "apply", "amtText": "£15,000", "note": "For South Asia students on STEM master's with financial need — separate application.", "src": "https://www.surrey.ac.uk/fees-and-funding/scholarships-and-bursaries/professor-gq-max-lu-global-scholarship-postgraduate" }
  ],
  "Brunel University of London": [
-  { "name": "VC's Postgraduate International Excellence Award", "kind": "apply", "amtText": "£6,000", "note": "Competitive; Brunel gives the single highest award you're eligible for.", "src": "https://www.brunel.ac.uk/scholarships/home" }
+  { "name": "VC's Postgraduate International Excellence Award", "kind": "apply", "amtText": "£6,000", "note": "Competitive; Brunel gives the single highest award you're eligible for.", "src": "https://www.brunel.ac.uk/scholarships/home" },
+  { "name": "Postgraduate International Bursary", "kind": "grade", "min": "2:2", "amt": 4000, "amtText": "£4,000", "note": "Assessed automatically for self-funded international students with a 2:2 or equivalent on a taught postgraduate course (January 2026 – January 2027 intakes) who pay the £5,000 deposit by the advisory deadline (30 Nov 2026 for January 2027).", "src": "https://www.brunel.ac.uk/scholarships/the-international-bursary-pg-terms-and-conditions" }
  ],
  "Newcastle University": [
-  { "name": "Vice-Chancellor's Excellence Scholarship (PG)", "kind": "apply", "amtText": "Up to 50% off tuition", "note": "30 awards for outstanding international applicants to full-time master's (listed on Newcastle's Nepal page).", "src": "https://www.ncl.ac.uk/international/country/nepal/" }
+  { "name": "Vice-Chancellor's Excellence Scholarship (PG)", "kind": "apply", "amtText": "Up to 50% off tuition", "note": "30 awards for outstanding international applicants to full-time master's (listed on Newcastle's Nepal page).", "src": "https://www.ncl.ac.uk/international/country/nepal/" },
+  { "name": "Vice-Chancellor's International Scholarship (PG)", "kind": "considered", "amtText": "£8,000", "note": "International applicants (Nepal listed) are considered automatically on merit — no form; for 2027 entry you must accept the offer and pay the deposit by 2 Aug 2027.", "src": "https://www.ncl.ac.uk/international/country/nepal/" }
  ],
  "University of Bath": [
   { "name": "Bath Global Excellence Scholarship", "kind": "apply", "amtText": "£10,000", "note": "Up to 250 competitive awards for high achievers on full-time taught master's (Engineering & Design, Humanities & Social Sciences, Science). Deadlines 4 Feb, 8 Apr, 11 Jun 2027.", "src": "https://www.bath.ac.uk/guides/applying-for-the-bath-global-excellence-scholarship/" }
@@ -77,5 +82,196 @@
  ],
  "Leeds Trinity University": [
   { "name": "International Scholarship", "kind": "auto", "amt": 3100, "amtText": "£3,100", "courses": ["MSc Computer Science", "MSc Data Science and Artificial Intelligence", "MSc Financial Technology"], "note": "Applied automatically to eligible international students in the first year — no application. Listed for Computer Science, Data Science & AI and Financial Technology, not Public Health.", "src": "https://www.leedstrinity.ac.uk/international/international-fees-and-funding/tuition-fees/" }
+ ],
+ "Leeds Beckett University": [
+  { "name": "International Student Scholarship", "kind": "nepal", "amt": 5000, "amtText": "£5,000 (first year)", "note": "Automatic — no application — for self-funded, full-time students domiciled in Nepal (also the Middle East, Africa and Turkey) paying the overseas fee; deducted from your invoice. Not for PGDip / PGCert, part-time, repeat or placement years. Can't be combined with another Leeds Beckett international scholarship.", "src": "https://www.leedsbeckett.ac.uk/international-students/scholarships/nepal-scholarships/" },
+  { "name": "Carnegie Sports Scholarship", "kind": "apply", "amtText": "50% off postgraduate tuition", "note": "For student-athletes at a high level in American football, athletics, cricket, football, netball, rugby league, rugby union or tennis; recipients represent the university in BUCS. Apply with your sporting record.", "src": "https://www.leedsbeckett.ac.uk/international-students/scholarships/nepal-scholarships/" }
+ ],
+ "University of Hertfordshire": [
+  { "name": "Chancellor's International Scholarship", "kind": "considered", "amtText": "£500–£4,000", "note": "Your course application is assessed automatically (grades, English, personal statement) — no separate form; the amount is emailed to successful applicants. For new, self-funded international students (stated for September 2026 entry). Not combinable with most other Herts scholarships.", "src": "https://www.herts.ac.uk/international/scholarships-and-fees/scholarships" }
+ ],
+ "University of Greenwich": [
+  { "name": "International Scholarship Award", "kind": "apply", "amtText": "Up to £3,000", "note": "Tuition fee discount for new international offer holders; you must fill in the scholarship application form. Criteria and deadlines for January 2027 entry are published from October 2026. Not combinable with other Greenwich awards.", "src": "https://www.gre.ac.uk/bursaries/international-scholarships-award" }
+ ],
+ "University of Chester": [
+  { "name": "International Scholarship Award", "kind": "considered", "amtText": "Shown on your offer", "note": "All international applicants are considered automatically when they apply; any award (amount not published) appears on the offer letter.", "src": "https://chester.ac.uk/international/fees-scholarships-and-finance/scholarships/" }
+ ],
+ "Teesside University": [
+  { "name": "Global Excellence Scholarship", "kind": "considered", "amtText": "£2,000 (first year)", "note": "International fee payers on campus are considered automatically but awards are limited and not guaranteed; you must pay the deposit and accept your offer by the date in the email. Stated for September 2026 starts (offer by 30 Apr 2026) — check for later intakes.", "src": "https://www.tees.ac.uk/sections/international/global_excellence_scholarship.cfm" }
+ ],
+ "University of Sunderland": [
+  { "name": "Global Leaders Scholarship", "kind": "considered", "amtText": "£5,500", "note": "Postgraduate fee reduction allocated by Admissions — no separate application; shown on your offer letter. Open to international applicants outside East Asia, the Gulf and Europe (so Nepal is eligible) for 2026/27 entry. Not guaranteed and subject to availability.", "src": "https://www.sunderland.ac.uk/scholarships-and-bursaries/scholarships-bursaries-guide" }
+ ],
+ "University of Staffordshire": [
+  { "name": "Vice Chancellor's Scholarship", "kind": "considered", "amtText": "£3,000", "note": "Full-time, campus-based international fee payers are considered by International Admissions — no form; shown on your offer letter and CAS. Not for sponsored students; only the highest-value Staffordshire discount applies.", "src": "https://www.staffs.ac.uk/international/your-application-journey/scholarships-fees/scholarships" }
+ ],
+ "Keele University": [
+  { "name": "Postgraduate Global Scholarship (1st)", "kind": "grade", "min": "1st", "amt": 5000, "amtText": "£5,000", "note": "Automatic for self-funded international students on a PGDip-or-higher taught course starting 2026/27, by undergraduate result (Keele's own equivalence). One-off; not combinable with other Keele awards.", "src": "https://www.keele.ac.uk/study/postgraduatestudy/tuitionfeesandfunding/postgraduatefunding/postgraduatebursariesandscholarshipsinternational/postgraduateglobalscholarshipinternational2026/" },
+  { "name": "Postgraduate Global Scholarship (2:1)", "kind": "grade", "min": "2:1", "amt": 4000, "amtText": "£4,000", "note": "Automatic with a 2:1 or equivalent (same scheme).", "src": "https://www.keele.ac.uk/study/postgraduatestudy/tuitionfeesandfunding/postgraduatefunding/postgraduatebursariesandscholarshipsinternational/postgraduateglobalscholarshipinternational2026/" },
+  { "name": "Postgraduate Global Scholarship (2:2)", "kind": "grade", "min": "2:2", "amt": 3000, "amtText": "£3,000", "note": "Automatic with a 2:2 or equivalent (same scheme).", "src": "https://www.keele.ac.uk/study/postgraduatestudy/tuitionfeesandfunding/postgraduatefunding/postgraduatebursariesandscholarshipsinternational/postgraduateglobalscholarshipinternational2026/" }
+ ],
+ "University of Worcester": [
+  { "name": "International Merit Scholarship (2:1 or 1st)", "kind": "grade", "min": "2:1", "amt": 3000, "amtText": "£3,000 a year", "note": "Automatic for non-EU students on full-time programmes, by academic result. Only one Worcester scholarship can be used (plus the early payment discount).", "src": "https://www.worcester.ac.uk/study/International/international-applicants/fees-scholarships-and-loans/" },
+  { "name": "International Merit Scholarship (2:2)", "kind": "grade", "min": "2:2", "amt": 2000, "amtText": "£2,000 a year", "note": "Automatic with a 2:2 or equivalent (same scheme).", "src": "https://www.worcester.ac.uk/study/International/international-applicants/fees-scholarships-and-loans/" },
+  { "name": "Early payment discount", "kind": "early", "amtText": "£500", "note": "If you pay the full year's tuition by 30 Sept (September start) or 31 Jan (January start). Can be added to the merit scholarship.", "src": "https://www.worcester.ac.uk/study/International/international-applicants/fees-scholarships-and-loans/" }
+ ],
+ "Bangor University": [
+  { "name": "International Scholarship", "kind": "considered", "amtText": "£6,000", "note": "All international applicants are considered when they apply (course, grades, statement, references, domicile) — the outcome is in your offer letter. At the university's discretion; not for fully sponsored students.", "src": "https://www.bangor.ac.uk/international/future/international-scholarship" }
+ ],
+ "Aberystwyth University": [
+  { "name": "Global Citizens Scholarship", "kind": "auto", "amt": 3800, "amtText": "£3,800 (sciences)", "note": "Granted automatically to eligible international fee payers who apply by 1 August and meet entry requirements — £3,800 for science subjects incl. Computer Science (£3,000 for humanities / business). Not with external funding (e.g. Chevening).", "src": "https://www.aber.ac.uk/en/study-with-us/international/scholarships/features/global-citizens-scholarship/" },
+  { "name": "International Accommodation Award", "kind": "auto", "amtText": "Free accommodation", "note": "Free university accommodation for the full year (50 weeks) of a one-year Master's (September or January start); can be combined with the Global Citizens Scholarship.", "src": "https://www.aber.ac.uk/en/study-with-us/ug-studies/scholarships/inclusive-accommodation/" }
+ ],
+ "University of South Wales": [
+  { "name": "International Scholarship", "kind": "considered", "amtText": "Up to £2,000 a year", "note": "Self-funded international applicants are considered automatically when the application arrives — confirmed in the offer letter. Plus £500 if you're CAS-ready early (31 May for September, 31 October for January/February). Not for sponsored students.", "src": "https://www.southwales.ac.uk/international/fees-scholarships/international-scholarships/" }
+ ],
+ "University of Bradford": [
+  { "name": "60th Anniversary Scholarship", "kind": "nepal", "amt": 3200, "amtText": "£3,200", "note": "Applied automatically as a tuition fee discount (no application, unlimited) for self-funded international students on full-time, on-campus taught master's in 2026/27. Based on nationality — Nepal gets the top rate (£3,200; most other countries £2,200).", "src": "https://www.bradford.ac.uk/scholarships/university-of-bradford-60th-anniversary-scholarship-2026-27/" }
+ ],
+ "Sheffield Hallam University": [
+  { "name": "Vice-Chancellor's Award", "kind": "nepal", "amt": 2000, "amtText": "£2,000 (Sept 2026) · £3,000 (Jan 2027)", "note": "Automatic first-year tuition bursary for self-financing students domiciled in South Asia (incl. Nepal) on a full-time taught course, studying at Sheffield Hallam for the first time. Only one award or scholarship can be used.", "src": "https://www.shu.ac.uk/funding/scholarships-and-bursaries/vice-chancellors-awards" }
+ ],
+ "University of Huddersfield": [
+  { "name": "Merit Scholarship (first class)", "kind": "grade", "min": "1st", "amt": 4000, "amtText": "£4,000 a year", "note": "Automatic for self-funding international students on full-time taught courses — notified in your offer letter, every year of the course except placement years.", "src": "https://www.hud.ac.uk/international/scholarships/" },
+  { "name": "Merit Scholarship", "kind": "grade", "min": "2:2", "amt": 2000, "amtText": "£2,000 a year", "note": "Automatic at general entry requirements (minimum 2:2 or equivalent) for self-funding international students; not alongside other scholarships.", "src": "https://www.hud.ac.uk/international/scholarships/" }
+ ],
+ "Manchester Metropolitan Univ.": [
+  { "name": "International Postgraduate Scholarship", "kind": "auto", "amt": 5000, "amtText": "£5,000 (first year)", "note": "Assessed automatically when you apply — no separate application — for international fee payers accepted onto a taught master's (£3,000 for MBA and some architecture courses). Stated for September 2026 entry; check later intakes.", "src": "https://www.mmu.ac.uk/study/scholarships/international-postgraduate-scholarship" }
+ ],
+ "University of Wolverhampton": [
+  { "name": "Academic Excellence Postgraduate Scholarship", "kind": "grade", "min": "2:1", "amt": 5000, "amtText": "£5,000", "note": "For all international PGT applicants with a 2:1 or above, deducted from tuition fees (£5,000 for September / November 2026 and January 2027 intakes; £4,000 for others). Privately funded students only.", "src": "https://www.wlv.ac.uk/international/international-fees--scholarships/" },
+  { "name": "International Postgraduate Scholarship", "kind": "grade", "min": "2:2", "amt": 2000, "amtText": "£2,000", "note": "For international PGT applicants with a 2:2 (or below) — not with the Academic Excellence award. September / November 2026 and January 2027 intakes.", "src": "https://www.wlv.ac.uk/international/international-fees--scholarships/" }
+ ],
+ "Nottingham Trent University": [
+  { "name": "NTU International Merit Scholarship / International Scholarship", "kind": "apply", "amtText": "£2,000–£3,000 (up to 50% for some countries)", "note": "Apply with the online scholarship form after getting an offer (January 2027 entry deadline 31 Oct 2026). Country-specific awards listed don't currently include Nepal.", "src": "https://www.ntu.ac.uk/international/scholarships" }
+ ],
+ "University of East Anglia": [
+  { "name": "International PG Merit Scholarship B", "kind": "nepal", "amt": 5500, "amtText": "£5,500 (2:2)", "note": "Automatic for Nepal nationals / residents paying overseas fees on an eligible on-campus master's — confirmed shortly after your offer, first year only. £6,500 with a 2:1 or above. Only combinable with the Early Payment Awards; not for fully sponsored students.", "src": "https://www.uea.ac.uk/study/fees-and-funding/scholarships/international-pg-merit-scholarship-b-2026" },
+  { "name": "International PG Merit Scholarship B (2:1 or above)", "kind": "grade", "min": "2:1", "amt": 6500, "amtText": "£6,500", "note": "The same scholarship at the higher rate for a 2:1 or above (UEA's own grade equivalence).", "src": "https://www.uea.ac.uk/study/fees-and-funding/scholarships/international-pg-merit-scholarship-b-2026" }
+ ],
+ "Edinburgh Napier University": [
+  { "name": "South Asia Scholarship", "kind": "considered", "amtText": "£3,000 (1-year master's)", "note": "For self-funding students living in Nepal (also India, Bangladesh, Sri Lanka) with an offer for a full-time taught master's (June / September 2026, January 2027). Awarded automatically once you pay the deposit, but numbers are limited — not all eligible applicants get it. £1,000 for 2-year courses.", "src": "https://www.napier.ac.uk/study-with-us/bursaries/south-asia-scholarship" }
+ ],
+ "University of Bedfordshire": [
+  { "name": "Vice Chancellor's Scholarship", "kind": "auto", "amt": 1000, "amtText": "£1,000 (first year)", "note": "International students on a master's starting in 2026/27 who don't receive another Bedfordshire scholarship get £1,000 off their first-year fees.", "src": "https://www.beds.ac.uk/international/fees-and-scholarships/" },
+  { "name": "Postgraduate Global Merit Scholarship", "kind": "considered", "amtText": "£3,000", "note": "For international students with at least 75% (or equivalent) in their bachelor's; replaces the Vice Chancellor's Scholarship. Subject-specific merit awards of up to £4,000 exist for listed courses. Plus £1,000 off for paying each year's fees in full by registration.", "src": "https://www.beds.ac.uk/international/fees-and-scholarships/" }
+ ],
+ "Middlesex University": [
+  { "name": "Regional and International Merit Awards", "kind": "apply", "amtText": "Up to £2,000", "note": "Apply once you have an offer (conditional or unconditional); for taught undergraduate and postgraduate courses.", "src": "https://www.mdx.ac.uk/international/course-fees-and-costs-for-international-students/scholarship-information-for-international-students/" }
+ ],
+ "University of Aberdeen": [
+  { "name": "Aberdeen Global Scholarship", "kind": "auto", "amt": 8000, "amtText": "£8,000", "note": "Applied automatically to all self-funded, full-time, on-campus international Master's students starting in 2026/27 or 2027/28 — shown on your CAS. Not with full sponsorship or other University of Aberdeen scholarships.", "src": "https://www.abdn.ac.uk/study/funding/644/" }
+ ],
+ "University of Kent": [
+  { "name": "Kent International Scholarship", "kind": "nepal", "amt": 5000, "amtText": "£5,000", "courses": ["MSc Advanced CS (+ Industrial Placement)", "MSc AI with Industrial Placement"], "note": "Guaranteed tuition fee discount for applicants domiciled in Nepal (and other listed countries) on taught master's outside Kent Business School — no application; you're notified after accepting your offer (January 2027 scheme).", "src": "https://www.kent.ac.uk/international/international-scholarships" },
+  { "name": "Kent International Scholarship (Kent Business School)", "kind": "nepal", "amt": 3000, "amtText": "£3,000", "courses": ["MSc Global Healthcare Management"], "note": "The same guaranteed discount at £3,000 for Kent Business School taught master's (Global Healthcare Management is a KBS course).", "src": "https://www.kent.ac.uk/international/international-scholarships" }
+ ],
+ "University of Plymouth": [
+  { "name": "International Welcome to Plymouth Scholarship", "kind": "auto", "amt": 4000, "amtText": "£4,000 (first year)", "note": "Offered automatically to any international postgraduate taught student who meets the entry and English requirements in their offer letter. Not for sponsored or online students; one Plymouth scholarship per year.", "src": "https://www.plymouth.ac.uk/study/funding/scholarships/international-postgraduate-welcome-to-plymouth-scholarship" }
+ ],
+ "University of Dundee": [
+  { "name": "Global Excellence Scholarship (first class)", "kind": "grade", "min": "1st", "amt": 8000, "amtText": "£8,000", "note": "For international fee payers with a UK first-class equivalent on a full-time, on-campus master's costing £22,250+ (MSc AI qualifies) — no separate form, verified at offer stage (September 2026 and January 2027 intakes; the 2027/28 scheme is £3,000).", "src": "https://www.dundee.ac.uk/scholarships/global-excellence-scholarship-postgraduate-january-2027" }
+ ],
+ "University of Essex": [
+  { "name": "Global Talent Masters Scholarship", "kind": "considered", "amtText": "£5,000", "note": "Self-funding international students on eligible courses are considered automatically, based on undergraduate grades (or a passed master's); deducted from tuition fees.", "src": "https://www.essex.ac.uk/scholarships/global-talent-masters-scholarship" }
+ ],
+ "Robert Gordon University": [
+  { "name": "International Student Discount for Master's", "kind": "nepal", "amt": 4000, "amtText": "£4,000", "note": "For self-funded international students on a full-time, on-campus master's — no application; shown in your offer letter and applied at enrolment. Nepal (with Kenya and Indonesia) gets £4,000; other countries £3,000. Only one RGU award per programme. Plus £500 off if you pay the deposit early (13 Nov 2026 for January 2027).", "src": "https://www.rgu.ac.uk/study/finance-funding/funding-and-scholarships/2279-rgu-international-student-discount-for-master-s-students" }
+ ],
+ "De Montfort University": [
+  { "name": "Global Access Scholarship", "kind": "auto", "amt": 3000, "amtText": "£3,000", "note": "Awarded automatically to international students starting a taught master's in October 2026 or February 2027 who pay the deposit before the deposit deadline. A further £500 if you pay the full fee before that deadline.", "src": "https://www.dmu.ac.uk/international/en/fees-and-scholarships/global-access-scholarship.aspx" }
+ ],
+ "UWE Bristol": [
+  { "name": "International Student Scholarship", "kind": "considered", "amtText": "Up to £4,000 (first year)", "note": "No application — awarded entirely at the university's discretion to international students on taught courses.", "src": "https://www.uwe.ac.uk/courses/funding/scholarships-and-bursaries/international-student-scholarships" },
+  { "name": "Postgraduate Success Scholarship", "kind": "early", "amtText": "£2,500–£3,500", "note": "Automatic once you pay at least £8,500 (£2,500) or the full fee (£3,500) by the deadline (1 Aug 2026 for September 2026). Not with other UWE fee reductions.", "src": "https://www.uwe.ac.uk/courses/funding/scholarships-and-bursaries/uwe-bristol-postgraduate-success-scholarship" }
+ ],
+ "Kingston University": [
+  { "name": "International Success Support Scholarship", "kind": "considered", "amtText": "£2,500", "note": "Applied automatically to the first-year invoice for international students on listed postgraduate courses only (the list changes by intake) — check whether your course is included.", "src": "https://www.kingston.ac.uk/study/fees-and-funding/international-scholarships-and-bursaries" },
+  { "name": "International Merit-Based Scholarship", "kind": "apply", "amtText": "£5,000", "note": "Apply with a 300-word personal statement (January 2027 applications open in early November).", "src": "https://www.kingston.ac.uk/study/fees-and-funding/international-scholarships-and-bursaries" }
+ ],
+ "University of Westminster": [
+  { "name": "International Postgraduate Excellence Award", "kind": "apply", "amtText": "£3,000", "note": "For overseas fee payers with an offer for a full-time master's — apply by the intake deadline (30 Nov 2026 for January 2027).", "src": "https://www.westminster.ac.uk/study/fees-and-funding/scholarships/international-postgraduate-excellence-award" }
+ ],
+ "London South Bank University": [
+  { "name": "Global Success Scholarship", "kind": "early", "amtText": "Up to £4,000", "note": "Given to international students who accept their offer and pay the early deposit by the set deadline; amount depends on subject; first year only.", "src": "https://www.lsbu.ac.uk/international/fees-and-funding/scholarships/the-global-success-scholarship" }
+ ],
+ "Glasgow Caledonian University": [
+  { "name": "Regional Postgraduate Scholarship", "kind": "nepal", "amt": 3500, "amtText": "£3,500", "note": "Tuition fee discount for Nepali students starting a full-time taught postgraduate course from 2026/27 (Glasgow or London campus) — no separate application, eligibility is assessed with your course application. Not for distance learning, part-time or research courses.", "src": "https://www.gcu.ac.uk/study/scholarships/postgraduate/new-to-gcu-regional-scholarship" }
+ ],
+ "Bournemouth University": [
+  { "name": "Academic Excellence Scholarship (International)", "kind": "grade", "min": "2:1", "amt": 4500, "amtText": "£4,500 (first year)", "note": "Automatically considered with a 2:1 or first-class degree (or equivalent) for courses starting January 2026, September 2026 or January 2027 — no application. Not for PGDip, part-time or distance learning.", "src": "https://www.bournemouth.ac.uk/study/postgraduate/fees-funding/scholarships/international-student-scholarships/academic-excellence-scholarship-international" },
+  { "name": "Academic Achievement Scholarship", "kind": "considered", "amtText": "£2,000", "note": "Automatically assessed for applicants with at least a high second-class honours degree (equivalent).", "src": "https://www.bournemouth.ac.uk/study/postgraduate/fees-funding/scholarships/international-student-scholarships" }
+ ],
+ "Univ. of the West of Scotland": [
+  { "name": "UWS Global Scholarship", "kind": "considered", "amtText": "Up to £2,000", "note": "Deducted automatically from tuition fees before your CAS is issued if you qualify — Scottish campuses, one-off for taught postgraduate study. Separately, selected programmes have a reduced 'enhanced scholarship' net fee (£13,000 class-based / £15,000 lab-based) with limited places.", "src": "https://www.uws.ac.uk/money-fees-funding/scholarships/uws-global-scholarships/" }
+ ],
+ "University of Stirling": [
+  { "name": "Vice-Chancellor's Postgraduate International Scholarship", "kind": "apply", "amtText": "£7,000", "note": "First-year tuition waiver — 100 awards for September 2026 and January 2027; apply through the 2026-27 application form once you hold an offer. Not with sponsorship or other scholarships.", "src": "https://www.stir.ac.uk/scholarships/general/postgraduate/vice-chancellors-postgraduate-international-scholarship/" }
+ ],
+ "Abertay University": [
+  { "name": "Abertay International Scholarship", "kind": "considered", "amtText": "Up to £3,000 a year", "note": "For new international taught students who meet their offer conditions — you're emailed after your offer if awarded (no form). Honoured if you defer September 2026 / January 2027 starts to the next intake.", "src": "https://www.abertay.ac.uk/study-apply/money-fees-and-funding/scholarships/international-postgraduate-abertay-scholarships/" }
+ ],
+ "Lancaster University": [
+  { "name": "Postgraduate International Early Acceptance Scholarship", "kind": "early", "amtText": "£2,000", "note": "International taught postgraduates (2027/28 entry) are considered automatically and get £2,000 off if they accept their place by 7 April 2027. Note: the £10,000 International Regional Scholarship included Nepal for 2026 entry, but Nepal isn't on the 2027 list.", "src": "https://www.lancaster.ac.uk/study/fees-and-funding/scholarships-and-bursaries/postgraduate-international-early-acceptance-scholarship/" }
+ ],
+ "Canterbury Christ Church University": [
+  { "name": "International Student Scholarship", "kind": "auto", "amt": 1500, "amtText": "£1,500 a year", "note": "Applied automatically to all full-time international students paying the standard international fee — no application.", "src": "https://www.canterbury.ac.uk/study-here/fees-and-funding/scholarships-and-bursaries/international-student-scholarship" }
+ ],
+ "Loughborough University": [
+  { "name": "Excellence Scholarship", "kind": "considered", "amtText": "Up to £6,000", "note": "Self-funding international students with a first-class degree (or equivalent) are considered from their application and final result — no separate application (listed for 2027 entry). Other Loughborough awards (Future Leaders £10,000, Global Impact) need an application by the spring deadline.", "src": "https://www.lboro.ac.uk/study/postgraduate/fees-funding/masters-funding/excellence-scholarship/" }
+ ],
+ "Oxford Brookes University": [
+  { "name": "International Student Scholarship", "kind": "early", "amtText": "£2,000", "note": "For postgraduate offer holders who pay the tuition deposit by the deadline linked to their offer date (for September 2026: 13 May, 7 July or 7 August).", "src": "https://www.brookes.ac.uk/study/funding/international-student-scholarship-september-entry" }
+ ],
+ "University of Roehampton": [
+  { "name": "International Excellence Scholarship", "kind": "considered", "amtText": "£1,000–£4,000", "note": "One-year awards for master's students (January or September entry); Roehampton automatically considers conditional offer holders for its Global Excellence award, paid as a fee discount on enrolment.", "src": "https://www.roehampton.ac.uk/study/fees-and-funding/international-fees-and-financial-support/postgraduate-scholarships/" }
+ ],
+ "University of Reading": [
+  { "name": "University of Reading Excellence Scholarship", "kind": "auto", "amt": 2000, "amtText": "£2,000–£7,000", "note": "Allocated automatically (2026/27) to international fee payers with at least a 2:2 (or expected), based on your academic record — at least £2,000; shown in your offer letter. Offer needed by 12 Dec 2026 for February 2027.", "src": "https://www.reading.ac.uk/ready-to-study/study/Fees-and-funding/masters-scholarships." }
+ ],
+ "Liverpool Hope University": [
+  { "name": "Hope Inspiring Ambition Scholarship", "kind": "auto", "amt": 2000, "amtText": "£2,000", "note": "Applied automatically when you receive an offer for any postgraduate programme (except PGCE) as an international student; unlimited. (Business, data science, public health and AI master's get the £2,500 Hope Inspiring Excellence Scholarship instead.)", "src": "https://www.hope.ac.uk/international/feesandscholarships/scholarships/" }
+ ],
+ "Bath Spa University": [
+  { "name": "International Recruitment Office Scholarship", "kind": "considered", "amtText": "£2,000", "note": "International students paying full fees on one-year postgraduate programmes at the Bath campuses are considered automatically once they accept their offer. An Asia Pacific scholarship (excluding China) is also automatic for 2026/27 applications made by 3 August.", "src": "https://www.bathspa.ac.uk/students/student-finance/scholarships-and-bursaries/international-recruitment-office-scholarship/" }
+ ],
+ "St Mary's University, Twickenham": [
+  { "name": "Country / Excellence Scholarship", "kind": "considered", "amtText": "Up to £1,500 / up to £4,000", "note": "Offer-holders are considered automatically for the first year — Country Scholarship (up to £1,500) for countries on the OECD development list, or Excellence Scholarship (up to £4,000); only one can be held. Full-time, on-campus taught courses starting September 2026 or January 2027.", "src": "https://www.stmarys.ac.uk/international/finance/scholarships.aspx" }
+ ],
+ "SOAS University of London": [
+  { "name": "SOAS Master's Scholarships (International)", "kind": "apply", "amtText": "£8,000", "note": "150+ fee waivers for overseas fee payers with a 2:1 or equivalent — apply by the round deadlines (2026 rounds: Feb, Apr, Jun). A Nepal / South Asia £5,000 scheme ran in 2023 only.", "src": "https://www.soas.ac.uk/study/student-life/finance/scholarships/soas-masters-scholarships-international-2026" }
+ ],
+ "University of Winchester": [
+  { "name": "International Postgraduate Student Scholarship", "kind": "considered", "amtText": "£5,000", "note": "Automatic for all new international taught postgraduates in 2025/26 (applied to the offer letter) — not yet confirmed for 2026/27 entry; check with Winchester.", "src": "https://www.winchester.ac.uk/student-life/Scholarships-bursaries-and-awards/International-scholarships-bursaries-and-awards/" }
+ ],
+ "University of York": [
+  { "name": "Global Impact Masters Scholarship", "kind": "considered", "amtText": "£8,000 (Nepal)", "note": "For 2026/27 entry, eligible international applicants (Nepal listed at £8,000) were considered automatically with their offer — the 2027/28 scheme is 'opening shortly', so confirm with York.", "src": "https://www.york.ac.uk/study/postgraduate-taught/funding/international/global-impact-masters-scholarship/" },
+  { "name": "International Masters Achievement Scholarship", "kind": "considered", "amtText": "Up to £10,000", "note": "Merit-based award for strong international applicants, assessed from your application; limited number.", "src": "https://www.york.ac.uk/study/postgraduate-taught/funding/international/international-masters-achievement-scholarship/" }
+ ],
+ "University of Sussex": [
+  { "name": "Sussex Nepal Scholarship (Masters)", "kind": "considered", "amtText": "£4,000", "note": "Automatic tuition fee reduction for overseas fee payers domiciled in Nepal stated for September 2026 entry — check it's renewed for your intake.", "src": "https://www.sussex.ac.uk/study/fees-funding/masters-scholarships/view/1888-Sussex-Nepal-Scholarship-Masters" }
+ ],
+ "Cardiff University": [
+  { "name": "Vice-Chancellor's International Scholarship", "kind": "considered", "amtText": "£3,500–£4,000", "note": "Self-funded international applicants to selected master's courses are considered automatically when they apply — not guaranteed; the eligible-course list is published per intake.", "src": "https://www.cardiff.ac.uk/study/international/funding-and-fees/international-scholarships/vc-international-scholarship" }
+ ],
+ "University of Leicester": [
+  { "name": "International Postgraduate Merit Scholarship", "kind": "grade", "min": "1st", "amt": 5000, "amtText": "£5,000", "note": "Automatic for self-funded international students with a first-class degree (or equivalent) on a taught master's — 2026/27 intakes incl. January and April 2027. Not with other Leicester awards.", "src": "https://le.ac.uk/study/postgraduates/fees-funding/scholarships-discounts/international-postgraduate-merit-scholarship" },
+  { "name": "Global Excellence Scholarship", "kind": "apply", "amtText": "£7,000", "note": "Competitive — needs a separate application by the published deadline.", "src": "https://le.ac.uk/study/postgraduates/fees-funding/scholarships-discounts/global-excellence-scholarship" }
+ ],
+ "Aston University": [
+  { "name": "Postgraduate International Community Scholarship", "kind": "auto", "amt": 3000, "amtText": "£3,000 (Apr 2027) · £4,000 (Sept 2026)", "note": "Applied automatically to self-funded international postgraduate taught students who pay the deposit by the deadline — £3,000 for April 2027 starts (£4,000 was offered for September 2026).", "src": "https://www.aston.ac.uk/international/scholarships" }
+ ],
+ "University of Strathclyde": [
+  { "name": "Faculty International Masters Scholarships", "kind": "considered", "amtText": "£6,000–£9,000", "note": "Faculty awards (Engineering, Science, Business) assessed automatically for international offer holders who meet the deposit deadline — Engineering £6,000 for January 2027; not guaranteed.", "src": "https://www.strath.ac.uk/engineering/studywithus/scholarships/internationalscholarships/" }
+ ],
+ "University of Nottingham": [
+  { "name": "International Postgraduate Masters Scholarship", "kind": "considered", "amtText": "£3,000", "note": "Automatic for self-funded international students starting a master's in 2026 (replaced the South Asia award) — check the terms for your intake.", "src": "https://www.nottingham.ac.uk/pgstudy/funding/international-postgraduate-scholarships" }
+ ],
+ "Queen Mary Univ. of London": [
+  { "name": "Global Excellence Scholarship", "kind": "considered", "amtText": "£7,000", "note": "International offer holders with a first-class degree (or equivalent) are considered automatically — limited, not guaranteed.", "src": "https://www.qmul.ac.uk/postgraduate/taught/funding_masters/" },
+  { "name": "President's Global Scholarship (PGT)", "kind": "apply", "amtText": "£10,000", "note": "Competitive awards for South Asia incl. Nepal — separate application; the 2026 round is closed, watch for 2027.", "src": "https://www.qmul.ac.uk/scholarships/items/presidents-global-scholarships--postgraduate-taught--.html" }
+ ],
+ "University of Glasgow": [
+  { "name": "Global Leadership Scholarship", "kind": "apply", "amtText": "£10,000", "note": "Competitive tuition fee discount for international master's applicants with a first-class (or equivalent) degree; Nepal is eligible — separate application by the deadline.", "src": "https://www.gla.ac.uk/scholarships/globalleadershipscholarship/" }
  ]
 }

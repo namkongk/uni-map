@@ -166,14 +166,15 @@ const myClass = () => ukClassOf(S.grade);
 
 /* ---------------- scholarships you can get (from scripts/scholarships.json) ---------------- */
 // Sorts each university's awards for one course: sure (automatic, incl. grade awards you meet), needs a higher grade,
-// apply (competitive), early-payment discounts, and conditional/other ones.
+// maybe (considered automatically but not guaranteed), apply (competitive), early-payment discounts, and conditional/other ones.
 function awardsFor(r, cls = myClass()) {
-  const res = { sure: [], grade: [], apply: [], early: [], other: [] };
+  const res = { sure: [], grade: [], maybe: [], apply: [], early: [], other: [] };
   if (r.lv !== "Masters") return res;
   for (const a of UNIS[r.u].sch || []) {
     if (a.courses && !a.courses.includes(r.p)) { res.other.push({ ...a, why: `Only for ${a.courses.join(", ")}` }); continue; }
     if (a.kind === "nepal" || a.kind === "auto") res.sure.push(a);
     else if (a.kind === "grade") (cls && CLS_RANK[cls] >= CLS_RANK[a.min] ? res.sure : res.grade).push(a);
+    else if (a.kind === "considered") res.maybe.push(a);
     else if (a.kind === "apply") res.apply.push(a);
     else if (a.kind === "early") res.early.push(a);
     else res.other.push({ ...a, why: a.kind === "pathway" ? "Pathway college only" : "Partner institutions only" });
@@ -288,7 +289,7 @@ function feeNote(r) {
 // Plain text (for filtering/sorting) and HTML (for the table) of the scholarships matched to a course.
 function awardsText(r) {
   const A = awardsFor(r); if (r.lv !== "Masters") return "";
-  return [...(r.s0 && !A.sure.some(a => a.amt >= r.s0) ? [rm(r, r.s0) + " " + (r.sl0 || "")] : []), ...A.sure.map(a => a.amtText + " " + a.name), ...A.grade.map(a => a.amtText + " if " + a.min), ...A.apply.map(a => a.name), ...A.early.map(a => a.name)].join(" · ");
+  return [...(r.s0 && !A.sure.some(a => a.amt >= r.s0) ? [rm(r, r.s0) + " " + (r.sl0 || "")] : []), ...A.sure.map(a => a.amtText + " " + a.name), ...A.grade.map(a => a.amtText + " if " + a.min), ...A.maybe.map(a => a.amtText + " " + a.name), ...A.apply.map(a => a.name), ...A.early.map(a => a.name)].join(" · ");
 }
 function awardsCell(r) {
   if (r.lv !== "Masters") return `<span class="muted">—</span>`;
@@ -297,6 +298,7 @@ function awardsCell(r) {
   if (r.s0 && !A.sure.some(a => a.amt >= r.s0)) out.push(`<span class="awc ok">✓ ${rm(r, r.s0)} <small>${esc(r.sl0 || "Listed scholarship")}</small></span>`);
   A.sure.forEach(a => out.push(`<span class="awc ok" title="${esc(a.note)}">✓ ${esc(a.amtText)} <small>${esc(a.name)}${a.kind === "nepal" ? " · Nepal" : ""}</small></span>`));
   A.grade.forEach(a => out.push(`<span class="awc need" title="${esc(a.note)}">${esc(a.amtText)} <small>needs ${esc(a.min)}${cls ? ` (you ≈ ${esc(cls)})` : " — add your grade"}</small></span>`));
+  A.maybe.forEach(a => out.push(`<span class="awc maybe" title="${esc(a.note)}">~ ${esc(a.amtText)} <small>may be offered · ${esc(a.name)}</small></span>`));
   if (A.apply.length) out.push(`<span class="awc apply" title="${esc(A.apply.map(a => a.name + ": " + a.amtText).join("\n"))}">+${A.apply.length} to apply for <small>${esc(A.apply.map(a => a.amtText).join(", "))}</small></span>`);
   A.early.forEach(a => out.push(`<span class="awc early" title="${esc(a.note)}">${esc(a.amtText)} <small>if you pay early</small></span>`));
   return out.join("") || `<span class="muted">None found</span>`;
@@ -1179,6 +1181,7 @@ function awardsHTML(u) {
     if (a.kind === "nepal") return ["ok", "✓ Automatic for Nepal"];
     if (a.kind === "auto") return ["ok", "✓ Automatic"];
     if (a.kind === "grade") return cls ? (CLS_RANK[cls] >= CLS_RANK[a.min] ? ["ok", `✓ Automatic — you meet the ${a.min}`] : ["need", `Needs a ${a.min} — you're ≈ ${cls === "3rd" ? "below 2:2" : cls}`]) : ["need", `Needs a ${a.min} — add your grade in Filters`];
+    if (a.kind === "considered") return ["maybe", "Considered automatically · not guaranteed"];
     if (a.kind === "apply") return ["apply", "Apply · competitive"];
     if (a.kind === "early") return ["early", "Discount for paying early"];
     if (a.kind === "pathway") return ["muted", "Pathway college only"];
@@ -1188,7 +1191,7 @@ function awardsHTML(u) {
     ${list.map(a => { const [c, t] = status(a); return `<div class="aw-row"><div class="aw-top"><b>${esc(a.name)}</b><span class="aw-amt">${esc(a.amtText)}</span></div>
       <span class="aw-st ${c}">${esc(t)}${a.courses && rows.some(r => a.courses.includes(r.p)) ? ` · ${esc(a.courses.join(", "))}` : ""}${a.deadline ? ` · deadline ${esc(a.deadline)}` : ""}</span>
       <p class="aw-note">${esc(a.note)} <a href="${esc(a.src)}" target="_blank" rel="noopener">Source ↗</a></p></div>`; }).join("")}
-    <p class="pp-src">Automatic awards count as "Sure scholarship"${when ? ` · checked ${when}` : ""}</p>
+    <p class="pp-src">Only guaranteed automatic awards count as "Sure scholarship"${when ? ` · checked ${when}` : ""}</p>
   </div></details>`;
 }
 function renderCard(u, withPlace) {
