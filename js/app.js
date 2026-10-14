@@ -306,6 +306,11 @@ function awardsCell(r) {
 const otherSch = r => r.lv === "PhD" ? (r.o || "") : "Chevening (full)" + (r.o ? "; " + r.o : "");
 
 /* ---------------- filters ---------------- */
+const AUT = /Sept|Oct/, JAN = /Jan|Feb/;
+function intakeMatch(r, k) {
+  const i = r.i || "";
+  return k === "aut" ? AUT.test(i) : k === "jan" ? JAN.test(i) : k === "both" ? AUT.test(i) && JAN.test(i) : true;
+}
 function numMatch(val, expr) {
   const m = expr.replace(/[^\d.<>=-]/g, "").match(/^(<=|>=|<|>|=)?(\d+(?:\.\d+)?)(?:-(\d+))?$/);
   if (!m) return null;
@@ -315,7 +320,7 @@ function numMatch(val, expr) {
 }
 function filtered() {
   const q = $("q").value.trim().toLowerCase();
-  const max = +$("maxcost").value, city = $("city").value, rank = $("rank").value, rad = +$("radius").value || 0, utype = $("utype").value;
+  const max = +$("maxcost").value, city = $("city").value, rank = $("rank").value, rad = +$("radius").value || 0, utype = $("utype").value, intake = $("intake").value;
   return ROWS.filter(r => {
     if (S.lvs.length && !S.lvs.includes(r.lv)) return false;
     if (S.subjs.length && !r.subj.some(g => S.subjs.includes(g))) return false;
@@ -326,7 +331,7 @@ function filtered() {
     if (utype && (utype === "private") !== isPrivate(r.u)) return false;
     if ($("f-sure").checked && !r.s) return false;
     if ($("f-place").checked && !r.pl.startsWith("Yes")) return false;
-    if ($("f-jan").checked && !/Jan|Feb|Mar|Apr|May|Jun|Jul|Nov/.test(r.i)) return false;
+    if (intake && !intakeMatch(r, intake)) return false;
     if ($("f-london").checked && r.c === "London") return false;
     if ($("f-noflag").checked && r.fl) return false;
     if ($("f-noest").checked && /est/.test(r.fn)) return false;
@@ -411,10 +416,13 @@ fitMaxCost(); $("maxcost").value = $("maxcost").max;
 { const nPriv = ROWS.filter(r => isPrivate(r.u)).length;
   $("utype").options[1].textContent = `Public (${ROWS.length - nPriv})`; $("utype").options[2].textContent = `Private (${nPriv})`;
   if (!nPriv) $("utype").options[2].disabled = true; }
-["q", "maxcost", "city", "radius", "rank", "utype", "f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).addEventListener("input", () => update({ fit: ["city", "radius"].includes(id) })));
+// Intake: courses starting in the September/October round, the January/February round, or both.
+{ const o = $("intake").options;
+  for (let k = 1; k < o.length; k++) { const n = ROWS.filter(r => intakeMatch(r, o[k].value)).length; o[k].textContent += ` (${n})`; o[k].disabled = !n; } }
+["q", "maxcost", "city", "radius", "rank", "utype", "intake", "f-sure", "f-place", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).addEventListener("input", () => update({ fit: ["city", "radius"].includes(id) })));
 $("reset").addEventListener("click", () => {
-  $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = ""; $("utype").value = "";
-  ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"].forEach(id => $(id).checked = false);
+  $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = ""; $("utype").value = ""; $("intake").value = "";
+  ["f-sure", "f-place", "f-london", "f-noflag", "f-noest", "f-entry"].forEach(id => $(id).checked = false);
   document.querySelectorAll("#frow input").forEach(i => i.value = ""); S.colf = {};
   S.lvs = []; S.subjs = []; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
 });
@@ -429,8 +437,8 @@ $("filtersToggle").addEventListener("click", () => { S.filtersOpen = !S.filtersO
 const applyFilters = () => { $("filtersToggle").setAttribute("aria-expanded", String(S.filtersOpen)); $("filtersBody").hidden = !S.filtersOpen; };
 applyFilters();
 function activeFilterCount() {
-  let n = ["q", "city", "rank", "utype"].filter(id => $(id).value.trim()).length;
-  n += ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"].filter(id => $(id).checked).length;
+  let n = ["q", "city", "rank", "utype", "intake"].filter(id => $(id).value.trim()).length;
+  n += ["f-sure", "f-place", "f-london", "f-noflag", "f-noest", "f-entry"].filter(id => $(id).checked).length;
   if ($("maxcost").value !== $("maxcost").max) n++;
   return n;
 }
@@ -1450,11 +1458,12 @@ document.addEventListener("change", e => { const s = e.target.closest("select[da
 
 /* saved searches: the current filters under a name, re-applied in one click (per set of ticked countries) */
 const SEL_KEY = SEL.join("+");
-const CHIPS = ["f-sure", "f-place", "f-jan", "f-london", "f-noflag", "f-noest", "f-entry"];
+const CHIPS = ["f-sure", "f-place", "f-london", "f-noflag", "f-noest", "f-entry"];
 const filterSnap = () => ({ q: $("q").value, max: $("maxcost").value === $("maxcost").max ? null : +$("maxcost").value, city: $("city").value, radius: $("radius").value,
-  rank: $("rank").value, utype: $("utype").value, chips: CHIPS.filter(id => $(id).checked), lvs: S.lvs.slice(), subjs: S.subjs.slice() });
+  rank: $("rank").value, utype: $("utype").value, intake: $("intake").value, chips: CHIPS.filter(id => $(id).checked), lvs: S.lvs.slice(), subjs: S.subjs.slice() });
 function applySearch(f) {
   $("q").value = f.q || ""; $("city").value = f.city || ""; $("radius").value = f.radius || ""; $("rank").value = f.rank || ""; $("utype").value = f.utype || "";
+  $("intake").value = f.intake || ((f.chips || []).includes("f-jan") ? "jan" : "");   // older saves had a "Non-autumn intake" tick
   $("maxcost").value = f.max == null ? $("maxcost").max : Math.min(+$("maxcost").max, f.max);
   CHIPS.forEach(id => $(id).checked = (f.chips || []).includes(id));
   S.lvs = Array.isArray(f.lvs) ? f.lvs.filter(l => LEVELS.includes(l)) : f.lv && f.lv !== "ALL" ? [f.lv] : []; S.subjs = Array.isArray(f.subjs) ? f.subjs.filter(g => PNAME[g]) : [];
