@@ -213,11 +213,11 @@ function applyLive() {
   for (const r of ROWS) {
     if (r.lv !== "Masters") continue;
     r.f = r.f0; r.fn = r.fn0; r.live = null; r.i = r.i0; r.fl = r.fl0; r.iLive = false; r.closed = null;
-    // Course details read from the course page: start dates replace the stored intakes; a course that has
-    // stopped recruiting (or whose page is gone) gets a warning, which "Hide warnings" also filters out.
+    // Course details read from the course page: a course that has stopped recruiting (or whose page is gone)
+    // gets a warning, which "Hide warnings" also filters out. Start dates stay as stored (checked by hand) —
+    // page-read months were unreliable (menu links like "Start in January", deadlines, induction dates).
     const info = r.url && LIVE.res[r.url]?.info;
     if (info) {
-      if (info.intakes?.length) { r.i = info.intakes.join(", "); r.iLive = r.i !== r.i0; }
       if (info.status === "closed" || info.status === "gone") {
         r.closed = { status: info.status, note: info.statusNote || "" };
         r.fl = [r.fl0, info.status === "gone" ? "Course page removed — check it still runs" : "Not taking applications (per course page)"].filter(Boolean).join("; ");
