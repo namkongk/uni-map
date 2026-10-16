@@ -279,7 +279,8 @@ const COLS = [
 const isPrivate = u => !!UNIS[u]?.priv;   // privately run; all other universities are public
 const rankText = (v, r) => v ?? (r.nr ? "Not checked" : "Unranked");
 const ukRankText = r => (r.co || "uk") === "uk" ? (ukRank(r)?.t ?? rankText(null, r)) : "—";   // UK league tables only rank UK universities
-const worldRankText = r => worldRank(r)?.t ?? (rankSrc() === "qs" ? rankText(null, r) : "Unranked");
+// US News positions were only collected for UK universities, so German ones read "Not checked" there.
+const worldRankText = r => worldRank(r)?.t ?? (rankSrc() === "qs" ? rankText(null, r) : rankSrc() === "usn" && (r.co || "uk") !== "uk" ? "Not checked" : "Unranked");
 
 /* ---------------- rankings: QS / THE / ARWU / CWUR worldwide, CUG / Guardian in the UK ---------------- */
 // Each gives { t: shown text ("601–650", "=45"), n: number to sort and filter by (top of a band) } or null if unranked.
@@ -291,6 +292,7 @@ const WR = {
   the: { name: "Times Higher Education 2027", short: "THE 2027", tag: "THE", get: r => rkOf(rkU(r).the, "the") },
   arwu: { name: "ShanghaiRanking ARWU 2026", short: "ARWU 2026", tag: "ARWU", get: r => rkOf(rkU(r).arwu, "arwu") },
   cwur: { name: "CWUR 2026", short: "CWUR 2026", tag: "CWUR", get: r => rkOf(rkU(r).cwur, "cwur") },
+  usn: { name: "US News Best Global Universities 2026–27", short: "US News 2026–27", tag: "US News", get: r => rkOf(rkU(r).usn, "usn") },
 };
 const UKR = {
   cug: { name: "Complete University Guide 2027", short: "CUG 2027", tag: "CUG", get: r => r.uk ? { t: String(r.uk), n: r.uk, src: "cug" } : null },
@@ -298,7 +300,7 @@ const UKR = {
 };
 // "Best of": the highest position the course's university reaches in any of the tables, labelled with that table.
 const bestOf = (T, r) => Object.values(T).map(x => x.get(r)).filter(Boolean).sort((a, b) => a.n - b.n)[0] || null;
-WR.best = { name: "Best of QS, THE, ARWU and CWUR", short: "best of 4", get: r => { const b = bestOf({ qs: WR.qs, the: WR.the, arwu: WR.arwu, cwur: WR.cwur }, r); return b && { ...b, t: `${b.t} (${WR[b.src].tag})` }; } };
+WR.best = { name: "Best of QS, THE, ARWU, CWUR and US News", short: "best of 5", get: r => { const b = bestOf({ qs: WR.qs, the: WR.the, arwu: WR.arwu, cwur: WR.cwur, usn: WR.usn }, r); return b && { ...b, t: `${b.t} (${WR[b.src].tag})` }; } };
 UKR.best = { name: "Best of CUG and Guardian", short: "best of 2", get: r => { const b = bestOf({ cug: UKR.cug, gua: UKR.gua }, r); return b && { ...b, t: `${b.t} (${UKR[b.src].tag})` }; } };
 const rankSrc = () => WR[$("rankSrc").value] ? $("rankSrc").value : "qs";
 const ukSrc = () => UKR[$("ukSrc").value] ? $("ukSrc").value : "cug";
@@ -307,7 +309,7 @@ const ukRank = r => (r.co || "uk") === "uk" ? UKR[ukSrc()].get(r) : null;
 // Every ranking a university has, as small labelled chips (UK tables first).
 function rankChips(r) {
   const uk = (r.co || "uk") === "uk" ? ["cug", "gua"].map(k => [k, UKR[k].get(r), true]) : [];
-  return [...uk, ...["qs", "the", "arwu", "cwur"].map(k => [k, WR[k].get(r), false])].filter(x => x[1])
+  return [...uk, ...["qs", "the", "arwu", "cwur", "usn"].map(k => [k, WR[k].get(r), false])].filter(x => x[1])
     .map(([k, v, isUk]) => `<span class="rk${isUk ? " uk" : ""}" title="${esc((isUk ? UKR : WR)[k].name)}">${esc((isUk ? UKR : WR)[k].tag)} <b>${esc(isUk ? "#" + v.t : v.t)}</b></span>`).join("");
 }
 // Small note under a tuition figure: live source link, or why the stored figure is still shown.
