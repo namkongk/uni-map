@@ -377,6 +377,10 @@ body.show-names .pin .nm,.pin.sel .nm{display:block}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:18px 16px 12px 20px}
 .card-top h2{font-size:22px;line-height:1.15;margin:0;letter-spacing:-.025em;font-weight:700}
 .card-sub{margin:5px 0 0;color:var(--muted);font-size:12.5px}
+.card-rating{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:7px 0 0;font-size:12.5px;color:var(--muted)}.card-rating:empty{display:none}
+.card-rating .g-score{font-size:15px;font-weight:750;color:var(--ink)}.card-rating .g-stars{color:#f5a623;letter-spacing:1px;font-size:13px}
+.card-rating a{color:var(--accent);text-decoration:none;font-weight:600}.card-rating a:hover{text-decoration:underline}
+.card-rating .g-logo{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;border:1px solid var(--line);font:700 11px/1 Arial,sans-serif;color:#4285f4}
 .card-ranks{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 0}.card-ranks:empty{display:none}
 .rk{display:inline-flex;align-items:baseline;gap:4px;padding:2px 8px;border-radius:999px;background:rgb(var(--tint) / .7);border:1px solid var(--line);font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .rk b{color:var(--ink);font-weight:700}.rk.uk{background:var(--accent-soft)}

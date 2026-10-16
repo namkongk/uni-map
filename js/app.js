@@ -1243,12 +1243,37 @@ function renderCard(u, withPlace) {
   $("cardTitle").textContent = u;
   $("cardSub").textContent = [MULTI ? uniCo(u).flag + " " + U.c : U.c, U.priv ? "Private" : "",     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
   $("cardRanks").innerHTML = rankChips(f);
+  showRating(u);
   $("cardAwards").innerHTML = `<div class="uni-note">${noteHTML(uniKey(u))}</div>` + awardsHTML(u);
   $("cardPay").innerHTML = payHTML(u);
   $("cardCourses").innerHTML = (rs.length ? rs : []).sort((a, b) => a.n - b.n).map(courseHTML).join("") || `<p class="gp-empty">No courses here match the current filters.</p>`;
   if (withPlace) loadPlace(u);
 }
 const stars = n => "★★★★★".slice(0, Math.round(n)) + "☆☆☆☆☆".slice(0, 5 - Math.round(n));
+// Google Maps rating at the top of the card. Fetched only when a card is opened (/api/rating, which saves it on the
+// server for everyone) and kept in this browser for next time; without one, a link to the university on Google Maps.
+const RATING_KEY = "ukmap-ratings", RATING_AGE = 30 * 864e5;
+let RATINGS = {};
+try { RATINGS = JSON.parse(localStorage.getItem(RATING_KEY) || "{}"); } catch (e) {}
+const saveRating = (u, g) => { RATINGS[u] = { ...g, saved: Date.now() }; try { localStorage.setItem(RATING_KEY, JSON.stringify(RATINGS)); } catch (e) {} };
+async function showRating(u) {
+  const box = $("cardRating"), had = RATINGS[u];
+  box.innerHTML = ratingHTML(u, had);
+  if (had && Date.now() - (had.saved || 0) < RATING_AGE) return;
+  try {
+    const res = await fetch("/api/rating?u=" + encodeURIComponent(u), { headers: { "x-requested-with": "unimap" } });
+    if (!res.ok) return;
+    const g = await res.json();
+    saveRating(u, g.none ? { none: true } : { r: g.r, n: g.n, uri: g.uri });
+    if ($("cardTitle").textContent === u) box.innerHTML = ratingHTML(u, RATINGS[u]);
+  } catch (e) {}
+}
+function ratingHTML(u, g) {
+  const logo = `<span class="g-logo" aria-hidden="true">G</span>`;
+  if (!g || !g.r) return `${logo}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(UNIS[u].q)}" target="_blank" rel="noopener">See Google reviews ↗</a>`;
+  return `${logo}<span class="g-score">${g.r.toFixed(1)}</span><span class="g-stars" aria-label="${g.r.toFixed(1)} out of 5 stars">${stars(g.r)}</span>`
+    + `<a href="${esc(g.uri || "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UNIS[u].q))}" target="_blank" rel="noopener">${(g.n || 0).toLocaleString("en-GB")} Google reviews ↗</a>`;
+}
 async function loadPlace(u) {
   const box = $("gplace"), id = ++placeReq;
   const gmSearch = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(UNIS[u].q);
@@ -1261,6 +1286,7 @@ async function loadPlace(u) {
   try { p = placeCache[u] ?? (placeCache[u] = await MAP.place(u)); }
   catch (e) { console.error(e); p = null; }
   if (id !== placeReq) return;
+  if (p?.rating) { saveRating(u, { r: p.rating, n: p.userRatingCount, uri: (p.googleMapsURI || "").replace(/[&?]g_mp=[^&]*/, "") }); $("cardRating").innerHTML = ratingHTML(u, RATINGS[u]); }
   if (!p) { box.innerHTML = `<div class="gp-empty">Couldn't load Google details (check that "Places API (New)" is enabled for your key).<br><a href="${gmSearch}" target="_blank" rel="noopener">Open in Google Maps ↗</a></div>`; return; }
   const photos = (p.photos || []).slice(0, 8).map(ph => {
     const a = (ph.authorAttributions || [])[0];

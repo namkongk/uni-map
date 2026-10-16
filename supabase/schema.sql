@@ -141,5 +141,17 @@ create table if not exists public.course_reports (
 create index if not exists course_reports_new_idx on public.course_reports (status, created_at desc);
 alter table public.course_reports enable row level security;
 
+-- Google Maps star rating per university, fetched the first time someone opens its card (/api/rating) and reused
+-- by everyone for 60 days. rating is null when Google has no rating for the place.
+create table if not exists public.place_ratings (
+  uni           text primary key,
+  rating        numeric(2,1),
+  rating_count  integer not null default 0,
+  maps_uri      text,
+  place_name    text,
+  checked_at    timestamptz not null default now()
+);
+alter table public.place_ratings enable row level security;
+
 -- Make the API see the new tables straight away.
 notify pgrst, 'reload schema';
