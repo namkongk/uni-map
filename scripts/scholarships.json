@@ -273,5 +273,15 @@
  ],
  "University of Glasgow": [
   { "name": "Global Leadership Scholarship", "kind": "apply", "amtText": "£10,000", "note": "Competitive tuition fee discount for international master's applicants with a first-class (or equivalent) degree; Nepal is eligible — separate application by the deadline.", "src": "https://www.gla.ac.uk/scholarships/globalleadershipscholarship/" }
+ ],
+ "University of Greater Manchester": [
+  { "name": "International Excellence Scholarship", "kind": "considered", "amtText": "Up to £4,000", "note": "Merit-based first-year fee discount for international students (2026/27), set from your highest verified qualification and applied at enrolment — not guaranteed. The Global Scholars Awards need a separate application and interview.", "src": "https://greatermanchester.ac.uk/study/international/scholarship" }
+ ],
+ "University of Law (Leeds)": [
+  { "name": "International Bursary", "kind": "auto", "amt": 1500, "amtText": "£1,500", "courses": ["MSc Computing", "MSc Computing and Cybersecurity", "MSc Computing and Artificial Intelligence", "MSc Data Science and Artificial Intelligence"], "note": "Listed off the international fee for courses starting 1 Jul 2026 – 31 May 2027 (£16,500 → £15,000 outside London); terms apply. Not yet shown for 2027/28 starts.", "src": "https://www.law.ac.uk/study/postgraduate/computer-science/msc-computing-and-artificial-intelligence/" },
+  { "name": "International Bursary (Healthcare Management)", "kind": "auto", "amt": 2500, "amtText": "£2,500", "courses": ["MSc Healthcare Management"], "note": "Listed off the international fee for starts 1 Jul 2026 – 31 May 2027 (£17,500 → £15,000 outside London); terms apply.", "src": "https://www.law.ac.uk/study/postgraduate/business/msc-healthcare-management/" }
+ ],
+ "University of Law (Manchester)": [
+  { "name": "International Bursary (Healthcare Management)", "kind": "auto", "amt": 2500, "amtText": "£2,500", "courses": ["MSc Healthcare Management"], "note": "Listed off the international fee for starts 1 Jul 2026 – 31 May 2027 (£17,500 → £15,000 outside London); terms apply.", "src": "https://www.law.ac.uk/study/postgraduate/business/msc-healthcare-management/" }
  ]
 }

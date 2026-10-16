@@ -725,8 +725,7 @@
   "c": "Bolton",
   "lat": 53.5734,
   "lng": -2.438,
-  "l": 11000,
-  "new": true
+  "l": 11000
  },
  "SOAS University of London": {
   "web": "https://www.soas.ac.uk",
@@ -1294,5 +1293,21 @@
   "lat": 51.7951,
   "lng": 6.1426,
   "co": "de"
+ },
+ "University of Law (Leeds)": {
+  "web": "https://www.law.ac.uk/locations/leeds/",
+  "c": "Leeds",
+  "lat": 53.7967,
+  "lng": -1.5562,
+  "l": 13000,
+  "priv": true
+ },
+ "University of Law (Manchester)": {
+  "web": "https://www.law.ac.uk/locations/manchester/",
+  "c": "Manchester",
+  "lat": 53.4817,
+  "lng": -2.2416,
+  "l": 13000,
+  "priv": true
  }
 }

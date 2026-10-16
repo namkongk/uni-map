@@ -737,5 +737,22 @@ export default {
   "https://www.leedstrinity.ac.uk/courses/postgraduate/data-science-and-artificial-intelligence/",
   "https://www.leedstrinity.ac.uk/courses/postgraduate/public-health/",
   "https://www.leedstrinity.ac.uk/courses/postgraduate/financial-technology/"
+ ],
+ "University of Greater Manchester": [
+  "https://greatermanchester.ac.uk/course/msc-software-engineering-full-time-12-months-university-of-greater-manchester/2026-27",
+  "https://greatermanchester.ac.uk/course/msc-artificial-intelligence-full-time-12-months-university-of-greater-manchester/2026-27",
+  "https://greatermanchester.ac.uk/course/msc-data-analytics-and-technologies-full-time-12-months-university-of-greater-manchester/2026-27",
+  "https://greatermanchester.ac.uk/course/msc-public-health-full-time-14-months-university-of-bolton/2026-27",
+  "https://greatermanchester.ac.uk/course/msc-health-analytics-and-technologies-full-time-12-months-university-of-greater-manchester/2026-27"
+ ],
+ "University of Law (Leeds)": [
+  "https://www.law.ac.uk/study/postgraduate/computer-science/msc-computing/",
+  "https://www.law.ac.uk/study/postgraduate/computer-science/msc-computing-and-cybersecurity/",
+  "https://www.law.ac.uk/study/postgraduate/computer-science/msc-computing-and-artificial-intelligence/",
+  "https://www.law.ac.uk/study/postgraduate/computer-science/msc-data-science-and-artificial-intelligence/",
+  "https://www.law.ac.uk/study/postgraduate/business/msc-healthcare-management/"
+ ],
+ "University of Law (Manchester)": [
+  "https://www.law.ac.uk/study/postgraduate/business/msc-healthcare-management/"
  ]
 };
