@@ -39,14 +39,18 @@
           <div class="field"><label for="city">City</label><select id="city"><option value="">Any city</option></select></div>
           <div class="field"><label for="radius">Radius (km)</label><input type="number" id="radius" min="0" max="1000" step="5" placeholder="City only"></div>
         </div>
+        <div class="field"><label for="rank">World rank</label>
+          <div class="pair"><select id="rank"><option value="">Any</option><option value="100">Top 100</option><option value="200">Top 200</option><option value="400">Top 400</option><option value="500">Top 500</option><option value="1000">Top 1000</option><option value="ranked">Ranked only</option></select>
+            <select id="rankSrc" aria-label="World ranking"><option value="qs">QS 2027</option><option value="the">THE 2027</option><option value="arwu">ARWU 2026</option><option value="cwur">CWUR 2026</option><option value="best">Best of all four</option></select></div></div>
+        <div class="field" id="ukRankField"><label for="ukrank">UK rank</label>
+          <div class="pair"><select id="ukrank"><option value="">Any</option><option value="10">Top 10</option><option value="20">Top 20</option><option value="30">Top 30</option><option value="50">Top 50</option><option value="75">Top 75</option><option value="100">Top 100</option><option value="ranked">Ranked only</option></select>
+            <select id="ukSrc" aria-label="UK league table"><option value="cug">Complete Univ. Guide 2027</option><option value="gua">Guardian 2027</option><option value="best">Best of both</option></select></div></div>
         <div class="row2">
-          <div class="field"><label for="rank">World rank (QS 2027)</label>
-            <select id="rank"><option value="">Any</option><option value="100">Top 100</option><option value="200">Top 200</option><option value="400">Top 400</option><option value="1000">Top 1000</option><option value="ranked">Ranked only</option></select></div>
           <div class="field"><label for="utype">University type</label>
             <select id="utype"><option value="">Any</option><option value="public">Public</option><option value="private">Private</option></select></div>
+          <div class="field"><label for="intake">Intake</label>
+            <select id="intake"><option value="">Any month</option><option value="aut">Sept / Oct</option><option value="jan">Jan / Feb</option><option value="both">Both Sept &amp; Jan</option></select></div>
         </div>
-        <div class="field"><label for="intake">Intake</label>
-          <select id="intake"><option value="">Any start month</option><option value="aut">September / October</option><option value="jan">January / February</option><option value="both">Both September and January</option></select></div>
         <div class="field"><label for="maxcost" class="range-lbl"><span>Max total after sure scholarship</span><b id="maxv"></b></label><input type="range" id="maxcost" min="20000" max="64000" step="500"></div>
         <div class="chips" role="group" aria-label="Options">
           <label class="chip-t"><input type="checkbox" id="f-sure"><span>Sure scholarship</span></label>
@@ -98,6 +102,7 @@
       <div>
         <h2 id="cardTitle"></h2>
         <p class="card-sub" id="cardSub"></p>
+        <p class="card-ranks" id="cardRanks"></p>
       </div>
       <button type="button" class="icon-btn" id="cardClose" aria-label="Close">
         <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>

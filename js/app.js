@@ -255,8 +255,8 @@ const COLS = [
   { k: "lv", h: "Level", type: "text", get: r => r.lv },
   { k: "g", h: "Subject", type: "text", get: r => r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g] },
   { k: "u", h: "University", type: "text", get: r => r.u + " " + r.c },
-  ...(SEL.includes("uk") ? [{ k: "uk", h: COUNTRIES.uk.rank, type: "num", get: r => r.uk ?? 99999, disp: r => ukRankText(r) }] : []),
-  { k: "qs", h: "World rank<br>(QS 2027)", type: "num", get: r => r.qss ?? 99999, disp: r => rankText(r.qs, r) },
+  ...(SEL.includes("uk") ? [{ k: "uk", h: COUNTRIES.uk.rank, type: "num", get: r => ukRank(r)?.n ?? 99999, disp: r => ukRankText(r), dyn: () => `UK rank<br>(${UKR[ukSrc()].short})` }] : []),
+  { k: "qs", h: "World rank<br>(QS 2027)", type: "num", get: r => worldRank(r)?.n ?? 99999, disp: r => worldRankText(r), dyn: () => `World rank<br>(${WR[rankSrc()].short})` },
   { k: "p", h: "Programme", type: "text", get: r => r.p },
   { k: "i", h: "Intakes", type: "text", get: r => r.i },
   { k: "f", h: "Tuition / yr<br>(intl)", type: "num", get: r => r.f, money: true },
@@ -278,7 +278,38 @@ const COLS = [
 // Universities added later (nr) haven't had their league-table positions checked yet.
 const isPrivate = u => !!UNIS[u]?.priv;   // privately run; all other universities are public
 const rankText = (v, r) => v ?? (r.nr ? "Not checked" : "Unranked");
-const ukRankText = r => (r.co || "uk") === "uk" ? rankText(r.uk, r) : "—";   // the UK league table only ranks UK universities
+const ukRankText = r => (r.co || "uk") === "uk" ? (ukRank(r)?.t ?? rankText(null, r)) : "—";   // UK league tables only rank UK universities
+const worldRankText = r => worldRank(r)?.t ?? (rankSrc() === "qs" ? rankText(null, r) : "Unranked");
+
+/* ---------------- rankings: QS / THE / ARWU / CWUR worldwide, CUG / Guardian in the UK ---------------- */
+// Each gives { t: shown text ("601–650", "=45"), n: number to sort and filter by (top of a band) } or null if unranked.
+const rkNum = t => { const m = String(t ?? "").match(/\d+/); return m ? +m[0] : null; };
+const rkOf = (t, src) => t == null || t === "" ? null : { t: String(t), n: rkNum(t), src };
+const rkU = r => UNIS[r.u]?.rk || {};
+const WR = {
+  qs: { name: "QS World University Rankings 2027", short: "QS 2027", tag: "QS", get: r => r.qs ? { t: r.qs, n: r.qss, src: "qs" } : null },
+  the: { name: "Times Higher Education 2027", short: "THE 2027", tag: "THE", get: r => rkOf(rkU(r).the, "the") },
+  arwu: { name: "ShanghaiRanking ARWU 2026", short: "ARWU 2026", tag: "ARWU", get: r => rkOf(rkU(r).arwu, "arwu") },
+  cwur: { name: "CWUR 2026", short: "CWUR 2026", tag: "CWUR", get: r => rkOf(rkU(r).cwur, "cwur") },
+};
+const UKR = {
+  cug: { name: "Complete University Guide 2027", short: "CUG 2027", tag: "CUG", get: r => r.uk ? { t: String(r.uk), n: r.uk, src: "cug" } : null },
+  gua: { name: "Guardian University Guide 2027", short: "Guardian 2027", tag: "Guardian", get: r => rkOf(rkU(r).gua, "gua") },
+};
+// "Best of": the highest position the course's university reaches in any of the tables, labelled with that table.
+const bestOf = (T, r) => Object.values(T).map(x => x.get(r)).filter(Boolean).sort((a, b) => a.n - b.n)[0] || null;
+WR.best = { name: "Best of QS, THE, ARWU and CWUR", short: "best of 4", get: r => { const b = bestOf({ qs: WR.qs, the: WR.the, arwu: WR.arwu, cwur: WR.cwur }, r); return b && { ...b, t: `${b.t} (${WR[b.src].tag})` }; } };
+UKR.best = { name: "Best of CUG and Guardian", short: "best of 2", get: r => { const b = bestOf({ cug: UKR.cug, gua: UKR.gua }, r); return b && { ...b, t: `${b.t} (${UKR[b.src].tag})` }; } };
+const rankSrc = () => WR[$("rankSrc").value] ? $("rankSrc").value : "qs";
+const ukSrc = () => UKR[$("ukSrc").value] ? $("ukSrc").value : "cug";
+const worldRank = r => WR[rankSrc()].get(r);
+const ukRank = r => (r.co || "uk") === "uk" ? UKR[ukSrc()].get(r) : null;
+// Every ranking a university has, as small labelled chips (UK tables first).
+function rankChips(r) {
+  const uk = (r.co || "uk") === "uk" ? ["cug", "gua"].map(k => [k, UKR[k].get(r), true]) : [];
+  return [...uk, ...["qs", "the", "arwu", "cwur"].map(k => [k, WR[k].get(r), false])].filter(x => x[1])
+    .map(([k, v, isUk]) => `<span class="rk${isUk ? " uk" : ""}" title="${esc((isUk ? UKR : WR)[k].name)}">${esc((isUk ? UKR : WR)[k].tag)} <b>${esc(isUk ? "#" + v.t : v.t)}</b></span>`).join("");
+}
 // Small note under a tuition figure: live source link, or why the stored figure is still shown.
 function feeNote(r) {
   const st = liveStatus(r), x = r.url && LIVE.res[r.url];
@@ -320,14 +351,14 @@ function numMatch(val, expr) {
 }
 function filtered() {
   const q = $("q").value.trim().toLowerCase();
-  const max = +$("maxcost").value, city = $("city").value, rank = $("rank").value, rad = +$("radius").value || 0, utype = $("utype").value, intake = $("intake").value;
+  const max = +$("maxcost").value, city = $("city").value, rank = $("rank").value, rad = +$("radius").value || 0, utype = $("utype").value, intake = $("intake").value, ukrank = SEL.includes("uk") ? $("ukrank").value : "";
   return ROWS.filter(r => {
     if (S.lvs.length && !S.lvs.includes(r.lv)) return false;
     if (S.subjs.length && !r.subj.some(g => S.subjs.includes(g))) return false;
     if (toBase(r.n, r) > max) return false;
     if (city) { if (rad > 0 ? uniKm(r.u, city) > rad : r.c !== city) return false; }
-    if (rank === "ranked" && r.qs == null) return false;
-    if (rank && rank !== "ranked" && !(r.qss <= +rank)) return false;
+    if (rank) { const w = worldRank(r); if (!w || (rank !== "ranked" && !(w.n <= +rank))) return false; }
+    if (ukrank) { const k = ukRank(r); if (!k || (ukrank !== "ranked" && !(k.n <= +ukrank))) return false; }
     if (utype && (utype === "private") !== isPrivate(r.u)) return false;
     if ($("f-sure").checked && !r.s) return false;
     if ($("f-place").checked && !r.pl.startsWith("Yes")) return false;
@@ -419,16 +450,16 @@ fitMaxCost(); $("maxcost").value = $("maxcost").max;
 // Intake: courses starting in the September/October round, the January/February round, or both.
 { const o = $("intake").options;
   for (let k = 1; k < o.length; k++) { const n = ROWS.filter(r => intakeMatch(r, o[k].value)).length; o[k].textContent += ` (${n})`; o[k].disabled = !n; } }
-["q", "maxcost", "city", "radius", "rank", "utype", "intake", "f-sure", "f-place", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).addEventListener("input", () => update({ fit: ["city", "radius"].includes(id) })));
+["q", "maxcost", "city", "radius", "rank", "rankSrc", "ukrank", "ukSrc", "utype", "intake", "f-sure", "f-place", "f-london", "f-noflag", "f-noest"].forEach(id => $(id).addEventListener("input", () => update({ fit: ["city", "radius"].includes(id) })));
 $("reset").addEventListener("click", () => {
-  $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = ""; $("utype").value = ""; $("intake").value = "";
+  $("q").value = ""; $("maxcost").value = $("maxcost").max; $("city").value = ""; $("radius").value = ""; $("rank").value = ""; $("rankSrc").value = "qs"; $("ukrank").value = ""; $("ukSrc").value = "cug"; $("utype").value = ""; $("intake").value = "";
   ["f-sure", "f-place", "f-london", "f-noflag", "f-noest", "f-entry"].forEach(id => $(id).checked = false);
   document.querySelectorAll("#frow input").forEach(i => i.value = ""); S.colf = {};
   S.lvs = []; S.subjs = []; S.sortK = "n"; S.dir = 1; save(); update({ fit: true });
 });
 if (!S.alert || !SEL.includes("uk")) $("alert").hidden = true; // the alert is about a UK scholarship
-// UK-only filter: "Outside London".
-if (!SEL.includes("uk")) { $("f-london").checked = false; $("f-london").closest("label").hidden = true; }
+// UK-only filters: "Outside London" and the UK league tables.
+if (!SEL.includes("uk")) { $("f-london").checked = false; $("f-london").closest("label").hidden = true; $("ukRankField").hidden = true; }
 $("alertX").addEventListener("click", () => { $("alert").hidden = true; S.alert = false; save(); });
 
 /* ---------------- floating filter card ---------------- */
@@ -437,7 +468,7 @@ $("filtersToggle").addEventListener("click", () => { S.filtersOpen = !S.filtersO
 const applyFilters = () => { $("filtersToggle").setAttribute("aria-expanded", String(S.filtersOpen)); $("filtersBody").hidden = !S.filtersOpen; };
 applyFilters();
 function activeFilterCount() {
-  let n = ["q", "city", "rank", "utype", "intake"].filter(id => $(id).value.trim()).length;
+  let n = ["q", "city", "rank", "ukrank", "utype", "intake"].filter(id => $(id).value.trim()).length;
   n += ["f-sure", "f-place", "f-london", "f-noflag", "f-noest", "f-entry"].filter(id => $(id).checked).length;
   if ($("maxcost").value !== $("maxcost").max) n++;
   return n;
@@ -843,7 +874,7 @@ function renderTable() {
     <td>${r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g]}</td>
     <td class="uni"><b>${esc(r.u)}</b><span class="sub">${MULTI ? coOf(r).flag + " " : ""}${esc(r.c)}${city && r.c !== city ? ` · ${Math.round(uniKm(r.u, city))} km from ${esc(city)}` : ""}</span></td>
     ${SEL.includes("uk") ? `<td class="num">${esc(ukRankText(r))}</td>` : ""}
-    <td class="num">${esc(rankText(r.qs, r))}</td>
+    <td class="num">${esc(worldRankText(r))}</td>
     <td>${esc(r.p)}</td>
     <td>${esc(r.i)}</td>
     <td class="num">~${rm(r, r.f)}${feeNote(r)}</td>
@@ -1208,8 +1239,8 @@ function renderCard(u, withPlace) {
   const any = rs.length ? rs : ROWS.filter(r => r.u === u);
   const f = any[0];
   $("cardTitle").textContent = u;
-  $("cardSub").textContent = [MULTI ? uniCo(u).flag + " " + U.c : U.c, U.priv ? "Private" : "", uniCo(u).rank ? (f.uk ? `UK #${f.uk}` : f.nr ? "" : "UK unranked") : "", f.qs ? `QS ${f.qs}` : f.nr ? "" : "QS unranked",
-    city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
+  $("cardSub").textContent = [MULTI ? uniCo(u).flag + " " + U.c : U.c, U.priv ? "Private" : "",     city && U.c !== city ? `${Math.round(uniKm(u, city))} km from ${city}` : "", `${rs.length} matching course${rs.length === 1 ? "" : "s"}`].filter(Boolean).join(" · ");
+  $("cardRanks").innerHTML = rankChips(f);
   $("cardAwards").innerHTML = `<div class="uni-note">${noteHTML(uniKey(u))}</div>` + awardsHTML(u);
   $("cardPay").innerHTML = payHTML(u);
   $("cardCourses").innerHTML = (rs.length ? rs : []).sort((a, b) => a.n - b.n).map(courseHTML).join("") || `<p class="gp-empty">No courses here match the current filters.</p>`;
@@ -1460,9 +1491,9 @@ document.addEventListener("change", e => { const s = e.target.closest("select[da
 const SEL_KEY = SEL.join("+");
 const CHIPS = ["f-sure", "f-place", "f-london", "f-noflag", "f-noest", "f-entry"];
 const filterSnap = () => ({ q: $("q").value, max: $("maxcost").value === $("maxcost").max ? null : +$("maxcost").value, city: $("city").value, radius: $("radius").value,
-  rank: $("rank").value, utype: $("utype").value, intake: $("intake").value, chips: CHIPS.filter(id => $(id).checked), lvs: S.lvs.slice(), subjs: S.subjs.slice() });
+  rank: $("rank").value, rankSrc: rankSrc(), ukrank: $("ukrank").value, ukSrc: ukSrc(), utype: $("utype").value, intake: $("intake").value, chips: CHIPS.filter(id => $(id).checked), lvs: S.lvs.slice(), subjs: S.subjs.slice() });
 function applySearch(f) {
-  $("q").value = f.q || ""; $("city").value = f.city || ""; $("radius").value = f.radius || ""; $("rank").value = f.rank || ""; $("utype").value = f.utype || "";
+  $("q").value = f.q || ""; $("city").value = f.city || ""; $("radius").value = f.radius || ""; $("rank").value = f.rank || ""; $("rankSrc").value = WR[f.rankSrc] ? f.rankSrc : "qs"; $("ukrank").value = f.ukrank || ""; $("ukSrc").value = UKR[f.ukSrc] ? f.ukSrc : "cug"; $("utype").value = f.utype || "";
   $("intake").value = f.intake || ((f.chips || []).includes("f-jan") ? "jan" : "");   // older saves had a "Non-autumn intake" tick
   $("maxcost").value = f.max == null ? $("maxcost").max : Math.min(+$("maxcost").max, f.max);
   CHIPS.forEach(id => $(id).checked = (f.chips || []).includes(id));
@@ -1627,7 +1658,7 @@ function renderCompare() {
   const ent = rs.map(r => { const c = entryCheck(r); return c.state === "ok" ? `<span class="ent ok">✓ You meet it</span>` : c.state === "no" ? `<span class="ent no">✗ ${esc(c.fail.join(", "))}</span>` : c.state === "add" ? `<span class="muted">Add your degree &amp; English test</span>` : `<span class="muted">Not listed</span>`; });
   $("cmpBody").innerHTML = `<table class="cmp-tbl"><thead><tr><th></th>${rs.map(r => `<th scope="col"><b>${esc(r.p)}</b><span class="sub">${esc(r.u)} · ${MULTI ? coOf(r).flag + " " : ""}${esc(r.c)}</span></th>`).join("")}</tr></thead><tbody>
     ${row("Level · subject", rs.map(r => `${r.lv} · ${esc(r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g])}`))}
-    ${row("Ranking", rs.map(r => [(r.co || "uk") === "uk" ? `UK ${esc(ukRankText(r))}` : "", `QS ${esc(rankText(r.qs, r))}`].filter(Boolean).join(" · ")))}
+    ${row("Rankings", rs.map(r => `<span class="card-ranks">${rankChips(r) || `<span class="muted">Unranked</span>`}</span>`))}
     ${row("Intakes", rs.map(r => esc(r.i)))}
     ${row("Tuition / yr", rs.map(r => "~" + rm(r, r.f)), best(base(r => r.f)))}
     ${row("Living / yr", rs.map(r => "~" + rm(r, r.l)), best(base(r => r.l)))}

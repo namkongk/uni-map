@@ -62,6 +62,11 @@ SCH = json.load(open(os.path.join(HERE, "scholarships.json")))
 for u in unis:
     if u in SCH: unis[u]["sch"] = SCH[u]
 
+# World and national rankings beyond QS / CUG (THE, ARWU, CWUR, Guardian), matched per university.
+RANK = json.load(open(os.path.join(HERE, "rankings.json")))
+for u in unis:
+    if RANK.get(u): unis[u]["rk"] = RANK[u]
+
 data = {"rows": out, "unis": unis, "cities": {**GEO, **CITIES_DE}, "cityCo": {c: "de" for c in CITIES_DE}, "payChecked": PAY.get("_checked"), "schChecked": SCH.get("_checked")}
 
 # Allowlist for api/refresh.js: the only pages the live refresher will fetch, grouped by university.
