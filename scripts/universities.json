@@ -1308,5 +1308,12 @@
   "lat": 51.5096,
   "lng": -0.0026,
   "l": 18000
+ },
+ "York St John University (York)": {
+  "web": "https://www.yorksj.ac.uk",
+  "c": "York",
+  "lat": 53.9646,
+  "lng": -1.079,
+  "l": 13000
  }
 }

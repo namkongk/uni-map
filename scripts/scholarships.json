@@ -288,5 +288,8 @@
  ],
  "York St John University (London)": [
   { "name": "Early payment discount", "kind": "early", "amtText": "5% of the balance", "note": "For international taught postgraduate students at the York and London campuses who pay early; most international students pay a 50% deposit first. No automatic international scholarship is listed.", "src": "https://www.yorksj.ac.uk/international/funding-scholarships-and-paying-tuition-fees/" }
+ ],
+ "York St John University (York)": [
+  { "name": "Early payment discount", "kind": "early", "amtText": "5% of the balance", "note": "For international taught postgraduate students at the York and London campuses who pay early; most international students pay a 50% deposit first. No automatic international scholarship is listed.", "src": "https://www.yorksj.ac.uk/international/funding-scholarships-and-paying-tuition-fees/" }
  ]
 }

@@ -934,5 +934,10 @@ export default {
 "York St John University (London), London, UK",
 51.5096,
 -0.0026
+],
+"York St John University (York)": [
+"York St John University (York), York, UK",
+53.9646,
+-1.079
 ]
 };

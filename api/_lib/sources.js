@@ -852,5 +852,8 @@ export default {
   "https://www.yorksj.ac.uk/courses/postgraduate/computer-science/data-science-msc/",
   "https://www.yorksj.ac.uk/courses/postgraduate/business-management/global-healthcare-management-msc/",
   "https://www.yorksj.ac.uk/courses/postgraduate/business-management/public-health-msc/"
+ ],
+ "York St John University (York)": [
+  "https://www.yorksj.ac.uk/courses/postgraduate/business-management/healthcare-management-mba/"
  ]
 };
