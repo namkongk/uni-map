@@ -846,5 +846,11 @@ export default {
  ],
  "University of Law (Manchester)": [
   "https://www.law.ac.uk/study/postgraduate/business/msc-healthcare-management/"
+ ],
+ "York St John University (London)": [
+  "https://www.yorksj.ac.uk/courses/postgraduate/computer-science/computer-science-msc/",
+  "https://www.yorksj.ac.uk/courses/postgraduate/computer-science/data-science-msc/",
+  "https://www.yorksj.ac.uk/courses/postgraduate/business-management/global-healthcare-management-msc/",
+  "https://www.yorksj.ac.uk/courses/postgraduate/business-management/public-health-msc/"
  ]
 };

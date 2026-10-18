@@ -657,14 +657,6 @@
   "l": 12000,
   "new": true
  },
- "York St John University": {
-  "web": "https://www.yorksj.ac.uk",
-  "c": "York",
-  "lat": 53.964,
-  "lng": -1.08,
-  "l": 13000,
-  "new": true
- },
  "University of Winchester": {
   "web": "https://www.winchester.ac.uk",
   "c": "Winchester",
@@ -1309,5 +1301,12 @@
   "lng": -2.2416,
   "l": 13000,
   "priv": true
+ },
+ "York St John University (London)": {
+  "web": "https://www.yorksj.ac.uk/london/",
+  "c": "London",
+  "lat": 51.5096,
+  "lng": -0.0026,
+  "l": 18000
  }
 }

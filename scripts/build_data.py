@@ -38,7 +38,7 @@ by_uni = {}
 # (Computing PhDs: estimated from that university's CS / AI / HCI master's only, not its health or nursing courses.)
 for r in rows:
     if r["g"] in ("CS", "AI", "HCI") and r.get("co", "uk") == "uk": by_uni.setdefault(r["u"], []).append(r)
-NO_PHD = {"Leeds Trinity University", "University of Law (Leeds)", "University of Law (Manchester)"}   # no computing PhD found on their pages
+NO_PHD = {"Leeds Trinity University", "University of Law (Leeds)", "University of Law (Manchester)", "York St John University (London)"}   # no computing PhD found on their pages
 for u, rs in by_uni.items():
     if u in NO_PHD: continue
     first = rs[0]

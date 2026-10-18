@@ -285,5 +285,8 @@
  ],
  "University of Law (Manchester)": [
   { "name": "International Bursary (Healthcare Management)", "kind": "auto", "amt": 2500, "amtText": "£2,500", "courses": ["MSc Healthcare Management"], "note": "Listed off the international fee for starts 1 Jul 2026 – 31 May 2027 (£17,500 → £15,000 outside London); terms apply.", "src": "https://www.law.ac.uk/study/postgraduate/business/msc-healthcare-management/" }
+ ],
+ "York St John University (London)": [
+  { "name": "Early payment discount", "kind": "early", "amtText": "5% of the balance", "note": "For international taught postgraduate students at the York and London campuses who pay early; most international students pay a 50% deposit first. No automatic international scholarship is listed.", "src": "https://www.yorksj.ac.uk/international/funding-scholarships-and-paying-tuition-fees/" }
  ]
 }
