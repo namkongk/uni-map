@@ -130,6 +130,9 @@ const netFee = r => Math.max(0, r.f - r.s);
 const dep = r => Math.min(100, Math.max(0, +S.dep || 0)) / 100 * netFee(r);
 const remFee = r => netFee(r) - dep(r);
 const need = r => remFee(r) + r.l;
+// The hours the pay-per-hour figure assumes: your jobs in Budget & work (student visa: up to 20 h/week in term).
+const hrsBasis = co => { const wk = weekHrs(co), H = hours(co), v = COUNTRIES[co].visaHrs;
+  return { wk, H, text: `at ${wk} h/week · ${H.toLocaleString("en-GB")} h/yr`, over: wk > v, visa: `Student visa: max ${v} h/week in term` }; };
 const needHr = r => { const H = hours(r.co || "uk"); if (!H) return Infinity; return grossFor(need(r), coOf(r)) / H; };
 const rateOf = r => rowRate[r.id] ?? avgRate(r.co || "uk");
 const deficit = r => need(r) - takeHome(rateOf(r), r.co || "uk");
@@ -266,7 +269,7 @@ const COLS = [
   { k: "n", h: "Total with sure<br>scholarship", type: "num", get: r => r.n, money: true },
   { k: "dep", h: DEP_LABEL, type: "num", get: dep, dyn: () => `${DEP_LABEL}<br>(${+S.dep || 0}% tuition)`, money: true },
   { k: "rem", h: "Remaining fee<br>(after deposit)", type: "num", get: remFee, money: true },
-  { k: "hr", h: "Pay needed / hr<br>(fee + living)", type: "num", get: needHr, local: true },
+  { k: "hr", h: "Pay needed / hr<br>(fee + living)", type: "num", get: needHr, local: true, dyn: () => `Pay needed / hr<br>(at ${weekHrs(SEL.includes("uk") ? "uk" : SEL[0])} h/week)` },
   { k: "rt", h: MULTI ? "Your avg rate<br>per hour" : `Your avg rate<br>${LSYM}/hr`, type: "num", get: rateOf, local: true },
   { k: "df", h: "Deficit / yr<br>(− = surplus)", type: "num", get: deficit, money: true },
   { k: "aw", h: "Scholarships<br>for you", type: "text", get: r => awardsText(r) },
@@ -907,7 +910,7 @@ function renderTable() {
     <td class="num net">~${rm(r, r.n)}</td>
     <td class="num">~${rm(r, Math.round(dep(r) / 50) * 50)}</td>
     <td class="num">~${rm(r, Math.round(remFee(r) / 50) * 50)}</td>
-    <td class="num hr ${h > 20 ? "hi" : ""}"><b>${rsym(r)}${isFinite(h) ? h.toFixed(2) : "—"}</b><span class="sub">needs ~${rm(r, r100(need(r)))}/yr</span></td>
+    <td class="num hr ${h > 20 ? "hi" : ""}" title="${esc(hrsBasis(r.co || "uk").visa)}"><b>${rsym(r)}${isFinite(h) ? h.toFixed(2) : "—"}</b><span class="sub">needs ~${rm(r, r100(need(r)))}/yr</span><span class="sub">${esc(hrsBasis(r.co || "uk").text)}</span></td>
     <td class="rate"><input type="number" min="0" max="200" step="0.01" data-id="${r.id}" class="${r.id in rowRate ? "ovr" : ""}" value="${rateOf(r).toFixed(2)}" aria-label="Hourly rate for ${esc(r.u)}"></td>
     <td class="num def ${d > 0 ? "short" : "ok"}" data-def="${r.id}">${defText(d, r)}</td>
     <td class="aw">${awardsCell(r)}</td>
@@ -1146,7 +1149,7 @@ function courseHTML(r) {
       ${row("Total with sure scholarship", "~" + rm(r, r.n))}
       ${row(`${coOf(r).depLabel} (${+S.dep || 0}%)`, "~" + rm(r, Math.round(dep(r) / 50) * 50))}
       ${row("Remaining fee", "~" + rm(r, Math.round(remFee(r) / 50) * 50))}
-      ${row("Pay needed / hr", `${rsym(r)}${isFinite(h) ? h.toFixed(2) : "—"}<span class="sub">to earn ~${rm(r, r100(need(r)))}/yr</span>`, h > 20 ? "hl" : "")}
+      ${row("Pay needed / hr", `${rsym(r)}${isFinite(h) ? h.toFixed(2) : "—"}<span class="sub">to earn ~${rm(r, r100(need(r)))}/yr ${esc(hrsBasis(r.co || "uk").text)}</span><span class="sub ${hrsBasis(r.co || "uk").over ? "warn" : ""}">${esc(hrsBasis(r.co || "uk").visa)}${hrsBasis(r.co || "uk").over ? " — your jobs add up to more" : ""}</span>`, h > 20 ? "hl" : "")}
       ${row(J(r.co).length > 1 ? "Your avg rate" : "Your rate", rsym(r) + rateOf(r).toFixed(2) + "/hr" + (r.id in rowRate ? "" : `<span class="sub">${J(r.co).length} job${J(r.co).length === 1 ? "" : "s"}${MULTI ? " in " + coOf(r).name : ""} · ${hours(r.co || "uk").toLocaleString("en-GB")} h/yr</span>`))}
       ${row("Deficit / yr", defText(d, r), d > 0 ? "hl" : "ok")}
       ${row("Placement", esc(r.pl))}
@@ -1720,7 +1723,7 @@ function renderCompare() {
     ${row("<b>Total year 1</b>", rs.map(r => `<b>~${rm(r, r.n)}</b>`), best(base(r => r.n)))}
     ${row(DEP_LABEL, rs.map(r => "~" + rm(r, Math.round(dep(r) / 50) * 50)))}
     ${row("Your work covers it?", rs.map(r => { const d = deficit(r); return d > 0 ? `<span class="ent no">Short ~${rm(r, r100(d))}/yr</span>` : `<span class="ent ok">Covered</span>`; }), best(base(deficit)))}
-    ${row("Pay needed / hr", rs.map(r => { const h = needHr(r); return isFinite(h) ? rsym(r) + h.toFixed(2) : "—"; }), best(base(needHr)))}
+    ${row("Pay needed / hr", rs.map(r => { const h = needHr(r); return isFinite(h) ? `${rsym(r)}${h.toFixed(2)}<span class="sub">${esc(hrsBasis(r.co || "uk").text)}</span>` : "—"; }), best(base(needHr)))}
     ${row("Entry", rs.map(r => esc(r.en || "Not listed")))}
     ${row("You meet entry?", ent)}
     ${row("Placement", rs.map(r => esc(r.pl)))}
