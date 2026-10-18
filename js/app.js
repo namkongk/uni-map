@@ -336,6 +336,21 @@ function awardsCell(r) {
   A.early.forEach(a => out.push(`<span class="awc early" title="${esc(a.note)}">${esc(a.amtText)} <small>if you pay early</small></span>`));
   return out.join("") || `<span class="muted">None found</span>`;
 }
+// Where to read about a course: the university's own page (German courses: alongside the DAAD listing), or for the
+// estimated PhD rows, the university's website.
+const courseLink = r => r.cw ? { url: r.cw, label: "University course page" } : r.url ? { url: r.url, label: "Course page" }
+  : UNIS[r.u]?.web ? { url: UNIS[r.u].web, label: r.lv === "PhD" ? "University website (PhD info)" : "University website" } : null;
+// Module codes + titles (UK computing courses), searchable from both search boxes; collapsed on the card, opened
+// with matches highlighted when the filter search names one of them.
+const modText = r => (r.m || []).map(m => m.join(" ")).join(" ");
+function modulesHTML(r) {
+  if (!r.m?.length) return "";
+  const q = $("q").value.trim().toLowerCase(), hit = m => q.length >= 3 && m.join(" ").toLowerCase().includes(q);
+  const open = r.m.some(hit);
+  return `<details class="full mods"${open ? " open" : ""}><summary>${IC.list}<span>Modules</span><span class="mods-n">${r.m.length}</span></summary>
+    <ul class="mods-list">${r.m.map(m => `<li class="${hit(m) ? "hit" : ""}">${m.length > 1 ? `<code>${esc(m[0])}</code>` : ""}<span>${esc(m[m.length - 1])}</span></li>`).join("")}</ul>
+    <p class="mods-note">Optional modules vary by year — check the <a href="${esc(courseLink(r)?.url || "#")}" target="_blank" rel="noopener">course page ↗</a></p></details>`;
+}
 const otherSch = r => r.lv === "PhD" ? (r.o || "") : "Chevening (full)" + (r.o ? "; " + r.o : "");
 
 /* ---------------- filters ---------------- */
@@ -369,7 +384,7 @@ function filtered() {
     if ($("f-noflag").checked && r.fl) return false;
     if ($("f-noest").checked && /est/.test(r.fn)) return false;
     if ($("f-entry").checked && entryCheck(r).state === "no") return false;
-    if (q && ![r.u, r.c, r.p, r.i, r.sl, otherSch(r), r.pl, r.fl, r.lv, PNAME[r.g], r.en].join(" ").toLowerCase().includes(q)) return false;
+    if (q && ![r.u, r.c, r.p, r.i, r.sl, otherSch(r), r.pl, r.fl, r.lv, PNAME[r.g], r.en, modText(r)].join(" ").toLowerCase().includes(q)) return false;
     for (const c of COLS) {
       const f = S.colf[c.k]; if (!f || c.type === "none") continue;
       if (c.type === "num") {
@@ -741,7 +756,9 @@ const normName = s => s.toLowerCase().replace(/univ\./g, "university").replace(/
 const SKIP = new Set(["of", "the", "and", "for", "at"]);
 const UNI_INDEX = Object.keys(UNIS).map(u => {
   const n = normName(u), words = n.split(" ");
-  return { u, n, words, initials: words.filter(w => !SKIP.has(w)).map(w => w[0]).join(""), city: UNIS[u].c, cn: normName(UNIS[u].c), courses: ROWS.filter(r => r.u === u).length };
+  const mods = [...new Set(ROWS.filter(r => r.u === u).flatMap(r => (r.m || []).map(m => m[m.length - 1])))];
+  return { u, n, words, initials: words.filter(w => !SKIP.has(w)).map(w => w[0]).join(""), city: UNIS[u].c, cn: normName(UNIS[u].c), courses: ROWS.filter(r => r.u === u).length,
+    mods: mods.map(t => [t, normName(t)]), codes: ROWS.filter(r => r.u === u).flatMap(r => (r.m || []).filter(m => m.length > 1).map(m => [m[0].toLowerCase(), m[1]])) };
 });
 function suggestUnis(q) {
   const t = normName(q); if (!t) return [];
@@ -753,9 +770,13 @@ function suggestUnis(q) {
     else if (x.words.some(w => w.startsWith(t))) sc = 80;                     // "glasgow", "imperial"
     else if (parts.every(p => x.n.includes(p))) sc = 60;                      // words in any order
     else if (x.cn.startsWith(t)) sc = 40;                                     // city: "london"
-    else return null;
+    else if (t.length >= 3) {                                                  // a module it teaches: "deep learning", "comp5008"
+      const hit = x.mods.find(([, n]) => n.includes(t) || parts.every(p => n.includes(p))) || x.codes.find(([c]) => c.startsWith(t.replace(/ /g, "")))?.slice(1).concat([""]);
+      if (!hit) return null;
+      return { ...x, mod: hit[0], sc: 20 - x.n.length / 1000 };
+    } else return null;
     return { ...x, sc: sc - x.n.length / 1000 };
-  }).filter(Boolean).sort((a, b) => b.sc - a.sc || a.u.localeCompare(b.u)).slice(0, 8);
+  }).filter(Boolean).sort((a, b) => b.sc - a.sc || a.u.localeCompare(b.u)).slice(0, 10);
 }
 // Highlight what was typed inside the university name.
 function markMatch(name, q) {
@@ -774,7 +795,7 @@ function usRender() {
     const shown = LIST.filter(r => r.u === x.u).length;
     return `<li role="option" id="us-opt-${i}" aria-selected="${i === usActive}" data-u="${esc(x.u)}">
       <span class="us-name">${markMatch(x.u, q)}</span>
-      <span class="us-meta">${esc(x.city)} · ${x.courses} course${x.courses === 1 ? "" : "s"}${shown < x.courses ? ` · ${shown ? shown + " match your filters" : "hidden by your filters"}` : ""}</span></li>`;
+      <span class="us-meta">${x.mod ? `Module: ${markMatch(x.mod, q)} · ` : ""}${esc(x.city)} · ${x.courses} course${x.courses === 1 ? "" : "s"}${shown < x.courses ? ` · ${shown ? shown + " match your filters" : "hidden by your filters"}` : ""}</span></li>`;
   }).join("") : `<li class="us-empty" role="presentation">No university matches “${esc(q.trim())}”</li>`;
   usList.hidden = false; usInput.setAttribute("aria-expanded", "true");
   usInput.setAttribute("aria-activedescendant", usActive >= 0 ? "us-opt-0" : "");
@@ -877,7 +898,7 @@ function renderTable() {
     <td class="uni"><b>${esc(r.u)}</b><span class="sub">${MULTI ? coOf(r).flag + " " : ""}${esc(r.c)}${city && r.c !== city ? ` · ${Math.round(uniKm(r.u, city))} km from ${esc(city)}` : ""}</span></td>
     ${SEL.includes("uk") ? `<td class="num">${esc(ukRankText(r))}</td>` : ""}
     <td class="num">${esc(worldRankText(r))}</td>
-    <td>${esc(r.p)}</td>
+    <td>${courseLink(r) ? `<a class="prog-link" href="${esc(courseLink(r).url)}" target="_blank" rel="noopener" title="${esc(courseLink(r).label)}">${esc(r.p)} ↗</a>` : esc(r.p)}</td>
     <td>${esc(r.i)}</td>
     <td class="num">~${rm(r, r.f)}${feeNote(r)}</td>
     <td class="num">~${rm(r, r.l)}</td>
@@ -1111,6 +1132,7 @@ function courseHTML(r) {
     <div class="course-h">
       <div class="tags"><span class="tag ${r.lv === "PhD" ? "phd" : ""}">${r.lv}</span><span class="tag">${r.lv === "PhD" ? "CS / AI / HCI" : PNAME[r.g]}</span>${isPrivate(r.u) ? `<span class="tag priv" title="Privately run university">Private</span>` : ""}${r.s ? `<span class="tag sure">Sure scholarship</span>` : ""}${r.pl.startsWith("Yes") ? `<span class="tag pl">Placement</span>` : ""}${r.fl ? `<span class="tag warn">${esc(r.fl)}</span>` : ""}</div>
       <div class="course-t"><b>${esc(r.p)}</b>${starBtn(r, "lg")}</div>
+      ${courseLink(r) ? `<a class="course-link" href="${esc(courseLink(r).url)}" target="_blank" rel="noopener">${IC.ext}<span>${esc(courseLink(r).label)}</span></a>` : ""}
       ${isShort(r) ? `<div class="course-st"><span>Application</span>${statusSelect(courseKey(r), S.short[courseKey(r)].st)}</div>` : ""}
     </div>
     <div class="kv">
@@ -1129,10 +1151,12 @@ function courseHTML(r) {
       ${row("Deficit / yr", defText(d, r), d > 0 ? "hl" : "ok")}
       ${row("Placement", esc(r.pl))}
       <div class="full"><b>Other scholarships:</b> ${esc(otherSch(r))}</div>
+      ${modulesHTML(r)}
       ${r.dur ? row("Duration", `${r.dur} semesters`) : ""}
       ${r.dl ? row("Apply by (winter)", esc(r.dl)) : ""}
       ${r.cw ? `<div class="full"><a href="${esc(r.cw)}" target="_blank" rel="noopener">University course page ↗</a> · <a href="${esc(r.url)}" target="_blank" rel="noopener">DAAD listing ↗</a>${courseCheck(r)}</div>`
-        : r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>` : ""}
+        : r.url ? `<div class="full"><a href="${esc(r.url)}" target="_blank" rel="noopener">Course page ↗</a>${courseCheck(r)}</div>`
+        : courseLink(r) ? `<div class="full"><a href="${esc(courseLink(r).url)}" target="_blank" rel="noopener">${esc(courseLink(r).label)} ↗</a></div>` : ""}
       ${(r.co || "uk") === "uk" ? planRow(r) : ""}
       <div class="full card-acts"><button type="button" class="act-btn" data-funds="${esc(courseKey(r))}" title="Proof of funds for the visa">${IC.funds}<span>Proof of funds</span></button>
         <button type="button" class="act-btn quiet" data-report="${esc(courseKey(r))}" title="Report wrong information about this course">${IC.flag}<span>Report</span></button></div>
@@ -1493,6 +1517,7 @@ function renderShortlist() {
       ${noteHTML(k)}
       <div class="shc-acts">
         <label class="act-btn cmp-pick" title="Add to the side-by-side comparison"><input type="checkbox" data-cmp="${esc(k)}"${S.cmp.includes(k) ? " checked" : ""}>${IC.cmp}<span>Compare</span></label>
+        ${courseLink(r) ? `<a class="act-btn" href="${esc(courseLink(r).url)}" target="_blank" rel="noopener" title="${esc(courseLink(r).label)}">${IC.ext}<span>Course page</span></a>` : ""}
         <button type="button" class="act-btn" data-funds="${esc(k)}" title="Proof of funds for the visa">${IC.funds}<span>Funds</span></button>
         <button type="button" class="act-btn quiet" data-report="${esc(k)}" title="Report wrong information about this course">${IC.flag}<span>Report</span></button>
       </div></article>`; }).join("")}</div>`
@@ -1631,6 +1656,7 @@ document.addEventListener("toggle", e => { const d = e.target; if (d.classList?.
 const uniKey = u => `u|${UNIS[u]?.co || "uk"}|${u}`;
 const ICO = (d, cls = "") => `<svg class="ico ${cls}" viewBox="0 0 20 20" aria-hidden="true">${d}</svg>`;
 const IC = {
+  ext: ICO('<path d="M11 3.5h5.5V9M16.5 3.5 9 11" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 12v3a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 15V7A1.5 1.5 0 0 1 5 5.5h3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>'),
   funds: ICO('<rect x="2.5" y="5" width="15" height="11" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M2.5 8.5h15" stroke="currentColor" stroke-width="1.6"/><circle cx="13.5" cy="12.3" r="1.2" fill="currentColor"/>'),
   flag: ICO('<path d="M5 17V3.5m0 0h9l-1.8 3.2L14 10H5" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
   cmp: ICO('<rect x="3" y="4" width="5.5" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/><rect x="11.5" y="4" width="5.5" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/>'),
@@ -1842,7 +1868,7 @@ function printShortlist() {
     <section class="pr-sec"><h2>Courses</h2>
     ${items.map(({ k, e, r }) => { const d = keyShown(k) ? deficit(r) : null, docs = docsOf(k), done = docs.filter(([id]) => e.docs?.[id]).length, ds = DATES(keyCo(k).code).filter(([f]) => e.d?.[f]);
       return `<article class="pr-card st-${e.st}">
-        <div class="pr-top"><div><h3>${esc(r.p)}</h3><p>${coOf(r).flag} ${esc(r.u)} · ${esc(r.c)} · starts ${esc(r.i)}</p></div><span class="pr-pill st-${e.st}">${STATUS_LBL[e.st] || "Considering"}</span></div>
+        <div class="pr-top"><div><h3>${esc(r.p)}</h3><p>${coOf(r).flag} ${esc(r.u)} · ${esc(r.c)} · starts ${esc(r.i)}</p>${courseLink(r) ? `<p class="pr-url">${esc(courseLink(r).url)}</p>` : ""}</div><span class="pr-pill st-${e.st}">${STATUS_LBL[e.st] || "Considering"}</span></div>
         <div class="pr-figs">
           <div><span>Tuition / yr</span><b>${rm(r, r.f)}</b></div>
           <div><span>Living / yr</span><b>${rm(r, r.l)}</b></div>

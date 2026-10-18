@@ -38,7 +38,8 @@
 "n": 58000,
 "o": "Clarendon Fund (full)",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.ox.ac.uk/admissions/graduate/courses/msc-advanced-computer-science"
 },
 {
 "g": "CS",
@@ -79,7 +80,8 @@
 "n": 60000,
 "o": "UCL Global Masters \u00a315,000 (need-based)",
 "pl": "No",
-"fl": "Conversion course"
+"fl": "Conversion course",
+"url": "https://www.ucl.ac.uk/prospective-students/graduate/taught-degrees/computer-science-msc-2026"
 },
 {
 "g": "CS",
@@ -99,7 +101,8 @@
 "n": 59000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://study.ed.ac.uk/programmes/postgraduate-taught/110-computer-science"
 },
 {
 "g": "CS",
@@ -162,7 +165,7 @@
 "o": "Think Big \u00a36,500\u2013\u00a326,000",
 "pl": "No",
 "fl": "Conversion course",
-"url": "https://www.bristol.ac.uk/study/outreach/virtual-resources-for-students/access-virtual-resources/virtual-resources/computer-science-resources/"
+"url": "https://www.bristol.ac.uk/study/postgraduate/taught/msc-computer-science-conversion/"
 },
 {
 "g": "CS",
@@ -308,7 +311,8 @@
 "n": 42000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.nottingham.ac.uk/pgstudy/course/taught/computer-science-artificial-intelligence"
 },
 {
 "g": "CS",
@@ -328,7 +332,8 @@
 "n": 50000,
 "o": "Global Talent \u00a36,000 (2:1, rolling)",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.qmul.ac.uk/postgraduate/taught/coursefinder/courses/computer-science-conversion-msc/"
 },
 {
 "g": "CS",
@@ -369,7 +374,8 @@
 "n": 48000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.st-andrews.ac.uk/subjects/computer-science/computer-science-msc/"
 },
 {
 "g": "CS",
@@ -473,7 +479,8 @@
 "n": 44000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.ncl.ac.uk/postgraduate/degrees/5178f/"
 },
 {
 "g": "CS",
@@ -514,7 +521,8 @@
 "n": 37000,
 "o": "",
 "pl": "Yes \u2013 24-month version",
-"fl": ""
+"fl": "",
+"url": "https://www.cardiff.ac.uk/study/postgraduate/taught/courses/course/advanced-computer-science-with-a-professional-placement-year-msc"
 },
 {
 "g": "CS",
@@ -576,7 +584,8 @@
 "n": 37000,
 "o": "Global Excellence \u00a37,000 (1st-class req.)",
 "pl": "Yes \u2013 2-yr industry",
-"fl": ""
+"fl": "",
+"url": "https://le.ac.uk/courses/advanced-computer-science-msc/2026"
 },
 {
 "g": "CS",
@@ -617,7 +626,8 @@
 "n": 43000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.citystgeorges.ac.uk/prospective-students/subjects/computer-science"
 },
 {
 "g": "CS",
@@ -658,7 +668,8 @@
 "n": 30000,
 "o": "",
 "pl": "Yes \u2013 placement year",
-"fl": ""
+"fl": "",
+"url": "https://www.herts.ac.uk/courses/postgraduate-masters/msc-advanced-computer-science"
 },
 {
 "g": "CS",
@@ -762,7 +773,8 @@
 "n": 27500,
 "o": "Global Excellence \u00a32,000; VC \u00a37,000",
 "pl": "Yes \u2013 Advanced Practice",
-"fl": ""
+"fl": "",
+"url": "https://www.tees.ac.uk/postgraduate_courses/computing_&_cyber_security/msc_computer_science.cfm"
 },
 {
 "g": "CS",
@@ -824,7 +836,8 @@
 "n": 26400,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.southwales.ac.uk/courses/msc-advanced-computer-science/"
 },
 {
 "g": "CS",
@@ -865,7 +878,8 @@
 "n": 27300,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.lincoln.ac.uk/course/cmpcmpms/"
 },
 {
 "g": "CS",
@@ -885,7 +899,8 @@
 "n": 27400,
 "o": "",
 "pl": "No",
-"fl": "Conversion course"
+"fl": "Conversion course",
+"url": "https://www.worcester.ac.uk/courses/computing-msc"
 },
 {
 "g": "CS",
@@ -926,7 +941,8 @@
 "n": 33910,
 "o": "",
 "pl": "Yes \u2013 year in industry",
-"fl": ""
+"fl": "",
+"url": "https://courses.aber.ac.uk/postgraduate/software-engineering-integrated-industrial-year/"
 },
 {
 "g": "CS",
@@ -967,7 +983,8 @@
 "n": 32900,
 "o": "Merit \u00a3750\u2013\u00a34,000",
 "pl": "Yes \u2013 +\u00a31,905",
-"fl": ""
+"fl": "",
+"url": "https://www.ntu.ac.uk/course/science-and-technology/pg/msc-computer-science"
 },
 {
 "g": "CS",
@@ -1008,7 +1025,8 @@
 "n": 29700,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://courses.hud.ac.uk/2026-27/postgraduate/computer-science-msc/"
 },
 {
 "g": "CS",
@@ -1112,7 +1130,8 @@
 "n": 30400,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.beds.ac.uk/courses/computer-science-masters/"
 },
 {
 "g": "CS",
@@ -1384,7 +1403,8 @@
 "n": 37175,
 "o": "",
 "pl": "No",
-"fl": "UKVI action plan"
+"fl": "UKVI action plan",
+"url": "https://www.essex.ac.uk/courses/pg00435/1/msc-advanced-computer-science"
 },
 {
 "g": "CS",
@@ -1404,7 +1424,8 @@
 "n": 35000,
 "o": "Intl up to \u00a35,000",
 "pl": "Yes \u2013 industrial placement",
-"fl": ""
+"fl": "",
+"url": "https://www.kent.ac.uk/courses/postgraduate/246/advanced-computer-science"
 },
 {
 "g": "AI",
@@ -1466,7 +1487,8 @@
 "n": 61000,
 "o": "UCL Global Masters \u00a315,000 (need-based)",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.ucl.ac.uk/prospective-students/graduate/taught-degrees/machine-learning-msc-2026"
 },
 {
 "g": "AI",
@@ -1486,7 +1508,8 @@
 "n": 59000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://study.ed.ac.uk/programmes/postgraduate-taught/107-artificial-intelligence"
 },
 {
 "g": "AI",
@@ -1611,7 +1634,8 @@
 "n": 46000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://courses.leeds.ac.uk/i537/advanced-computer-science-artificial-intelligence-msc"
 },
 {
 "g": "AI",
@@ -1631,7 +1655,8 @@
 "n": 46000,
 "o": "Global Leadership \u00a310,000 (1st-class req.)",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.gla.ac.uk/schools/computing/study/postgraduatetaughtdegrees/"
 },
 {
 "g": "AI",
@@ -1672,7 +1697,8 @@
 "n": 42000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.nottingham.ac.uk/pgstudy/course/taught/computer-science-artificial-intelligence"
 },
 {
 "g": "AI",
@@ -1818,7 +1844,8 @@
 "n": 37000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.cardiff.ac.uk/study/postgraduate/taught/courses/course/artificial-intelligence-msc"
 },
 {
 "g": "AI",
@@ -1901,7 +1928,8 @@
 "n": 38250,
 "o": "Intl scholarship \u00a38,000",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.abdn.ac.uk/study/postgraduate-taught/degree-programmes/1034/artificial-intelligence/"
 },
 {
 "g": "AI",
@@ -1921,7 +1949,8 @@
 "n": 37000,
 "o": "Global Excellence \u00a37,000 (1st-class req.)",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://le.ac.uk/courses/artificial-intelligence-msc/2026"
 },
 {
 "g": "AI",
@@ -1983,7 +2012,8 @@
 "n": 44000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.citystgeorges.ac.uk/prospective-students/courses/postgraduate/artificial-intelligence"
 },
 {
 "g": "AI",
@@ -2003,7 +2033,8 @@
 "n": 35000,
 "o": "Intl up to \u00a35,000",
 "pl": "Yes \u2013 Year in Industry",
-"fl": ""
+"fl": "",
+"url": "https://www.kent.ac.uk/courses/postgraduate/249/artificial-intelligence"
 },
 {
 "g": "AI",
@@ -2023,7 +2054,8 @@
 "n": 30000,
 "o": "",
 "pl": "Yes \u2013 placement year",
-"fl": ""
+"fl": "",
+"url": "https://www.herts.ac.uk/courses/postgraduate-masters/msc-artificial-intelligence-and-robotics-with-placement-year"
 },
 {
 "g": "AI",
@@ -2043,7 +2075,8 @@
 "n": 23500,
 "o": "Intl scholarships (value n/p)",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://wrexham.ac.uk/courses/postgraduate-courses/msc-artificial-intelligence/"
 },
 {
 "g": "AI",
@@ -2084,7 +2117,8 @@
 "n": 27500,
 "o": "Global Excellence \u00a32,000; VC \u00a37,000",
 "pl": "Yes \u2013 Advanced Practice",
-"fl": ""
+"fl": "",
+"url": "https://www.tees.ac.uk/postgraduate_courses/computing_&_cyber_security/msc_applied_artificial_intelligence.cfm"
 },
 {
 "g": "AI",
@@ -2104,7 +2138,8 @@
 "n": 26400,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.southwales.ac.uk/courses/msc-artificial-intelligence/"
 },
 {
 "g": "AI",
@@ -2145,7 +2180,8 @@
 "n": 27300,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.lincoln.ac.uk/course/intvisms/"
 },
 {
 "g": "AI",
@@ -2228,7 +2264,8 @@
 "n": 33910,
 "o": "",
 "pl": "Yes \u2013 year in industry",
-"fl": ""
+"fl": "",
+"url": "https://www.aber.ac.uk/en/cs/study-with-us/pg/"
 },
 {
 "g": "AI",
@@ -2248,7 +2285,8 @@
 "n": 35200,
 "o": "None for Nepal (Dundee finder)",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.dundee.ac.uk/postgraduate/artificial-intelligence"
 },
 {
 "g": "AI",
@@ -2289,7 +2327,8 @@
 "n": 37175,
 "o": "",
 "pl": "No",
-"fl": "UKVI action plan"
+"fl": "UKVI action plan",
+"url": "https://www.essex.ac.uk/courses/pg00457/1/msc-artificial-intelligence"
 },
 {
 "g": "AI",
@@ -2309,7 +2348,8 @@
 "n": 32900,
 "o": "Merit \u00a3750\u2013\u00a34,000",
 "pl": "Yes \u2013 +\u00a31,905",
-"fl": ""
+"fl": "",
+"url": "https://www.ntu.ac.uk/course/science-and-technology/pg/artificial-intelligence"
 },
 {
 "g": "AI",
@@ -2392,7 +2432,8 @@
 "n": 29700,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://courses.hud.ac.uk/2026-27/postgraduate/artificial-intelligence-msc/"
 },
 {
 "g": "AI",
@@ -2538,7 +2579,8 @@
 "n": 41300,
 "o": "Intl up to \u00a35,000",
 "pl": "Yes \u2013 12-month placement",
-"fl": ""
+"fl": "",
+"url": "https://www.kingston.ac.uk/study/postgraduate/artificial-intelligence-msc"
 },
 {
 "g": "AI",
@@ -2600,7 +2642,8 @@
 "n": 36900,
 "o": "",
 "pl": "Yes \u2013 placement version",
-"fl": ""
+"fl": "",
+"url": "https://www.lsbu.ac.uk/study/course-finder/msc-applied-artificial-intelligence"
 },
 {
 "g": "AI",
@@ -2683,7 +2726,8 @@
 "n": 31630,
 "o": "Data Lab funded places",
 "pl": "Short placement (discretionary)",
-"fl": ""
+"fl": "",
+"url": "https://www.rgu.ac.uk/study/courses/pgcert-pgdip-msc-artificial-intelligence"
 },
 {
 "g": "AI",
@@ -2829,7 +2873,8 @@
 "n": 57000,
 "o": "UCL Global Masters \u00a315,000 (need-based)",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.ucl.ac.uk/prospective-students/graduate/taught-degrees/human-computer-interaction-msc"
 },
 {
 "g": "HCI",
@@ -2849,7 +2894,8 @@
 "n": 57000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://study.ed.ac.uk/programmes/postgraduate-taught/803-design-informatics"
 },
 {
 "g": "HCI",
@@ -2995,7 +3041,8 @@
 "n": 44000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.ncl.ac.uk/postgraduate/degrees/5447f/"
 },
 {
 "g": "HCI",
@@ -3057,7 +3104,8 @@
 "n": 39000,
 "o": "Chancellor's Intl \u00a35,000",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.sussex.ac.uk/study/masters/courses/advanced-computer-science-msc"
 },
 {
 "g": "HCI",
@@ -3077,7 +3125,8 @@
 "n": 35700,
 "o": "",
 "pl": "No",
-"fl": "Research degree"
+"fl": "Research degree",
+"url": "https://www.swansea.ac.uk/postgraduate/research/maths-comp-sci/computer-science/msc-by-research-human-computer-interaction/"
 },
 {
 "g": "HCI",
@@ -3118,7 +3167,8 @@
 "n": 43000,
 "o": "",
 "pl": "Internship option",
-"fl": ""
+"fl": "",
+"url": "https://www.citystgeorges.ac.uk/prospective-students/courses/postgraduate/human-computer-interaction-design"
 },
 {
 "g": "HCI",
@@ -3159,7 +3209,8 @@
 "n": 33000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.bournemouth.ac.uk/study/courses/msc-human-centred-artificial-intelligence"
 },
 {
 "g": "HCI",
@@ -3200,7 +3251,8 @@
 "n": 33000,
 "o": "",
 "pl": "No",
-"fl": "UKVI action plan"
+"fl": "UKVI action plan",
+"url": "https://www.gcu.ac.uk/study/courses/pg/msc-user-experience-and-design-glasgow"
 },
 {
 "g": "HCI",
@@ -3220,7 +3272,8 @@
 "n": 30000,
 "o": "",
 "pl": "No",
-"fl": ""
+"fl": "",
+"url": "https://www.herts.ac.uk/courses/postgraduate-masters-study"
 },
 {
 "g": "HCI",
@@ -3324,7 +3377,8 @@
 "n": 38000,
 "o": "Intl up to \u00a35,000",
 "pl": "Projects / placements",
-"fl": ""
+"fl": "",
+"url": "https://www.kingston.ac.uk/study/postgraduate/user-experience-design-msc"
 },
 {
 "g": "HCI",

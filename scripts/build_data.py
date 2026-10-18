@@ -16,9 +16,13 @@ def gq(u, c, co="uk"):
 # German cities (geocoded by scripts/import_germany.mjs) join the city list; each city is tagged with its country.
 CITIES_DE = json.load(open(os.path.join(HERE, "cities_de.json"))) if os.path.exists(os.path.join(HERE, "cities_de.json")) else {}
 
+# Module codes and titles per course (UK computing master's), keyed "university|programme".
+MODS = json.load(open(os.path.join(HERE, "modules.json"))) if os.path.exists(os.path.join(HERE, "modules.json")) else {}
+
 out, unis = [], {}
 for r in rows:
     r = dict(r); r["lv"] = "Masters"; r["subj"] = [r["g"]]; r.setdefault("co", "uk"); out.append(r)
+    if MODS.get(f"{r['u']}|{r['p']}"): r["m"] = MODS[f"{r['u']}|{r['p']}"]
     if r["u"] not in unis:
         U = UNIS[r["u"]]
         unis[r["u"]] = {"c": r["c"], "lat": U["lat"], "lng": U["lng"], "q": gq(r["u"], r["c"], r["co"]), "web": U["web"], "co": r["co"]}
