@@ -1516,6 +1516,7 @@ function renderShortlist() {
         <div title="Intakes"><dt>${IC.cal}Starts</dt><dd>${esc(r.i)}</dd></div>
         <div class="aff ${d > 0 ? "short" : "ok"}" title="Whether your jobs cover the remaining fee and living costs"><dt>${IC.work}Work</dt><dd>${d > 0 ? `−${rm(r, r100(d))}/yr` : "✓ Covered"}</dd></div>
       </dl>
+      ${modulesHTML(r)}
       ${planHTML(k)}
       ${noteHTML(k)}
       <div class="shc-acts">
@@ -1891,6 +1892,7 @@ function printShortlist() {
         </div>
         ${r.en ? `<p class="pr-line"><b>Entry:</b> ${esc(r.en)}</p>` : ""}
         ${ds.length ? `<p class="pr-line"><b>Dates:</b> ${ds.map(([f, l]) => `${l} <b>${fmtDate(e.d[f])}</b>`).join(" &nbsp;·&nbsp; ")}</p>` : ""}
+        ${r.m?.length ? `<div class="pr-mods"><b>Modules <span>(${r.m.length} · optional ones vary by year)</span></b><ul>${r.m.map(m => `<li>${m.length > 1 ? `<code>${esc(m[0])}</code> ` : ""}${esc(m[m.length - 1])}</li>`).join("")}</ul></div>` : ""}
         <div class="pr-docs"><div class="pr-docs-h"><b>Documents</b><span>${done} of ${docs.length} ready</span><i style="--p:${Math.round(done / docs.length * 100)}%"></i></div>
           <ul>${docs.map(([id, l]) => `<li class="${e.docs?.[id] ? "on" : ""}">${l}</li>`).join("")}</ul></div>
         ${S.notes[k] ? `<div class="pr-note"><b>Notes</b><p>${esc(S.notes[k]).replace(/\n/g, "<br>")}</p></div>` : ""}
