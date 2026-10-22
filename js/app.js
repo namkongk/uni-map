@@ -1825,20 +1825,30 @@ $("reportDlg").addEventListener("submit", async e => {
   } catch (err) { msg.className = "acct-msg err"; msg.textContent = err.message; btn.disabled = false; }
 });
 
-/* share: a link that carries the shortlist (courses + status, no notes), plus a printable page */
-const b64e = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+/* share: a short link that carries the shortlist (courses + status, no notes), plus a printable page.
+   Each course is a 5-character code (a hash of its key) followed by a status digit: #l=k3x9a1p0q7z0 … */
 const b64d = s => decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))));
+const shortId = k => { let h = 0x811c9dc5; for (let i = 0; i < k.length; i++) { h ^= k.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(36).padStart(7, "0").slice(-5); };
+let SHORT_IDS = null;   // short code → course key, built on first use
+const keyOfShort = id => { if (!SHORT_IDS) { SHORT_IDS = new Map(); for (const k of ALLKEYED.keys()) { const c = shortId(k); if (!SHORT_IDS.has(c)) SHORT_IDS.set(c, k); } } return SHORT_IDS.get(id); };
 async function shareLink() {
-  const keys = Object.entries(S.short).filter(([k]) => ALLKEYED.has(k)).map(([k, e]) => [k, e.st]);
+  const keys = Object.entries(S.short).filter(([k]) => ALLKEYED.has(k));
   if (!keys.length) return toolMsg("Star some courses first.");
-  const url = location.origin + location.pathname + "#s=" + b64e(JSON.stringify({ v: 1, k: keys }));
+  const code = keys.map(([k, e]) => shortId(k) + Math.max(0, STATUS.findIndex(x => x[0] === e.st))).join("");
+  const url = location.origin + location.pathname + "#l=" + code;
   try { await navigator.clipboard.writeText(url); toolMsg("Link copied — anyone with it can see your shortlist (not your notes or money)."); }
   catch (e) { prompt("Copy this link:", url); }
 }
+// Shared links: the short form (#l=…) and the older long form (#s=<base64 JSON>).
+function sharedItems() {
+  const l = location.hash.match(/^#l=([0-9a-z]+)/);
+  if (l) return (l[1].match(/[0-9a-z]{5}\d/g) || []).slice(0, 100).map(c => [keyOfShort(c.slice(0, 5)), STATUS[+c[5]]?.[0]]).filter(([k]) => k);
+  const m = location.hash.match(/^#s=([\w-]+)/); if (!m) return null;
+  try { const data = JSON.parse(b64d(m[1])); return Array.isArray(data.k) ? data.k.slice(0, 100) : []; } catch (e) { return []; }
+}
 function openShared() {
-  const m = location.hash.match(/^#s=([\w-]+)/); if (!m) return;
-  let data; try { data = JSON.parse(b64d(m[1])); } catch (e) { return; }
-  const items = (Array.isArray(data.k) ? data.k : []).slice(0, 100).map(([k, st]) => ({ k, st: STATUS_LBL[st] ? st : "considering", r: ALLKEYED.get(k) })).filter(x => x.r);
+  const list = sharedItems(); if (!list) return;
+  const items = list.map(([k, st]) => ({ k, st: STATUS_LBL[st] ? st : "considering", r: ALLKEYED.get(k) })).filter(x => x.r);
   history.replaceState(null, "", location.pathname + location.search);
   if (!items.length) return;
   $("sharedBody").innerHTML = `<p class="dlg-pad muted">Someone shared ${items.length} course${items.length === 1 ? "" : "s"} with you. Costs are first-year estimates.</p>
